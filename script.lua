@@ -3,10 +3,9 @@ local animatedText = require("lib.animatedText")
 local afk = require("afk")
 
 local page = action_wheel:newPage()
+local wasAimingLastTick = false
 
 animatedText.new("afk", models.model.root.Body, vec(-7, 4, -6), vec(0.3, 0.3, 0.3), "BILLBOARD", "")
-
-local wasAimingLastTick = false
 
 vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
