@@ -1,5 +1,6 @@
 local squapi = require("lib.SquAPI")
 local animatedText = require("lib.animatedText")
+local depthEffect = require("lib.depth_effect")
 local afk = require("afk")
 
 local page = action_wheel:newPage()
@@ -13,7 +14,19 @@ vanilla_model.ARMOR:setVisible(true)
 models.model.root.SadChair:setVisible(false)
 models.model.root.Head.CreeperEyes:setVisible(false)
 
-models:setSecondaryRenderType("EYES")
+models.model.root.Head.Eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
+models.model.root.Head.CreeperEyes:setPrimaryRenderType("EYES")
+
+local depthObjects = {
+	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer1, 64),
+	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer2, 32),
+	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer3, 16),
+	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer4, -16),
+	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer1, 64),
+	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer2, 32),
+	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer3, 16),
+	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer4, -16)
+}
 
 ------------------------------------------------------------------
 
@@ -133,6 +146,18 @@ local function isRangedWeaponDrawn(itemStack)
 		if (useAction == "BOW") or (useAction == "SPEAR") then return true end
 	end
 	return false
+end
+
+local tickCounter = 0
+function events.tick()
+	tickCounter = tickCounter + 1
+end
+
+function events.render(delta)
+	for i, depthObject in pairs(depthObjects) do
+		local depth = math.cos((tickCounter + delta) * 0.1 + i) * 4
+   		depthObject:setDepth(depth)
+	end
 end
 
 local function aimingAnimationChecks()
