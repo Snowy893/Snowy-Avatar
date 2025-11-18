@@ -1,9 +1,11 @@
-local squapi = require("lib.SquAPI")
-local animatedText = require("lib.animatedText")
-local depthEffect = require("lib.depth_effect")
-local afk = require("afk")
+local smoothie = require("lib.thirdparty.Smoothie")
+local animatedText = require("lib.thirdparty.animatedText")
+local depthEffect = require("lib.thirdparty.depth_effect")
+local afk = require("lib.afk")
+local doRandom = require("lib.doRandom")
 
 local page = action_wheel:newPage()
+local tickCounter = 0
 local wasAimingLastTick = false
 
 animatedText.new("afk", models.model.root.Body, vec(-7, 4, -6), vec(0.3, 0.3, 0.3), "BILLBOARD", "")
@@ -40,15 +42,13 @@ nameplate.ALL:setText(toJson {
 
 ------------------------------------------------------------------
 
----@diagnostic disable-next-line: undefined-field
-squapi.eye:new(
-	models.model.root.Head.Eyes, --element
-	.25,                      --(.25)leftdistance
-	.25                       --(1.25)rightdistance
-)
+smoothie:newEye(models.model.root.Head.Eyes)
+	:leftOffsetStrength(0.25)
+	:rightOffsetStrength(0.25)
+	:topOffsetStrength(0.5)
+	:bottomOffsetStrength(0.5)
 
----@diagnostic disable-next-line: undefined-field
-local blink = squapi.randimation:new(animations.model.blink)
+doRandom:new(function () animations.model.blink:play() end, 100, 300)
 
 ------------------------------------------------------------------
 
@@ -98,9 +98,20 @@ page:setAction(1, creeperAction)
 
 ------------------------------------------------------------------
 
+function events.TICK()
+	tickCounter = tickCounter + 1
+end
+
+function events.RENDER(delta)
+	for i, depthObject in pairs(depthObjects) do
+		local depth = math.cos((tickCounter + delta) * 0.1 + i) * 4
+   		depthObject:setDepth(depth)
+	end
+end
+
 ---@param toggle boolean
 local function afkAnimationToggle(toggle)
-	blink.enabled = not toggle
+	--blink.enabled = not toggle
 	animations.model.afkStart:setPlaying(toggle)
 	if not toggle then
 		animations.model.afkLoop:stop()
@@ -120,13 +131,13 @@ local function deepAfkAnimationToggle(toggle)
 	end
 end
 
-local function noddingOff(tickCounter, delta)
-	models.model.root.Head:setOffsetRot(math.sin((tickCounter + delta) / 16))
+local function noddingOff(ticks, delta)
+	models.model.root.Head:setOffsetRot(math.sin((ticks + delta) / 16))
 end
 
-local function sleepyText(tickCounter, delta)
+local function sleepyText(ticks, delta)
 	for i, v in pairs(animatedText.getTask("afk").textTasks) do
-		animatedText.transform("afk", vec(-i * 1.1, (math.sin((tickCounter + delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil, v)
+		animatedText.transform("afk", vec(-i * 1.1, (math.sin((ticks + delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil, v)
 	end
 end
 
@@ -146,18 +157,6 @@ local function isRangedWeaponDrawn(itemStack)
 		if (useAction == "BOW") or (useAction == "SPEAR") then return true end
 	end
 	return false
-end
-
-local tickCounter = 0
-function events.tick()
-	tickCounter = tickCounter + 1
-end
-
-function events.render(delta)
-	for i, depthObject in pairs(depthObjects) do
-		local depth = math.cos((tickCounter + delta) * 0.1 + i) * 4
-   		depthObject:setDepth(depth)
-	end
 end
 
 local function aimingAnimationChecks()
