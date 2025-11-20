@@ -21,7 +21,6 @@ end
 ---@return self
 function doRandomly:new(func)
     self.func = func
-    self.condition = true
     self.minTicks = 100
     self.maxTicks = 300
     self:resetTickCounter()
@@ -60,7 +59,7 @@ end
 function events.TICK()
     if next(doRandomly.ALL) == nil then return end
     for _, rand in pairs(doRandomly.ALL) do
-        if rand.condition ~= nil and (rand.condition or rand.condition()) then
+        if rand.condition == nil or (rand.condition ~= nil and rand.condition()) then
             rand.tickCounter = rand.tickCounter - 1
             if rand.tickCounter == 0 then
                 rand.func()
