@@ -1,8 +1,11 @@
-local squapi = require("lib.SquAPI")
-local animatedText = require("lib.animatedText")
-local afk = require("afk")
+local smoothie = require("lib.thirdparty.Smoothie")
+local animatedText = require("lib.thirdparty.animatedText")
+local depthEffect = require("lib.thirdparty.depth_effect")
+local afk = require("lib.afk")
+local doRandomly = require("lib.doRandomly")
 
 local page = action_wheel:newPage()
+local tickCounter = 0
 local wasAimingLastTick = false
 
 animatedText.new("afk", models.model.root.Body, vec(-7, 4, -6), vec(0.3, 0.3, 0.3), "BILLBOARD", "")
@@ -13,7 +16,19 @@ vanilla_model.ARMOR:setVisible(true)
 models.model.root.SadChair:setVisible(false)
 models.model.root.Head.CreeperEyes:setVisible(false)
 
-models:setSecondaryRenderType("EYES")
+models.model.root.Head.Eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
+models.model.root.Head.CreeperEyes:setPrimaryRenderType("EYES")
+
+local depthObjects = {
+	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer1, 64),
+	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer2, 32),
+	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer3, 16),
+	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer4, -16),
+	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer1, 64),
+	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer2, 32),
+	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer3, 16),
+	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer4, -16)
+}
 
 ------------------------------------------------------------------
 
@@ -27,15 +42,13 @@ nameplate.ALL:setText(toJson {
 
 ------------------------------------------------------------------
 
----@diagnostic disable-next-line: undefined-field
-squapi.eye:new(
-	models.model.root.Head.Eyes, --element
-	.25,                      --(.25)leftdistance
-	.25                       --(1.25)rightdistance
-)
+smoothie:newEye(models.model.root.Head.Eyes)
+	:leftOffsetStrength(0.25)
+	:rightOffsetStrength(0.25)
+	:topOffsetStrength(0.5)
+	:bottomOffsetStrength(0.5)
 
----@diagnostic disable-next-line: undefined-field
-local blink = squapi.randimation:new(animations.model.blink)
+doRandomly:new(function () animations.model.blink:play() end):register()
 
 ------------------------------------------------------------------
 
@@ -86,8 +99,8 @@ page:setAction(1, creeperAction)
 ------------------------------------------------------------------
 
 ---@param toggle boolean
-local function afkAnimationToggle(toggle)
-	blink.enabled = not toggle
+local function noddingOffToggle(toggle)
+	--blink.enabled = not toggle
 	animations.model.afkStart:setPlaying(toggle)
 	if not toggle then
 		animations.model.afkLoop:stop()
@@ -96,7 +109,7 @@ local function afkAnimationToggle(toggle)
 end
 
 ---@param toggle boolean
-local function deepAfkAnimationToggle(toggle)
+local function sleepyTextToggle(toggle)
 	if toggle then
 		animatedText.setText("afk", {text = "Zzz", color = "#605b85"})
 		for i, v in pairs(animatedText.getTask("afk").textTasks) do
@@ -107,13 +120,13 @@ local function deepAfkAnimationToggle(toggle)
 	end
 end
 
-local function noddingOff(tickCounter, delta)
-	models.model.root.Head:setOffsetRot(math.sin((tickCounter + delta) / 16))
+local function noddingOff(ticks, delta)
+	models.model.root.Head:setOffsetRot(math.sin((ticks + delta) / 16))
 end
 
-local function sleepyText(tickCounter, delta)
+local function sleepyText(ticks, delta)
 	for i, v in pairs(animatedText.getTask("afk").textTasks) do
-		animatedText.transform("afk", vec(-i * 1.1, (math.sin((tickCounter + delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil, v)
+		animatedText.transform("afk", vec(-i * 1.1, (math.sin((ticks + delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil, v)
 	end
 end
 
@@ -164,8 +177,19 @@ local function aimingAnimationChecks()
 	end
 end
 
-afk.register("ON_AFK_CHANGE", afkAnimationToggle)
-afk.register("ON_DEEP_AFK_CHANGE", deepAfkAnimationToggle)
+function events.TICK()
+	tickCounter = tickCounter + 1
+end
+
+function events.RENDER(delta)
+	for i, depthObject in pairs(depthObjects) do
+		local depth = math.cos((tickCounter + delta) * 0.1 + i) * 4
+   		depthObject:setDepth(depth)
+	end
+end
+
+afk.register("ON_AFK_CHANGE", noddingOffToggle)
+afk.register("ON_DEEP_AFK_CHANGE", sleepyTextToggle)
 afk.register("ON_RENDER_AFK_LOOP", noddingOff)
 afk.register("ON_RENDER_DEEP_AFK_LOOP", sleepyText)
 afk.register("ON_START_AFK_LOOP", function () animations.model.afkLoop:setPlaying(true) end)
