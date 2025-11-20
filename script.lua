@@ -2,7 +2,7 @@ local smoothie = require("lib.thirdparty.Smoothie")
 local animatedText = require("lib.thirdparty.animatedText")
 local depthEffect = require("lib.thirdparty.depth_effect")
 local afk = require("lib.afk")
-local doRandom = require("lib.doRandom")
+local doRandomly = require("lib.doRandomly")
 
 local page = action_wheel:newPage()
 local tickCounter = 0
@@ -48,7 +48,7 @@ smoothie:newEye(models.model.root.Head.Eyes)
 	:topOffsetStrength(0.5)
 	:bottomOffsetStrength(0.5)
 
-doRandom:new(function () animations.model.blink:play() end, 100, 300)
+doRandomly:new(function () animations.model.blink:play() end):register()
 
 ------------------------------------------------------------------
 
@@ -98,19 +98,8 @@ page:setAction(1, creeperAction)
 
 ------------------------------------------------------------------
 
-function events.TICK()
-	tickCounter = tickCounter + 1
-end
-
-function events.RENDER(delta)
-	for i, depthObject in pairs(depthObjects) do
-		local depth = math.cos((tickCounter + delta) * 0.1 + i) * 4
-   		depthObject:setDepth(depth)
-	end
-end
-
 ---@param toggle boolean
-local function afkAnimationToggle(toggle)
+local function noddingOffToggle(toggle)
 	--blink.enabled = not toggle
 	animations.model.afkStart:setPlaying(toggle)
 	if not toggle then
@@ -120,7 +109,7 @@ local function afkAnimationToggle(toggle)
 end
 
 ---@param toggle boolean
-local function deepAfkAnimationToggle(toggle)
+local function sleepyTextToggle(toggle)
 	if toggle then
 		animatedText.setText("afk", {text = "Zzz", color = "#605b85"})
 		for i, v in pairs(animatedText.getTask("afk").textTasks) do
@@ -188,8 +177,19 @@ local function aimingAnimationChecks()
 	end
 end
 
-afk.register("ON_AFK_CHANGE", afkAnimationToggle)
-afk.register("ON_DEEP_AFK_CHANGE", deepAfkAnimationToggle)
+function events.TICK()
+	tickCounter = tickCounter + 1
+end
+
+function events.RENDER(delta)
+	for i, depthObject in pairs(depthObjects) do
+		local depth = math.cos((tickCounter + delta) * 0.1 + i) * 4
+   		depthObject:setDepth(depth)
+	end
+end
+
+afk.register("ON_AFK_CHANGE", noddingOffToggle)
+afk.register("ON_DEEP_AFK_CHANGE", sleepyTextToggle)
 afk.register("ON_RENDER_AFK_LOOP", noddingOff)
 afk.register("ON_RENDER_DEEP_AFK_LOOP", sleepyText)
 afk.register("ON_START_AFK_LOOP", function () animations.model.afkLoop:setPlaying(true) end)

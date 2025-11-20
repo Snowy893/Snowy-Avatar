@@ -9,6 +9,9 @@
         "url": ".vscode/avatar.schema.json"
       }
     ],
-    "figura.librariesFolderPath": "C:\\Users\\snowy\\AppData\\Roaming\\.minecraft\\figura\\avatars\\libraries\\"
+    "figura.librariesFolderPath": "F:\\SSD\\Ultimate Backup\\Documents\\Minecraft Stuff\\Figura\\avatars\\libraries\\",
+    "[lua]": {
+      "editor.formatOnType": true,
+    }
   }
 }
