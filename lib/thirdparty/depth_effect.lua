@@ -11,7 +11,7 @@ local depthObjMt = {__index = depthObj}
 ---@type {[ModelPart]: auria.depth_effect.obj}
 local appliedDepthEffect = {}
 
-local function midRender(delta, ctx, model)
+local function midRender(_delta, _ctx, model)
    local me = appliedDepthEffect[model]
    local depth = me.depth
 

@@ -46,7 +46,7 @@ function smoothie:newSmoothHead(modelPart)
     local headRotPrevFrame = vec(0, 0, 0)
 
     -- Head rotation processor
-    events.RENDER:register(function(delta, context)
+    events.RENDER:register(function(_, context)
         -- Checking the need to process the head rotation
         if not player:isLoaded() then return end
         if not (context == "RENDER" or context == "FIRST_PERSON" or context == "MINECRAFT_GUI") then return end
@@ -200,7 +200,7 @@ function smoothie:newEar(modelPart)
     local rotationLimits = {top = 90, bottom = 90, left = 90, right = 90}
 
     -- Ear rotation logic
-    events.RENDER:register(function(delta)
+    events.RENDER:register(function()
         -- Calculating the difference in head rotation
         local headRotationAngle = (vanilla_model.HEAD:getOriginRot() + 180) % 360 - 180
         headRotationDelta = headRotationDelta + (prevHeadRotationAngle - headRotationAngle)
@@ -287,7 +287,7 @@ function smoothie:newPhysicalBody(modelPart)
     if player:isLoaded() then bodyYaw, prevBodyYaw = player:getBodyYaw(), player:getBodyYaw() end
 
     -- Physical body processor
-    events.RENDER:register(function(delta)
+    events.RENDER:register(function()
         if not player:isLoaded() then return end
 
         -- Calculating the difference in body yaw

@@ -1,122 +1,86 @@
 ---@class Afk
 local afk = {}
+local registered = 0
 
 ---@alias Afk.event
----| "ON_AFK_CHANGE"
----| "ON_DEEP_AFK_CHANGE"
----| "ON_START_AFK_LOOP"
----| "ON_RENDER_AFK_LOOP"
----| "ON_RENDER_DEEP_AFK_LOOP"
+---| "ON_CHANGE"
+---| "ON_RENDER_LOOP"
 ---| "ON_TICK_NOT_AFK"
 
-local afkEvents = {
-    ON_AFK_CHANGE = {},
-    ON_DEEP_AFK_CHANGE = {},
-    ON_START_AFK_LOOP = {},
-    ON_RENDER_AFK_LOOP = {},
-    ON_RENDER_DEEP_AFK_LOOP = {},
-    ON_TICK_NOT_AFK = {}
-}
+---@param secondsUntilAfk integer
+---@return table
+function afk.new(secondsUntilAfk)
+    registered = registered + 1
 
-local afkCheckTickRate = 5
-local afkDelay = 180*afkCheckTickRate
-local deepAfkDelay = 60*afkCheckTickRate + afkDelay
+    local afkCheckTickRate = 5
+    local delay = secondsUntilAfk * afkCheckTickRate
 
-local doAfk = nil
-local isAfk = false
-local wasAfk = false
-local isDeepAfk = false
-local wasDeepAfk = false
-local loopAfk = false
+    ---@class Afklib
+    local interface = {}
 
-local tickCounter = 0
-local afkTime = 0
-local oldAfkTime = 0
-local position
-local rotation
-local oldPosition
-local oldRotation
+    interface.isAfk = false
+    interface.wasAfk = false
+    interface.afkTime = 0
 
----@param event? Afk.event
----@param func function
-function afk.register(event, func)
-    table.insert(afkEvents[event], func)
-end
+    interface.events = {
+        ON_CHANGE = {},
+        ON_RENDER_LOOP = {},
+        ON_TICK_NOT_AFK = {},
+    }
 
----@param state boolean
-function afk.setLoopAfk(state)
-    loopAfk = state
-end
-
----@param state boolean
-function pings.sendDoAfk(state)
-    if doAfk == state then return end
-    doAfk = state
-    if host:isHost() then config:save("do_afk", state) end
-    if not state then
-        for _, func in pairs(afkEvents["ON_AFK_CHANGE"]) do func(false) end
-        for _, func in pairs(afkEvents["ON_DEEP_AFK_CHANGE"]) do func(false) end
-        loopAfk = false
-        isAfk = false
-		wasAfk = false
-		isDeepAfk = false
-		wasDeepAfk = false
+    ---@param event Afk.event
+    ---@param func function
+    function interface:register(event, func)
+        local tbl = interface.events[event]
+        table.insert(tbl, func)
+        return interface
     end
-end
 
-function StartInstruction()
-    for _, func in pairs(afkEvents["ON_START_AFK_LOOP"]) do func() end
-	loopAfk = true
-end
+    events.TICK:register(function()
+        if world.getTime() % afkCheckTickRate == 0 then
+            if (interface.position == interface.oldPosition)
+                and (interface.rotation == interface.oldRotation)
+                and (player:getPose() ~= "SLEEPING")
+            then
+                interface.afkTime = interface.afkTime + 1
+            else
+                interface.afkTime = 0
+            end
 
-function events.ENTITY_INIT()
-    if doAfk == nil then pings.sendDoAfk(config:load("do_afk")) end
-end
+            interface.wasAfk = interface.isAfk
+            interface.oldPosition = interface.position
+            interface.oldRotation = interface.rotation
+            interface.position = player:getPos()
+            interface.rotation = player:getRot()
 
-function events.TICK()
-    if doAfk and tickCounter % afkCheckTickRate == 0 then
-        if (position == oldPosition) and (rotation == oldRotation) then afkTime = afkTime + 1 else afkTime = 0 end
-
-        wasAfk = isAfk
-        wasDeepAfk = isDeepAfk
-        oldPosition = position
-        oldRotation = rotation
-        position = user:getPos()
-        rotation = user:getRot()
-
-        if afkTime ~= 0 then
-            if afkTime >= afkDelay then
-                isAfk = true
-                if afkTime >= deepAfkDelay then
-                    isDeepAfk = true
+            if interface.afkTime ~= 0 then
+                if interface.afkTime >= delay then
+                    interface.isAfk = true
+                end
+            else
+                if interface.oldAfkTime ~= 0 then
+                    interface.isAfk = false
                 end
             end
-        else
-            if oldAfkTime ~= 0 then
-                isAfk = false
-                isDeepAfk = false
+
+            interface.oldAfkTime = interface.afkTime
+
+            if interface.isAfk ~= interface.wasAfk then
+                for _, func in pairs(interface.events.ON_CHANGE) do func(interface.isAfk) end
             end
         end
 
-        oldAfkTime = afkTime
-
-        if isAfk ~= wasAfk then
-            if not isAfk then loopAfk = false end
-            for _, func in pairs(afkEvents["ON_AFK_CHANGE"]) do func(isAfk) end
+        if not interface.isAfk then
+            for _, func in pairs(interface.events.ON_TICK_NOT_AFK) do func() end
         end
-        if isDeepAfk ~= wasDeepAfk then
-            for _, func in pairs(afkEvents["ON_DEEP_AFK_CHANGE"]) do func(isDeepAfk) end
-        end
-	end
-    if not doAfk or not isAfk then for _, func in pairs(afkEvents["ON_TICK_NOT_AFK"]) do func() end end
-    tickCounter = tickCounter + 1
-end
+    end, "Afk.tick."..registered)
 
-function events.RENDER(delta, context)
-    if not loopAfk then return end
-    for _, func in pairs(afkEvents["ON_RENDER_AFK_LOOP"]) do func(tickCounter, delta, context) end
-    if not isDeepAfk then return end
-    for _, func in pairs(afkEvents["ON_RENDER_DEEP_AFK_LOOP"]) do func(tickCounter, delta, context) end
+    events.RENDER:register(function (delta, context)
+        if not interface.isAfk then return end
+        for _, func in pairs(interface.events.ON_RENDER_LOOP) do func(delta, context) end
+    end, "Afk.render."..registered)
+
+    return interface
 end
 
 return afk
