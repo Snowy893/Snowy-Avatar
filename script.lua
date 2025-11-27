@@ -145,7 +145,7 @@ local function setEyeColor(tbl)
 	end
 end
 
----comment `:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
+---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
 ---@param itemStack ItemStack
 ---@return boolean
 local function isCrossbowCharged(itemStack)
@@ -153,7 +153,7 @@ local function isCrossbowCharged(itemStack)
 		itemStack:getTag()["ChargedProjectiles"][1] ~= nil
 end
 
----comment Checks if the player is using an item with `action` that is either `"BOW"` or `"SPEAR"`. EXCLUDES CROSSBOWS!
+---Checks if the player is using an item with `action` that is either `"BOW"` or `"SPEAR"`. EXCLUDES CROSSBOWS!
 ---@param itemStack ItemStack
 ---@return boolean
 local function isRangedWeaponDrawn(itemStack)
@@ -262,7 +262,6 @@ afk.new(210)
     end)
 
 enviLib.register("DIMENSION", function(dim)
-	print("event triggered: " .. dim)
 	util.switch(dim, {
 		["minecraft:overworld"] = function ()
 			setEyeColor({
