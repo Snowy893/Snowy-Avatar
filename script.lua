@@ -102,37 +102,46 @@ page:setAction(1, creeperAction)
 ------------------------------------------------------------------
 
 local function resetEyeColor()
-	util.deepLoop(models.model.root.Head.Eyes:getChildren(), function(part)
-		part.background:setColor()
-		for i = 1, 4 do
-			part["layer" .. tostring(i)]:setColor()
-		end
-	end)
+	models.model.root.Head.Eyes.RightEye.background:setColor()
+	models.model.root.Head.Eyes.LeftEye.background:setColor()
+	for i = 1, 4 do
+		models.model.root.Head.Eyes.RightEye["layer" .. tostring(i)]:setColor()
+		models.model.root.Head.Eyes.LeftEye["layer" .. tostring(i)]:setColor()
+	end
 end
 
 ---@param tbl table
 local function setEyeColor(tbl)
 	resetEyeColor()
-    for _, value in ipairs(tbl) do
-        if value.type == "eyes" then
-            util.deepLoop(models.model.root.Head.Eyes:getChildren(), function(part)
-                part.background:setColor(value.color)
+	for _, v in pairs(tbl) do
+		util.switch(v.type, {
+			["all"] = function ()
+				models.model.root.Head.Eyes.RightEye.background:setColor(v.color)
+				models.model.root.Head.Eyes.LeftEye.background:setColor(v.color)
 				for i = 1, 4 do
-					part["layer"..tostring(i)]:setColor(value.color)
+					models.model.root.Head.Eyes.RightEye["layer" .. tostring(i)]:setColor(v.color)
+					models.model.root.Head.Eyes.LeftEye["layer" .. tostring(i)]:setColor(v.color)
 				end
-            end)
-        elseif value.type == "layers" then
-            for i = 1, 4 do
-				models.model.root.Head.Eyes.RightEye["layer" .. tostring(i)]:setColor(value.color)
-				models.model.root.Head.Eyes.LeftEye["layer" .. tostring(i)]:setColor(value.color)
-            end
-        elseif value.type:find("layer") then
-			models.model.root.Head.Eyes.RightEye[value.type]:setColor(value.color)
-			models.model.root.Head.Eyes.LeftEye[value.type]:setColor(value.color)
-		elseif value.type == "background" then
-			models.model.root.Head.Eyes.RightEye.background:setColor(value.color)
-			models.model.root.Head.Eyes.LeftEye.background:setColor(value.color)
-		end
+				models.model.root.Head.CreeperEyes:setColor(v.color)
+			end,
+			["layers"] = function ()
+				for i = 1, 4 do
+					models.model.root.Head.Eyes.RightEye["layer" .. tostring(i)]:setColor(v.color)
+					models.model.root.Head.Eyes.LeftEye["layer" .. tostring(i)]:setColor(v.color)
+				end
+			end,
+			["layer"] = function ()
+				models.model.root.Head.Eyes.RightEye["layer"..tostring(v.layer)]:setColor(v.color)
+				models.model.root.Head.Eyes.LeftEye["layer"..tostring(v.layer)]:setColor(v.color)
+			end,
+			["background"] = function ()
+				models.model.root.Head.Eyes.RightEye.background:setColor(v.color)
+				models.model.root.Head.Eyes.LeftEye.background:setColor(v.color)
+			end,
+			["creeper"] = function ()
+				models.model.root.Head.CreeperEyes:setColor(v.color)
+			end
+		})
 	end
 end
 
@@ -253,16 +262,29 @@ afk.new(210)
     end)
 
 enviLib.register("DIMENSION", function(dim)
-	if dim == "minecraft:overworld" then
-        resetEyeColor()
-    elseif dim == "minecraft:the_nether" then
-        setEyeColor({
-            {type = "eyes", color = vec(1, 0.42, 0.75)}
-		})
-    elseif dim == "minecraft:the_end" then
-        setEyeColor({
-            {type = "layers", color = vec(1, 0.5, 0.85)},
-			{type = "background", color = vec(0.45, 0.45, 0.45)}
-		})
-	end
+	print("event triggered: " .. dim)
+	util.switch(dim, {
+		["minecraft:overworld"] = function ()
+			setEyeColor({
+				{ type = "all",   color = vec(0.55, 0.14, 1) }
+			})
+		end,
+		["minecraft:the_nether"] = function ()
+			setEyeColor({
+				{ type = "all", color = vec(0.89, 0.1, 0.95) },
+			})
+		end,
+		["minecraft:the_end"] = function ()
+			setEyeColor({
+				{ type = "layers",     color = vec(0.81, 0.96, 0.99) },
+				{ type = "background", color = vec(0.38, 0.12, 0.48) },
+				{ type = "creeper", color = vec(0.81, 0.96, 0.99)}
+			})
+		end,
+		default = function ()
+			setEyeColor({
+				{ type = "all", color = vec(0.55, 0.14, 1) },
+			})
+		end
+	})
 end)
