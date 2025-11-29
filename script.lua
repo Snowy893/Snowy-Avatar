@@ -1,18 +1,21 @@
 --#region imports
-local smoothie = require("lib.thirdparty.Smoothie")
-local animatedText = require("lib.thirdparty.animatedText")
-local depthEffect = require("lib.thirdparty.depth_effect")
+local smoothie = require "lib.thirdparty.Smoothie"
+local animatedText = require "lib.thirdparty.animatedText"
+local depthEffect = require "lib.thirdparty.depth_effect"
+local util = require "lib.util"
+local afk = require "lib.afk"
+local doRandomly = require "lib.doRandomly"
+local enviLib = require "lib.enviLib"
+local colorParts                            = require "lib.colorParts"
 
-local util = require("lib.util")
-local afk = require("lib.afk")
-local doRandomly = require("lib.doRandomly")
-local enviLib = require("lib.enviLib")
 --#endregion
 
 local page = action_wheel:newPage()
-local isAfk = false
-local wasAimingLastTick = false
-local wasSleeping = false
+local isAfk, wasAimingLastTick, wasSleeping = false, false, false
+
+local depthObjects = {}
+
+local eyeColor = colorParts.new({models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye})
 
 animatedText.new("afk", models.model.root.Body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
 	"BILLBOARD", "")
@@ -28,16 +31,18 @@ models.model.root.Head.CreeperEyes:setVisible(false)
 models.model.root.Head.Eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
 models.model.root.Head.CreeperEyes:setPrimaryRenderType("EYES")
 
-local depthObjects = {
-	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer1, 64),
-	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer2, 32),
-	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer3, 16),
-	depthEffect.apply(models.model.root.Head.Eyes.RightEye.layer4, -16),
-	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer1, 64),
-	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer2, 32),
-	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer3, 16),
-	depthEffect.apply(models.model.root.Head.Eyes.LeftEye.layer4, -16),
-}
+local depthIncrement = 16
+for i, v in ipairs({models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye}) do
+    local index = 1
+	local layer = v["layer" .. tostring(index)]
+    while layer do
+		if not v["layer" .. tostring(index + 1)] then depthIncrement = -16 end
+		table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+		depthIncrement = depthIncrement * 2
+		index = index + 1
+		layer = v["layer"..tostring(index)]
+	end
+end
 
 ------------------------------------------------------------------
 
@@ -100,50 +105,6 @@ page:setAction(2, sadChairAction)
 page:setAction(1, creeperAction)
 
 ------------------------------------------------------------------
-
-local function resetEyeColor()
-	models.model.root.Head.Eyes.RightEye.background:setColor()
-	models.model.root.Head.Eyes.LeftEye.background:setColor()
-	for i = 1, 4 do
-		models.model.root.Head.Eyes.RightEye["layer" .. tostring(i)]:setColor()
-		models.model.root.Head.Eyes.LeftEye["layer" .. tostring(i)]:setColor()
-	end
-end
-
----@param tbl table
-local function setEyeColor(tbl)
-	resetEyeColor()
-	for _, v in pairs(tbl) do
-		util.switch(v.type, {
-			["all"] = function ()
-				models.model.root.Head.Eyes.RightEye.background:setColor(v.color)
-				models.model.root.Head.Eyes.LeftEye.background:setColor(v.color)
-				for i = 1, 4 do
-					models.model.root.Head.Eyes.RightEye["layer" .. tostring(i)]:setColor(v.color)
-					models.model.root.Head.Eyes.LeftEye["layer" .. tostring(i)]:setColor(v.color)
-				end
-				models.model.root.Head.CreeperEyes:setColor(v.color)
-			end,
-			["layers"] = function ()
-				for i = 1, 4 do
-					models.model.root.Head.Eyes.RightEye["layer" .. tostring(i)]:setColor(v.color)
-					models.model.root.Head.Eyes.LeftEye["layer" .. tostring(i)]:setColor(v.color)
-				end
-			end,
-			["layer"] = function ()
-				models.model.root.Head.Eyes.RightEye["layer"..tostring(v.layer)]:setColor(v.color)
-				models.model.root.Head.Eyes.LeftEye["layer"..tostring(v.layer)]:setColor(v.color)
-			end,
-			["background"] = function ()
-				models.model.root.Head.Eyes.RightEye.background:setColor(v.color)
-				models.model.root.Head.Eyes.LeftEye.background:setColor(v.color)
-			end,
-			["creeper"] = function ()
-				models.model.root.Head.CreeperEyes:setColor(v.color)
-			end
-		})
-	end
-end
 
 ---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
 ---@param itemStack ItemStack
@@ -210,7 +171,7 @@ end
 
 function events.RENDER(delta)
 	if player:getPose() == "SLEEPING" then
-		for i, v in pairs(animatedText.getTask("sleeping").textTasks) do
+		for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
 			animatedText.transform(
 				"sleeping", vec(-i * 1.1,
 					(math.sin((world.getTime(delta)) / 8 + i) * .5) + (i * 1.3), 0),
@@ -247,7 +208,7 @@ afk.new(210)
 	:register("ON_CHANGE", function (toggle)
 		if toggle then
 			animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
-			for i, v in pairs(animatedText.getTask("afk").textTasks) do
+			for _, v in pairs(animatedText.getTask("afk").textTasks) do
 				v.task:outline(true)
 			end
 		else
@@ -255,35 +216,36 @@ afk.new(210)
 		end
 	end)
 	:register("ON_RENDER_LOOP", function (delta)
-		for i, v in pairs(animatedText.getTask("afk").textTasks) do
+		for i, v in ipairs(animatedText.getTask("afk").textTasks) do
 			animatedText.transform("afk",
 				vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil, v)
 		end
     end)
 
 enviLib.register("DIMENSION", function(dim)
+	local s, e = dim:find("minecraft:")
+	if s == 1 and e then
+		dim = dim:sub(e+1, dim:len())
+	end
 	util.switch(dim, {
-		["minecraft:overworld"] = function ()
-			setEyeColor({
-				{ type = "all",   color = vec(0.55, 0.14, 1) }
-			})
+		the_end = function()
+			models.model.root.Head.CreeperEyes:setColor()
+			models.model.root.Head.CreeperEyes:setColor(0.81, 0.96, 0.99)
+			eyeColor.color("all", vec(0.81, 0.96, 0.99))
+			eyeColor.color("depthBackground", vec(0.35, 0.1, 0.35))
+			eyeColor.color("layer1", vec(1, 1, 1))
 		end,
-		["minecraft:the_nether"] = function ()
-			setEyeColor({
-				{ type = "all", color = vec(0.89, 0.1, 0.95) },
-			})
+		the_nether = function()
+			models.model.root.Head.CreeperEyes:setColor()
+			models.model.root.Head.CreeperEyes:setColor(vec(0.86, 0.42, 0.92))
+			eyeColor.color("all", vec(0.87, 0.65, 0.88))
+			eyeColor.color("depthBackground", vec(0.86, 0.42, 0.92))
 		end,
-		["minecraft:the_end"] = function ()
-			setEyeColor({
-				{ type = "layers",     color = vec(0.81, 0.96, 0.99) },
-				{ type = "background", color = vec(0.38, 0.12, 0.48) },
-				{ type = "creeper", color = vec(0.81, 0.96, 0.99)}
-			})
-		end,
-		default = function ()
-			setEyeColor({
-				{ type = "all", color = vec(0.55, 0.14, 1) },
-			})
+		default = function()
+			models.model.root.Head.CreeperEyes:setColor()
+			models.model.root.Head.CreeperEyes:setColor(vec(0.75, 0.52, 0.9))
+			eyeColor.color("all", vec(0.86, 0.74, 1))
+			eyeColor.color("depthBackground", vec(0.75, 0.52, 0.9))
 		end
 	})
 end)

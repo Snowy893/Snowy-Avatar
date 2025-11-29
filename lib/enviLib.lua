@@ -6,7 +6,7 @@ enviLib.BIOME = { ON_CHANGE = {} }
 
 enviLib.REGISTERED = { DIMENSION = {}, BIOME = {} }
 
-local util = require("lib.util")
+local util = require "lib.util"
 
 local currentID = {}
 local oldID = {}

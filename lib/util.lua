@@ -19,20 +19,4 @@ function util.switch(value, cases)
     return match()
 end
 
----@overload fun(tbl, func)
----@param tbl table
----@param func function
----@param excludeTables boolean
-function util.deepLoop(tbl, func, excludeTables)
-    if excludeTables == nil then excludeTables = true end
-    for _, v in pairs(tbl) do
-        if type(v) == "table" then
-            if not excludeTables then func(v) end
-            util.deepLoop(v, func)
-        else
-            func(v)
-        end
-    end
-end
-
 return util

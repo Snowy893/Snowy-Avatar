@@ -1,0 +1,69 @@
+---@class ColorParts
+local colorParts = {}
+
+local util = require "lib.util"
+
+---@param parts ModelPart[]
+function colorParts.new(parts)
+    local interface = {}
+
+    local layers = {}
+    for _, v in pairs(parts) do
+        local index = 1
+        local layer = v["layer" .. tostring(index)]
+        while layer do
+            table.insert(layers, layer)
+            index = index + 1
+            layer = v["layer" .. tostring(index)]
+        end
+    end
+
+    ---@param type string
+    ---@param color? Vector3 Resets color multiplier if nil
+    function interface.color(type, color)
+        util.switch(type, {
+            all = function()
+                for _, v in pairs(parts) do
+                    v:setColor()
+                    v:setColor(color)
+                end
+                interface.color("depthLayers", color)
+                interface.color("depthBackground", color)
+            end,
+            depthLayers = function ()
+                for _, v in pairs(layers) do
+                    v:setColor()
+                    v:setColor(color)
+                end
+            end,
+            depthBackground = function()
+                for _, v in pairs(parts) do
+                    local bg = v.bg or v.background
+                    bg:setColor()
+                    bg:setColor(color)
+                end
+            end,
+            default = function ()
+                if type:find("layer") or type:find("depthLayer") then
+                    for _, v in pairs(parts) do
+                        if v[type] then
+                            v[type]:setColor(color)
+                        end
+                    end
+                    return
+                end
+                error("Invalid color type: "..tostring(type))
+            end
+        })
+
+        for _, v in pairs(parts) do
+            v:setColor(color)
+        end
+    end
+
+    return interface
+end
+
+
+
+return colorParts
