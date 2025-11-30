@@ -1,6 +1,6 @@
 ---@class Afk
 local afk = {}
-local registered = 0
+local afks = 0
 
 local util = require "lib.util"
 
@@ -10,15 +10,14 @@ local util = require "lib.util"
 ---| "ON_TICK_NOT_AFK"
 
 ---@param secondsUntilAfk integer
----@return table
+---@return Afk.Obj
 function afk.new(secondsUntilAfk)
-    registered = registered + 1
+    afks = afks + 1
 
     local afkCheckTickRate = 5
     local delay = secondsUntilAfk * afkCheckTickRate
-    
 
-    ---@class Afklib
+    ---@class Afk.Obj
     local interface = {}
 
     interface.isAfk = false
@@ -30,13 +29,13 @@ function afk.new(secondsUntilAfk)
         ON_TICK_NOT_AFK = {},
     }
 
-    local onAfk = util.onChange(function()
-        for _, func in pairs(interface.events.ON_CHANGE) do func(interface.isAfk) end
+    local onAfk = util.onChange(function(toggle)
+        for _, func in pairs(interface.events.ON_CHANGE) do func(toggle) end
     end)
 
     ---@param event Afk.event
     ---@param func function
-    function interface:register(event, func)
+    function interface.register(event, func)
         local tbl = interface.events[event]
         table.insert(tbl, func)
         return interface
@@ -70,18 +69,18 @@ function afk.new(secondsUntilAfk)
 
             interface.oldAfkTime = interface.afkTime
 
-            onAfk:check(interface.isAfk)
+            onAfk.check(interface.isAfk)
         end
 
         if not interface.isAfk then
             for _, func in pairs(interface.events.ON_TICK_NOT_AFK) do func() end
         end
-    end, "Afk.tick."..registered)
+    end, "Afk.tick."..afks)
 
     events.RENDER:register(function (delta, context)
         if not interface.isAfk then return end
         for _, func in pairs(interface.events.ON_RENDER_LOOP) do func(delta, context) end
-    end, "Afk.render."..registered)
+    end, "Afk.render."..afks)
 
     return interface
 end

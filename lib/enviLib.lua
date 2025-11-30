@@ -1,15 +1,10 @@
 ---@class EnviLib
 local enviLib = {}
 
-enviLib.DIMENSION = { ON_CHANGE = {} }
-enviLib.BIOME = { ON_CHANGE = {} }
-
-enviLib.CACHE = { DIMENSION = {}, BIOME = {} }
+enviLib.DIMENSION = { ON_CHANGE = {}, REGISTERED = {} }
+enviLib.BIOME = { ON_CHANGE = {}, REGISTERED = {} }
 
 local util = require "lib.util"
-
-local current = {}
-local old = {}
 
 ---@alias EnviLib.type string
 ---| "DIMENSION"
@@ -23,8 +18,8 @@ function enviLib.register(type, func, id)
     if id == nil then
         table.insert(enviLib[type].ON_CHANGE, func)
     else
-        if not util.contains(enviLib.CACHE[type], id) then
-            table.insert(enviLib.CACHE[type], id)
+        if not util.contains(enviLib[type].REGISTERED, id) then
+            table.insert(enviLib[type].REGISTERED, id)
         end
         table.insert(enviLib[type][id], func)
     end
@@ -32,29 +27,32 @@ end
 
 ---@param type EnviLib.type
 ---@param currentEnvi any
-local function onChange(type, currentEnvi)
-    local id
-    if type == "BIOME" then id = currentEnvi.id else id = currentEnvi end
+---@param oldId string
+local function onChange(type, currentEnvi, oldId)
+    local id = currentEnvi
+    if type == "BIOME" then id = currentEnvi.id end
     for _, func in pairs(enviLib[type].ON_CHANGE) do func(currentEnvi) end
-    for _, value in pairs(enviLib.CACHE[type]) do
-        for _, func in pairs(enviLib[type][value]) do
-            if old[type] == value or id[type] == value then
-                func(currentEnvi, value == id)
+    for _, registeredId in pairs(enviLib[type].REGISTERED) do
+        for _, func in pairs(enviLib[type][registeredId]) do
+            if oldId == registeredId or id == registeredId then
+                func(currentEnvi, registeredId == id)
             end
         end
     end
 end
 
+local onDimensionChange = util.onChange(function (dim, oldDim)
+    onChange("DIMENSION", dim, oldDim)
+end)
+
+local onBiomeChange = util.onChange(function (_id, oldBiome, biome)
+    onChange("BIOME", biome, oldBiome)
+end)
+
 events.TICK:register(function()
-    current.DIMENSION = world.getDimension()
     local biome = world.getBiome(player:getPos())
-    current.BIOME = biome.id
-
-    if old.DIMENSION ~= current.DIMENSION then onChange("DIMENSION", current.DIMENSION) end
-    if old.BIOME ~= current.DIMENSION then onChange("BIOME", biome) end
-
-    old.DIMENSION = current.DIMENSION
-    old.BIOME = current.BIOME
+    onDimensionChange.check(world.getDimension())
+    onBiomeChange.setExtraArg(biome).check(biome.id)
 end, "EnviLib.tick")
 
 return enviLib

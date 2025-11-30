@@ -4,7 +4,9 @@ local colorParts = {}
 local util = require "lib.util"
 
 ---@param parts ModelPart[]
-function colorParts.new(parts)
+---@return ColorParts.Obj
+function colorParts:new(parts)
+    ---@class ColorParts.Obj
     local interface = {}
 
     local layers = {}
@@ -20,15 +22,15 @@ function colorParts.new(parts)
 
     ---@param type string
     ---@param color? Vector3 Resets color multiplier if nil
-    function interface.color(type, color)
+    function interface:color(type, color)
         util.switch(type, {
             all = function()
                 for _, v in pairs(parts) do
                     v:color()
                     v:color(color)
                 end
-                interface.color("depthLayers", color)
-                interface.color("depthBackground", color)
+                interface:color("depthLayers", color)
+                interface:color("depthBackground", color)
             end,
             depthLayers = function ()
                 for _, v in pairs(layers) do

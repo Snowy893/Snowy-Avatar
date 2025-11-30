@@ -4,7 +4,7 @@ local animatedText = require "lib.thirdparty.animatedText"
 local depthEffect = require "lib.thirdparty.depth_effect"
 local util = require "lib.util"
 local afk = require "lib.afk"
-local doRandomly = require "lib.doRandomly"
+local periodical = require "lib.periodical"
 local enviLib = require "lib.enviLib"
 local colorParts                            = require "lib.colorParts"
 
@@ -14,29 +14,24 @@ local page = action_wheel:newPage()
 local isAfk = false
 
 local onSleep = util.onChange(function(toggle)
+	animations.model.afkLoop:setPlaying(toggle)
 	if toggle then
-		animations.model.afkLoop:play()
 		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
 		for _, v in pairs(animatedText.getTask("afk").textTasks) do
 			v.task:outline(true)
 		end
 	else
-		animations.model.afkLoop:stop()
 		animatedText.setText("sleeping", "")
 	end
 end)
 
-local onAiming     = util.onChange(function(toggle)
-	if toggle then
-		animations.model.aiming:play()
-	else
-		animations.model.aiming:stop()
-	end
+local onAiming = util.onChange(function(toggle)
+	animations.model.aiming:setPlaying(toggle)
 end)
 
 local depthObjects = {}
 
-local eyeColor = colorParts.new({models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye})
+local eyeColor = colorParts:new({models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye})
 
 animatedText.new("afk", models.model.root.Body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
 	"BILLBOARD", "")
@@ -83,9 +78,10 @@ smoothie:newEye(models.model.root.Head.Eyes)
 	:topOffsetStrength(0.5)
 	:bottomOffsetStrength(0.5)
 
-doRandomly.new(function() animations.model.blink:play() end)
-	:setCondition(function() return not isAfk and player:getPose() ~= "SLEEPING" end)
-	:register()
+periodical.new(function() animations.model.blink:play() end)
+	.condition(function() return not isAfk and player:getPose() ~= "SLEEPING" end)
+	.timing(100, 300)
+	.register()
 
 ------------------------------------------------------------------
 
@@ -158,11 +154,11 @@ local function aimingAnimationChecks()
 		aiming = isRangedWeaponDrawn(heldRightItem) or isRangedWeaponDrawn(heldLeftItem)
 	end
 
-	onAiming:check(aiming)
+	onAiming.check(aiming)
 end
 
 function events.TICK()
-	onSleep:check(player:getPose() == "SLEEPING")
+	onSleep.check(player:getPose() == "SLEEPING")
 end
 
 function events.RENDER(delta)
@@ -182,7 +178,7 @@ function events.RENDER(delta)
 end
 
 afk.new(180)
-	:register("ON_CHANGE", function (toggle)
+	.register("ON_CHANGE", function (toggle)
 		isAfk = toggle
 		animations.model.afkStart:setPlaying(toggle)
 		if not toggle then
@@ -190,16 +186,16 @@ afk.new(180)
 			models.model.root.Head:setOffsetRot(0)
 		end
 	end)
-	:register("ON_RENDER_LOOP", function (delta)
+	.register("ON_RENDER_LOOP", function (delta)
 		if animations.model.afkStart:isStopped() then
 			animations.model.afkLoop:play()
 		end
 		models.model.root.Head:setOffsetRot(math.sin(world.getTime(delta) / 14))
 	end)
-	:register("ON_TICK_NOT_AFK", aimingAnimationChecks)
+	.register("ON_TICK_NOT_AFK", aimingAnimationChecks)
 
 afk.new(210)
-	:register("ON_CHANGE", function (toggle)
+	.register("ON_CHANGE", function (toggle)
 		if toggle then
 			animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
 			for _, v in pairs(animatedText.getTask("afk").textTasks) do
@@ -209,37 +205,35 @@ afk.new(210)
 			animatedText.setText("afk", "")
 		end
 	end)
-	:register("ON_RENDER_LOOP", function (delta)
+	.register("ON_RENDER_LOOP", function (delta)
 		for i, v in ipairs(animatedText.getTask("afk").textTasks) do
 			animatedText.transform("afk",
 				vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil, v)
 		end
-    end)
+	end)
 
 enviLib.register("DIMENSION", function(dim)
-	local s, e = dim:find("minecraft:")
-	if s == 1 and e then
-		dim = dim:sub(e+1, dim:len())
-	end
+	local _, endIndex = dim:find(":")
+	dim = dim:sub(endIndex + 1, dim:len())
 	util.switch(dim, {
 		the_end = function()
 			models.model.root.Head.CreeperEyes:color()
 			models.model.root.Head.CreeperEyes:color(0.81, 0.96, 0.99)
-			eyeColor.color("all", vec(0.81, 0.96, 0.99))
-			eyeColor.color("depthBackground", vec(0.35, 0.1, 0.35))
-			eyeColor.color("layer1", vec(1, 1, 1))
+			eyeColor:color("all", vec(0.81, 0.96, 0.99))
+			eyeColor:color("depthBackground", vec(0.35, 0.1, 0.35))
+			eyeColor:color("layer1", vec(1, 1, 1))
 		end,
 		the_nether = function()
 			models.model.root.Head.CreeperEyes:color()
 			models.model.root.Head.CreeperEyes:color(vec(0.86, 0.42, 0.92))
-			eyeColor.color("all", vec(0.87, 0.65, 0.88))
-			eyeColor.color("depthBackground", vec(0.86, 0.42, 0.92))
+			eyeColor:color("all", vec(0.91, 0.65, 0.88))
+			eyeColor:color("depthBackground", vec(0.86, 0.42, 0.92))
 		end,
 		default = function()
 			models.model.root.Head.CreeperEyes:color()
 			models.model.root.Head.CreeperEyes:color(vec(0.75, 0.52, 0.9))
-			eyeColor.color("all", vec(0.86, 0.74, 1))
-			eyeColor.color("depthBackground", vec(0.75, 0.52, 0.9))
+			eyeColor:color("all", vec(0.86, 0.74, 1))
+			eyeColor:color("depthBackground", vec(0.75, 0.52, 0.9))
 		end
 	})
 end)

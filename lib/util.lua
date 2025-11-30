@@ -22,18 +22,26 @@ end
 ---@overload fun(func)
 ---@param func function
 ---@param initialValue any
+---@return OnChange
 function util.onChange(func, initialValue)
-    ---@class onChange
+    ---@class OnChange
     local interface = {}
     
     local oldValue = initialValue or nil
+    local extraArg
 
-    function interface:check(value)
+    function interface.setExtraArg(value)
+        extraArg = value
+        return interface
+    end
+
+    ---@overload fun(value)
+    ---@param value any
+    function interface.check(value)
         if oldValue ~= value then
-            func(value)
+            func(value, oldValue, extraArg)
         end
         oldValue = value
-        return interface
     end
 
     return interface
