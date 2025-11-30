@@ -19,4 +19,24 @@ function util.switch(value, cases)
     return match()
 end
 
+---@overload fun(func)
+---@param func function
+---@param initialValue any
+function util.onChange(func, initialValue)
+    ---@class onChange
+    local interface = {}
+    
+    local oldValue = initialValue or nil
+
+    function interface:check(value)
+        if oldValue ~= value then
+            func(value)
+        end
+        oldValue = value
+        return interface
+    end
+
+    return interface
+end
+
 return util

@@ -2,6 +2,8 @@
 local afk = {}
 local registered = 0
 
+local util = require "lib.util"
+
 ---@alias Afk.event
 ---| "ON_CHANGE"
 ---| "ON_RENDER_LOOP"
@@ -14,12 +16,12 @@ function afk.new(secondsUntilAfk)
 
     local afkCheckTickRate = 5
     local delay = secondsUntilAfk * afkCheckTickRate
+    
 
     ---@class Afklib
     local interface = {}
 
     interface.isAfk = false
-    interface.wasAfk = false
     interface.afkTime = 0
 
     interface.events = {
@@ -27,6 +29,10 @@ function afk.new(secondsUntilAfk)
         ON_RENDER_LOOP = {},
         ON_TICK_NOT_AFK = {},
     }
+
+    local onAfk = util.onChange(function()
+        for _, func in pairs(interface.events.ON_CHANGE) do func(interface.isAfk) end
+    end)
 
     ---@param event Afk.event
     ---@param func function
@@ -46,8 +52,7 @@ function afk.new(secondsUntilAfk)
             else
                 interface.afkTime = 0
             end
-
-            interface.wasAfk = interface.isAfk
+            
             interface.oldPosition = interface.position
             interface.oldRotation = interface.rotation
             interface.position = player:getPos()
@@ -65,9 +70,7 @@ function afk.new(secondsUntilAfk)
 
             interface.oldAfkTime = interface.afkTime
 
-            if interface.isAfk ~= interface.wasAfk then
-                for _, func in pairs(interface.events.ON_CHANGE) do func(interface.isAfk) end
-            end
+            onAfk:check(interface.isAfk)
         end
 
         if not interface.isAfk then

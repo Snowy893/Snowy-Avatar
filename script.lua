@@ -11,7 +11,28 @@ local colorParts                            = require "lib.colorParts"
 --#endregion
 
 local page = action_wheel:newPage()
-local isAfk, wasAimingLastTick, wasSleeping = false, false, false
+local isAfk = false
+
+local onSleep = util.onChange(function(toggle)
+	if toggle then
+		animations.model.afkLoop:play()
+		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
+		for _, v in pairs(animatedText.getTask("afk").textTasks) do
+			v.task:outline(true)
+		end
+	else
+		animations.model.afkLoop:stop()
+		animatedText.setText("sleeping", "")
+	end
+end)
+
+local onAiming     = util.onChange(function(toggle)
+	if toggle then
+		animations.model.aiming:play()
+	else
+		animations.model.aiming:stop()
+	end
+end)
 
 local depthObjects = {}
 
@@ -32,15 +53,15 @@ models.model.root.Head.Eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
 models.model.root.Head.CreeperEyes:setPrimaryRenderType("EYES")
 
 local depthIncrement = 16
-for i, v in ipairs({models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye}) do
+for i, eye in ipairs({models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye}) do
     local index = 1
-	local layer = v["layer" .. tostring(index)]
+	local layer = eye["layer" .. tostring(index)]
     while layer do
-		if not v["layer" .. tostring(index + 1)] then depthIncrement = -16 end
+		if not eye["layer" .. tostring(index + 1)] then depthIncrement = -16 end
 		table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
 		depthIncrement = depthIncrement * 2
 		index = index + 1
-		layer = v["layer"..tostring(index)]
+		layer = eye["layer"..tostring(index)]
 	end
 end
 
@@ -137,49 +158,22 @@ local function aimingAnimationChecks()
 		aiming = isRangedWeaponDrawn(heldRightItem) or isRangedWeaponDrawn(heldLeftItem)
 	end
 
-	if aiming then
-		if not wasAimingLastTick then
-			animations.model.aiming:play()
-			wasAimingLastTick = true
-		end
-	else
-		if wasAimingLastTick then
-			animations.model.aiming:stop()
-			wasAimingLastTick = false
-		end
-	end
+	onAiming:check(aiming)
 end
 
 function events.TICK()
-    if player:getPose() == "SLEEPING" then
-        if not wasSleeping then
-            animations.model.afkLoop:play()
-            animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
-            for _, v in pairs(animatedText.getTask("afk").textTasks) do
-                v.task:outline(true)
-            end
-            wasSleeping = true
-        end
-    else
-        if wasSleeping then
-            animations.model.afkLoop:stop()
-            animatedText.setText("sleeping", "")
-            wasSleeping = false
-        end
-    end
+	onSleep:check(player:getPose() == "SLEEPING")
 end
 
 function events.RENDER(delta)
 	if player:getPose() == "SLEEPING" then
 		for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
 			animatedText.transform(
-				"sleeping", vec(-i * 1.1,
-					(math.sin((world.getTime(delta)) / 8 + i) * .5) + (i * 1.3), 0),
+				"sleeping",
+				vec(-i * 1.1, (math.sin((world.getTime(delta)) / 8 + i) * .5) + (i * 1.3), 0),
 				nil, nil, v
 			)
 		end
-	else
-		animatedText.setText("sleeping", "")
 	end
 	for i, depthObject in pairs(depthObjects) do
 		local depth = math.cos((world.getTime(delta)) * 0.1 + i) * 4
@@ -229,21 +223,21 @@ enviLib.register("DIMENSION", function(dim)
 	end
 	util.switch(dim, {
 		the_end = function()
-			models.model.root.Head.CreeperEyes:setColor()
-			models.model.root.Head.CreeperEyes:setColor(0.81, 0.96, 0.99)
+			models.model.root.Head.CreeperEyes:color()
+			models.model.root.Head.CreeperEyes:color(0.81, 0.96, 0.99)
 			eyeColor.color("all", vec(0.81, 0.96, 0.99))
 			eyeColor.color("depthBackground", vec(0.35, 0.1, 0.35))
 			eyeColor.color("layer1", vec(1, 1, 1))
 		end,
 		the_nether = function()
-			models.model.root.Head.CreeperEyes:setColor()
-			models.model.root.Head.CreeperEyes:setColor(vec(0.86, 0.42, 0.92))
+			models.model.root.Head.CreeperEyes:color()
+			models.model.root.Head.CreeperEyes:color(vec(0.86, 0.42, 0.92))
 			eyeColor.color("all", vec(0.87, 0.65, 0.88))
 			eyeColor.color("depthBackground", vec(0.86, 0.42, 0.92))
 		end,
 		default = function()
-			models.model.root.Head.CreeperEyes:setColor()
-			models.model.root.Head.CreeperEyes:setColor(vec(0.75, 0.52, 0.9))
+			models.model.root.Head.CreeperEyes:color()
+			models.model.root.Head.CreeperEyes:color(vec(0.75, 0.52, 0.9))
 			eyeColor.color("all", vec(0.86, 0.74, 1))
 			eyeColor.color("depthBackground", vec(0.75, 0.52, 0.9))
 		end

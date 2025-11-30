@@ -24,30 +24,30 @@ function colorParts.new(parts)
         util.switch(type, {
             all = function()
                 for _, v in pairs(parts) do
-                    v:setColor()
-                    v:setColor(color)
+                    v:color()
+                    v:color(color)
                 end
                 interface.color("depthLayers", color)
                 interface.color("depthBackground", color)
             end,
             depthLayers = function ()
                 for _, v in pairs(layers) do
-                    v:setColor()
-                    v:setColor(color)
+                    v:color()
+                    v:color(color)
                 end
             end,
             depthBackground = function()
                 for _, v in pairs(parts) do
                     local bg = v.bg or v.background
-                    bg:setColor()
-                    bg:setColor(color)
+                    bg:color()
+                    bg:color(color)
                 end
             end,
             default = function ()
                 if type:find("layer") or type:find("depthLayer") then
                     for _, v in pairs(parts) do
                         if v[type] then
-                            v[type]:setColor(color)
+                            v[type]:color(color)
                         end
                     end
                     return
@@ -57,7 +57,7 @@ function colorParts.new(parts)
         })
 
         for _, v in pairs(parts) do
-            v:setColor(color)
+            v:color(color)
         end
     end
 
