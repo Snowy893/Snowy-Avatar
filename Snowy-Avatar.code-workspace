@@ -1,17 +1,18 @@
 {
   "folders": [
-    {"path": "."}
+    {
+      "path": "."
+    }
   ],
   "settings": {
     "json.schemas": [
       {
-        "fileMatch": ["**/avatar.json"],
+        "fileMatch": [
+          "**/avatar.json"
+        ],
         "url": ".vscode/avatar.schema.json"
       }
     ],
-    "figura.librariesFolderPath": "F:\\SSD\\Ultimate Backup\\Documents\\Minecraft Stuff\\Figura\\avatars\\libraries\\",
-    "[lua]": {
-      "editor.formatOnType": true,
-    }
+    "figura.librariesFolderPath": "F:\\SSD\\Ultimate Backup\\Documents\\Minecraft Stuff\\Figura\\avatars\\libraries\\"
   }
 }

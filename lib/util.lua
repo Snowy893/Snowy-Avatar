@@ -3,6 +3,7 @@ local util = {}
 
 ---@param tbl table
 ---@param value any
+---@return boolean
 function util.contains(tbl, value)
     for _, v in pairs(tbl) do
         if value == v then return true end
@@ -23,21 +24,21 @@ end
 ---@param func function
 ---@param initialValue any
 ---@return OnChange
-function util.onChange(func, initialValue)
+function util:onChange(func, initialValue)
     ---@class OnChange
     local interface = {}
-    
+
     local oldValue = initialValue or nil
     local extraArg
 
-    function interface.setExtraArg(value)
+    ---@param value any
+    function interface:setExtraParam(value)
         extraArg = value
         return interface
     end
 
-    ---@overload fun(value)
     ---@param value any
-    function interface.check(value)
+    function interface:check(value)
         if oldValue ~= value then
             func(value, oldValue, extraArg)
         end
@@ -45,6 +46,31 @@ function util.onChange(func, initialValue)
     end
 
     return interface
+end
+
+---@param fromPage Page
+---@param toPage Page
+---@param title string
+---@param item? Minecraft.itemID
+---@return Action
+function util.switchPageAction(fromPage, toPage, title, item)
+    return fromPage:newAction()
+        :title(title)
+        :item(item)
+        :setOnLeftClick(function() action_wheel:setPage(toPage) end)
+end
+
+---@return boolean
+function util.isRaining()
+    local currentBiome
+    local rainType
+    local rainGradient = 0
+
+    rainGradient = world.getRainGradient()
+    currentBiome = world.getBiome(player:getPos())
+    rainType = currentBiome.getPrecipitation(currentBiome)
+
+    return rainGradient == 1 and rainType == "RAIN"
 end
 
 return util

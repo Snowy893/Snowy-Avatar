@@ -6,15 +6,15 @@ enviLib.BIOME = { ON_CHANGE = {}, REGISTERED = {} }
 
 local util = require "lib.util"
 
----@alias EnviLib.type string
+---@alias EnviLib.Type string
 ---| "DIMENSION"
 ---| "BIOME"
 
 ---@overload fun(type, func)
----@param type EnviLib.type
+---@param type EnviLib.Type
 ---@param func function
 ---@param id string
-function enviLib.register(type, func, id)
+function enviLib:register(type, func, id)
     if id == nil then
         table.insert(enviLib[type].ON_CHANGE, func)
     else
@@ -25,7 +25,7 @@ function enviLib.register(type, func, id)
     end
 end
 
----@param type EnviLib.type
+---@param type EnviLib.Type
 ---@param currentEnvi any
 ---@param oldId string
 local function onChange(type, currentEnvi, oldId)
@@ -41,18 +41,18 @@ local function onChange(type, currentEnvi, oldId)
     end
 end
 
-local onDimensionChange = util.onChange(function (dim, oldDim)
+local onDimensionChange = util:onChange(function(dim, oldDim)
     onChange("DIMENSION", dim, oldDim)
 end)
 
-local onBiomeChange = util.onChange(function (_id, oldBiome, biome)
+local onBiomeChange = util:onChange(function(_id, oldBiome, biome)
     onChange("BIOME", biome, oldBiome)
 end)
 
 events.TICK:register(function()
     local biome = world.getBiome(player:getPos())
-    onDimensionChange.check(world.getDimension())
-    onBiomeChange.setExtraArg(biome).check(biome.id)
+    onDimensionChange:check(world.getDimension())
+    onBiomeChange:setExtraParam(biome):check(biome.id)
 end, "EnviLib.tick")
 
 return enviLib

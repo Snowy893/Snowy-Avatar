@@ -23,8 +23,9 @@ function colorParts:new(parts)
     ---@param type string
     ---@param color? Vector3 Resets color multiplier if nil
     function interface:color(type, color)
+        if type == "layers" then type = "depthLayers" end
         util.switch(type, {
-            all = function()
+            all = function ()
                 for _, v in pairs(parts) do
                     v:color()
                     v:color(color)
@@ -38,7 +39,7 @@ function colorParts:new(parts)
                     v:color(color)
                 end
             end,
-            depthBackground = function()
+            depthBackground = function ()
                 for _, v in pairs(parts) do
                     local bg = v.bg or v.background
                     bg:color()
@@ -57,10 +58,6 @@ function colorParts:new(parts)
                 error("Invalid color type: "..tostring(type))
             end
         })
-
-        for _, v in pairs(parts) do
-            v:color(color)
-        end
     end
 
     return interface
