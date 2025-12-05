@@ -8,10 +8,11 @@ local periodical = require "lib.periodical"
 local enviLib = require "lib.enviLib"
 local colorParts = require "lib.colorParts"
 --#endregion
+local page = action_wheel:newPage()
 
 local isAfk = false
 
-local onSleep = util.onChange(function(toggle)
+local onSleep = util:onChange(function (toggle)
 	animations.model.afkLoop:setPlaying(toggle)
 	if toggle then
 		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
@@ -23,13 +24,47 @@ local onSleep = util.onChange(function(toggle)
 	end
 end)
 
-local onAiming = util.onChange(function(toggle)
+local onAiming = util:onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
+end)
+
+local onDebug = util:onChange(function (toggle)
+	if toggle then
+		renderer:setPostEffect("bumpy")
+	else
+		renderer:setPostEffect()
+	end
 end)
 
 local eyes = { models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye }
 
 local depthObjects = {}
+
+local onPermissionChange = util:onChange(function (toggle)
+	if toggle then
+		local depthIncrement = 16
+		for _, eye in pairs(eyes) do
+			local index = 1
+			local layer = eye["layer" .. tostring(index)]
+			while layer do
+				if not eye["layer" .. tostring(index + 1)] then depthIncrement = -depthIncrement end
+				if util:comparePermission("HIGH") then
+					table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+				else
+					table.insert(depthObjects, layer)
+				end
+				depthIncrement = depthIncrement * 2
+				index = index + 1
+				layer = eye["layer" .. tostring(index)]
+			end
+		end
+	else
+		if next(depthObjects) ~= nil then
+			for _, depthObj in pairs(depthObjects) do depthObj:remove() end
+			depthObjects = {}
+		end
+	end
+end)
 
 local eyeColor = colorParts:new(eyes)
 
@@ -46,19 +81,6 @@ models.model.root.Head.CreeperEyes:setVisible(false)
 
 models.model.root.Head.Eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
 models.model.root.Head.CreeperEyes:setPrimaryRenderType("EYES")
-
-local depthIncrement = 16
-for _, eye in pairs(eyes) do
-	local index = 1
-	local layer = eye["layer" .. tostring(index)]
-	while layer do
-		if not eye["layer" .. tostring(index + 1)] then depthIncrement = -16 end
-		table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
-		depthIncrement = depthIncrement * 2
-		index = index + 1
-		layer = eye["layer" .. tostring(index)]
-	end
-end
 
 ------------------------------------------------------------------
 
@@ -85,9 +107,16 @@ periodical:new(function() animations.model.blink:play() end)
 
 ------------------------------------------------------------------
 
-local page = action_wheel:newPage()
-
 action_wheel:setPage(page)
+
+---@param toggle boolean
+local function notchShader(toggle)
+	if toggle then
+		renderer:setPostEffect("notch")
+	else
+		renderer:setPostEffect()
+	end
+end
 
 ---@param toggle boolean
 function pings.sadChair(toggle)
@@ -103,11 +132,17 @@ function pings.creeper()
 end
 
 function CreeperInstruction()
-	models.model.root.Head.Eyes:setVisible(true)
-	models.model.root.Head.CreeperEyes:setVisible(false)
+    models.model.root.Head.Eyes:setVisible(true)
+    models.model.root.Head.CreeperEyes:setVisible(false)
 end
 
 page:setKeepSlots(false)
+
+page:newAction()
+	:title("Dither")
+	:item("minecraft:apple")
+	:hoverColor(1, 0, 1)
+	:onToggle(notchShader)
 
 page:newAction()
 	:title("Sad Chair")
@@ -119,7 +154,7 @@ page:newAction()
 	:title("Creeper")
 	:item("minecraft:creeper_head")
 	:hoverColor(1, 0, 1)
-	:onLeftClick(pings.creeper)
+    :onLeftClick(pings.creeper)
 
 ------------------------------------------------------------------
 
@@ -145,14 +180,18 @@ end
 ------------------------------------------------------------------
 
 function events.TICK()
-	onSleep.check(player:getPose() == "SLEEPING")
+	onSleep:check(player:getPose() == "SLEEPING")
 end
 
 function events.RENDER(delta)
-	for i, depthObject in pairs(depthObjects) do
-		local depth = math.cos((world.getTime(delta)) * 0.1 + i) * 4
-		depthObject:setDepth(depth)
+	onPermissionChange:check(util:comparePermission("HIGH"))
+	if util:comparePermission("HIGH") then
+		for i, depthObject in pairs(depthObjects) do
+			local depth = math.cos((world.getTime(delta)) * 0.1 + i) * 4
+			depthObject:setDepth(depth)
+		end
 	end
+	if host:isHost() then onDebug:check(client:isDebugOverlayEnabled()) end
 end
 
 afk:new(180)
@@ -182,8 +221,8 @@ afk:new(180)
 			aiming = isRangedWeaponDrawn(heldRightItem) or isRangedWeaponDrawn(heldLeftItem)
 		end
 
-		onAiming.check(aiming)
-	end)
+		onAiming:check(aiming)
+    end)
 
 afk:new(210)
 	:register("ON_CHANGE", function(toggle)

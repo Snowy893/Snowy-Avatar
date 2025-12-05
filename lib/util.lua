@@ -32,6 +32,7 @@ function util:onChange(func, initialValue)
     local extraArg
 
     ---@param value any
+    ---@return OnChange
     function interface:setExtraParam(value)
         extraArg = value
         return interface
@@ -71,6 +72,22 @@ function util.isRaining()
     rainType = currentBiome.getPrecipitation(currentBiome)
 
     return rainGradient == 1 and rainType == "RAIN"
+end
+
+local permissionLevels = {
+    BLOCKED = 1,
+    LOW = 2,
+    DEFAULT = 3,
+    HIGH = 4,
+    MAX = 5
+}
+
+---Returns true if the current permission level is greater than input permission level
+---@param level AvatarAPI.permissionLevel
+---@return boolean 
+function util:comparePermission(level)
+    local currentLevel = avatar:getPermissionLevel()
+    return permissionLevels[currentLevel] >= permissionLevels[level]
 end
 
 return util
