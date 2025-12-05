@@ -28,14 +28,6 @@ local onAiming = util:onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
-local onDebug = util:onChange(function (toggle)
-	if toggle then
-		renderer:setPostEffect("bumpy")
-	else
-		renderer:setPostEffect()
-	end
-end)
-
 local eyes = { models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye }
 
 local depthObjects = {}
@@ -191,7 +183,6 @@ function events.RENDER(delta)
 			depthObject:setDepth(depth)
 		end
 	end
-	if host:isHost() then onDebug:check(client:isDebugOverlayEnabled()) end
 end
 
 afk:new(180)
