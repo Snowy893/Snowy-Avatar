@@ -1,6 +1,6 @@
 ---@class Afk
 local afk = {}
-local afkObjs = 0
+afk.ALL = {}
 
 local util = require "lib.util"
 
@@ -12,14 +12,11 @@ local util = require "lib.util"
 ---@param secondsUntilAfk integer
 ---@return Afk.Obj
 function afk:new(secondsUntilAfk)
-    afkObjs = afkObjs + 1
-
-    local afkCheckTickRate = 5
-    local delay = secondsUntilAfk * afkCheckTickRate
-
     ---@class Afk.Obj
     local interface = {}
 
+    interface.afkCheckTickRate = 5
+    interface.delay = secondsUntilAfk * interface.afkCheckTickRate
     interface.isAfk = false
     interface.afkTime = 0
 
@@ -29,7 +26,7 @@ function afk:new(secondsUntilAfk)
         ON_TICK_NOT_AFK = {},
     }
 
-    local onAfk = util:onChange(function(toggle)
+    interface.onAfkChange = util:onChange(function(toggle)
         for _, func in pairs(interface.events.ON_CHANGE) do func(toggle) end
     end)
 
@@ -41,48 +38,54 @@ function afk:new(secondsUntilAfk)
         return interface
     end
 
-    events.TICK:register(function()
-        if world.getTime() % afkCheckTickRate == 0 then
-            if (interface.position == interface.oldPosition)
-                and (interface.rotation == interface.oldRotation)
-                and (player:getPose() ~= "SLEEPING")
-            then
-                interface.afkTime = interface.afkTime + 1
-            else
-                interface.afkTime = 0
-            end
-
-            interface.oldPosition = interface.position
-            interface.oldRotation = interface.rotation
-            interface.position = player:getPos()
-            interface.rotation = player:getRot()
-
-            if interface.afkTime ~= 0 then
-                if interface.afkTime >= delay then
-                    interface.isAfk = true
-                end
-            else
-                if interface.oldAfkTime ~= 0 then
-                    interface.isAfk = false
-                end
-            end
-
-            interface.oldAfkTime = interface.afkTime
-
-            onAfk:check(interface.isAfk)
-        end
-
-        if not interface.isAfk then
-            for _, func in pairs(interface.events.ON_TICK_NOT_AFK) do func() end
-        end
-    end, "Afk.tick." .. afkObjs)
-
-    events.RENDER:register(function(delta, context)
-        if not interface.isAfk then return end
-        for _, func in pairs(interface.events.ON_RENDER_LOOP) do func(delta, context) end
-    end, "Afk.render." .. afkObjs)
+    table.insert(afk.ALL, interface)
 
     return interface
 end
+
+events.TICK:register(function ()
+    for _, obj in pairs(afk.ALL) do
+        if world.getTime() % obj.afkCheckTickRate == 0 then
+            if (obj.position == obj.oldPosition)
+                and (obj.rotation == obj.oldRotation)
+                and (player:getPose() ~= "SLEEPING")
+            then
+                obj.afkTime = obj.afkTime + 1
+            else
+                obj.afkTime = 0
+            end
+
+            obj.oldPosition = obj.position
+            obj.oldRotation = obj.rotation
+            obj.position = player:getPos()
+            obj.rotation = player:getRot()
+
+            if obj.afkTime ~= 0 then
+                if obj.afkTime >= obj.delay then
+                    obj.isAfk = true
+                end
+            else
+                if obj.oldAfkTime ~= 0 then
+                    obj.isAfk = false
+                end
+            end
+
+            obj.oldAfkTime = obj.afkTime
+
+            obj.onAfkChange:check(obj.isAfk)
+        end
+
+        if not obj.isAfk then
+            for _, func in pairs(obj.events.ON_TICK_NOT_AFK) do func() end
+        end
+    end
+end, "Afk")
+
+events.RENDER:register(function(delta, context)
+    for _, obj in pairs(afk.ALL) do
+        if not obj.isAfk then return end
+        for _, func in pairs(obj.events.ON_RENDER_LOOP) do func(delta, context) end
+    end
+end, "Afk")
 
 return afk

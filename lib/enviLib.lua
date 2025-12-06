@@ -26,7 +26,7 @@ function enviLib:register(type, func, id)
 end
 
 ---@param type EnviLib.Type
----@param currentEnvi any
+---@param currentEnvi string | table
 ---@param oldId string
 local function onChange(type, currentEnvi, oldId)
     local id = currentEnvi

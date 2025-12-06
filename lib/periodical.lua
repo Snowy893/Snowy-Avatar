@@ -1,17 +1,17 @@
 ---@class Periodical
 local periodical = {}
-periodical.ALL = {}
+periodical.objs = 0
 
+---@overload fun(func)
 ---@param func function
+---@param eventType string
 ---@return Periodical.Obj
-function periodical:new(func)
-    assert(type(func) == "function",
-        "Invalid argument to function 'new'. Expected function, got " .. type(func))
-
+function periodical:new(func, eventType)
     ---@class Periodical.Obj
     local interface = {}
 
     interface.func = func
+    interface.type = eventType or "TICK"
 
     function interface:resetTickCounter()
         if interface.maxTicks == nil or interface.minTicks == interface.maxTicks then
@@ -53,33 +53,29 @@ function periodical:new(func)
     function interface:register()
         local tbl = {}
 
-        interface.index = #periodical.ALL + 1
-        table.insert(periodical.ALL, interface)
-
-        function tbl.unRegister()
-            table.remove(periodical.ALL, interface.index)
+        interface.name = "Periodical."..tostring(periodical.objs+1)
+        
+        events[interface.type]:register(function()
+            if interface.conditionFunc() then
+                interface.tickCounter = interface.tickCounter - 1
+                if interface.tickCounter == 0 then
+                    interface.func()
+                    interface:resetTickCounter()
+                end
+            end
+        end, interface.name)
+        
+        function tbl:unRegister()
+            events[interface.type]:remove(interface.name)
+            periodical.objs = periodical.objs - 1
+            interface.name = nil
             return interface
         end
 
         return tbl
     end
 
-    ---@diagnostic disable-next-line: missing-return-value
     return interface:setCondition(function() return true end):setTiming(100)
 end
-
-events.TICK:register(function()
-    if next(periodical.ALL) == nil then return end
-    for _, rand in pairs(periodical.ALL) do
-        if rand.conditionFunc() then
-            rand.tickCounter = rand.tickCounter - 1
-            if rand.tickCounter == 0 then
-                rand.func()
-                rand:resetTickCounter()
-            end
-        end
-    end
-end, "Periodical.tick")
-
 
 return periodical

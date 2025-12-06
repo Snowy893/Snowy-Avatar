@@ -61,25 +61,12 @@ function util.switchPageAction(fromPage, toPage, title, item)
         :setOnLeftClick(function() action_wheel:setPage(toPage) end)
 end
 
----@return boolean
-function util.isRaining()
-    local currentBiome
-    local rainType
-    local rainGradient = 0
-
-    rainGradient = world.getRainGradient()
-    currentBiome = world.getBiome(player:getPos())
-    rainType = currentBiome.getPrecipitation(currentBiome)
-
-    return rainGradient == 1 and rainType == "RAIN"
-end
-
 local permissionLevels = {
-    BLOCKED = 1,
-    LOW = 2,
-    DEFAULT = 3,
-    HIGH = 4,
-    MAX = 5
+    BLOCKED = 0,
+    LOW = 1,
+    DEFAULT = 2,
+    HIGH = 3,
+    MAX = 4
 }
 
 ---Returns true if the current permission level is greater than input permission level

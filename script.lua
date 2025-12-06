@@ -32,7 +32,7 @@ local eyes = { models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes
 
 local depthObjects = {}
 
-local onPermissionChange = util:onChange(function (toggle)
+local onPermissionChange = util:onChange(function(toggle)
 	if toggle then
 		local depthIncrement = 16
 		for _, eye in pairs(eyes) do
@@ -173,9 +173,10 @@ function events.TICK()
 	onSleep:check(player:getPose() == "SLEEPING")
 end
 
-function events.RENDER(delta)
-	onPermissionChange:check(util.comparePermissionLevel("HIGH"))
-	if util.comparePermissionLevel("HIGH") then
+function events.RENDER(delta, context)
+	local hasPermission = util.comparePermissionLevel("HIGH")
+	onPermissionChange:check(hasPermission)
+	if context ~= "FIRST_PERSON" and hasPermission then
 		for i, depthObject in pairs(depthObjects) do
 			local depth = math.cos((world.getTime(delta)) * 0.1 + i) * 4
 			depthObject:setDepth(depth)
