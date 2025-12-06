@@ -40,7 +40,7 @@ local onPermissionChange = util:onChange(function (toggle)
 			local layer = eye["layer" .. tostring(index)]
 			while layer do
 				if not eye["layer" .. tostring(index + 1)] then depthIncrement = -depthIncrement end
-				if util:comparePermission("HIGH") then
+				if util.comparePermissionLevel("HIGH") then
 					table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
 				else
 					table.insert(depthObjects, layer)
@@ -50,11 +50,9 @@ local onPermissionChange = util:onChange(function (toggle)
 				layer = eye["layer" .. tostring(index)]
 			end
 		end
-	else
-		if next(depthObjects) ~= nil then
-			for _, depthObj in pairs(depthObjects) do depthObj:remove() end
-			depthObjects = {}
-		end
+	elseif next(depthObjects) ~= nil then
+		for _, depthObj in pairs(depthObjects) do depthObj:remove() end
+		depthObjects = {}
 	end
 end)
 
@@ -176,8 +174,8 @@ function events.TICK()
 end
 
 function events.RENDER(delta)
-	onPermissionChange:check(util:comparePermission("HIGH"))
-	if util:comparePermission("HIGH") then
+	onPermissionChange:check(util.comparePermissionLevel("HIGH"))
+	if util.comparePermissionLevel("HIGH") then
 		for i, depthObject in pairs(depthObjects) do
 			local depth = math.cos((world.getTime(delta)) * 0.1 + i) * 4
 			depthObject:setDepth(depth)

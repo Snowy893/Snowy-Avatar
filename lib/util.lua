@@ -1,4 +1,4 @@
----@class util
+---@class Util
 local util = {}
 
 ---@param tbl table
@@ -83,11 +83,12 @@ local permissionLevels = {
 }
 
 ---Returns true if the current permission level is greater than input permission level
----@param level AvatarAPI.permissionLevel
+---@overload fun(targetLevel)
+---@param targetLevel AvatarAPI.permissionLevel
 ---@return boolean 
-function util:comparePermission(level)
-    local currentLevel = avatar:getPermissionLevel()
-    return permissionLevels[currentLevel] >= permissionLevels[level]
+function util.comparePermissionLevel(targetLevel, currentLevel)
+    local level = currentLevel or avatar:getPermissionLevel()
+    return permissionLevels[level] >= permissionLevels[targetLevel]
 end
 
 return util
