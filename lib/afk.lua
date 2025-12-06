@@ -43,9 +43,10 @@ function afk:new(secondsUntilAfk)
     return interface
 end
 
-events.TICK:register(function ()
-    for _, obj in pairs(afk.ALL) do
-        if world.getTime() % obj.afkCheckTickRate == 0 then
+events.TICK:register(function()
+    local time = world.getTime()
+    for i, obj in pairs(afk.ALL) do
+        if (time + i) % obj.afkCheckTickRate == 0 then
             if (obj.position == obj.oldPosition)
                 and (obj.rotation == obj.oldRotation)
                 and (player:getPose() ~= "SLEEPING")

@@ -27,32 +27,36 @@ end
 
 ---@param type EnviLib.Type
 ---@param currentEnvi string | table
----@param oldId string
-local function onChange(type, currentEnvi, oldId)
+---@param oldID string
+local function onChange(type, currentEnvi, oldID)
     local id = currentEnvi
     if type == "BIOME" then id = currentEnvi.id end
     for _, func in pairs(enviLib[type].ON_CHANGE) do func(currentEnvi) end
     for _, registeredId in pairs(enviLib[type].REGISTERED) do
         for _, func in pairs(enviLib[type][registeredId]) do
-            if oldId == registeredId or id == registeredId then
+            if oldID == registeredId or id == registeredId then
                 func(currentEnvi, registeredId == id)
             end
         end
     end
 end
 
+---@param dim Minecraft.dimensionID
+---@param oldDim Minecraft.dimensionID
 local onDimensionChange = util:onChange(function(dim, oldDim)
     onChange("DIMENSION", dim, oldDim)
 end)
 
-local onBiomeChange = util:onChange(function(_id, oldBiome, biome)
-    onChange("BIOME", biome, oldBiome)
+---@param oldBiomeID Minecraft.biomeID
+---@param biome Biome
+local onBiomeChange = util:onChange(function(_, oldBiomeID, biome)
+    onChange("BIOME", biome, oldBiomeID)
 end)
 
 events.TICK:register(function()
     local biome = world.getBiome(player:getPos())
     onDimensionChange:check(world.getDimension())
     onBiomeChange:setExtraParam(biome):check(biome.id)
-end, "EnviLib.tick")
+end, "EnviLib")
 
 return enviLib
