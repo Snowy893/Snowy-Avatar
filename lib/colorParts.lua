@@ -46,8 +46,9 @@ function colorParts:new(parts)
                     bg:color(color)
                 end
             end,
-            default = function ()
+            default = function()
                 if type:find("layer") or type:find("depthLayer") then
+
                     for _, v in pairs(parts) do
                         if v[type] then
                             v[type]:color(color)

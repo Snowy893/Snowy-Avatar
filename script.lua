@@ -235,14 +235,14 @@ afk:new(210)
 
 enviLib:register("DIMENSION", function(dim)
 	local _, endIndex = dim:find(":")
-	dim = dim:sub(endIndex + 1, dim:len())
+    dim = dim:sub(endIndex + 1, dim:len())
 	util.switch(dim, {
 		the_end = function()
 			models.model.root.Head.CreeperEyes:color()
 			models.model.root.Head.CreeperEyes:color(0.81, 0.96, 0.99)
 			eyeColor:color("all", vec(0.81, 0.96, 0.99))
 			eyeColor:color("depthBackground", vec(0.35, 0.1, 0.35))
-			eyeColor:color("depthLayer1", vec(1, 1, 1))
+			eyeColor:color("layer1", vec(1, 1, 1))
 		end,
 		the_nether = function()
 			models.model.root.Head.CreeperEyes:color()
