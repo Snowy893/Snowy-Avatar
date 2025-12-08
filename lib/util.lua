@@ -27,10 +27,8 @@ end
 ---@param currentDepth? integer
 ---@return ModelPart
 function util.deepcopy(part, name, maxDepth, currentDepth)
-    if not currentDepth then
-        currentDepth = 1
-    end
-    if maxDepth and currentDepth > maxDepth then return part end
+    local depth = currentDepth or 1
+    if maxDepth and depth > maxDepth then return part end
     local copy
     if name then
         copy = part:copy(name)
@@ -39,7 +37,7 @@ function util.deepcopy(part, name, maxDepth, currentDepth)
     end
     for _, child in ipairs(part:getChildren()) do
         copy:removeChild(child)
-        util.deepcopy(child, nil, maxDepth, currentDepth + 1):moveTo(copy)
+        util.deepcopy(child, nil, maxDepth, depth + 1):moveTo(copy)
     end
     return copy
 end
@@ -93,7 +91,7 @@ local permissionLevels = {
     MAX = 4
 }
 
----Returns true if the current permission level is greater than input permission level
+---Returns true if the current permission level is greater than or equal to the input permission level
 ---@overload fun(targetLevel)
 ---@param targetLevel AvatarAPI.permissionLevel
 ---@return boolean 
