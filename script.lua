@@ -29,9 +29,9 @@ local onAiming = util:onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
-local eyes = { models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye, models.model.root.Skull.Eyes2.RightEye2, models.model.root.Skull.Eyes2.LeftEye2 }
+local eyes = { models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye, models.model.Skull.Eyes2.RightEye2, models.model.Skull.Eyes2.LeftEye2 }
 
-local creeperEyes = {models.model.root.Head.CreeperEyes, models.model.root.Skull.CreeperEyes2}
+local creeperEyes = {models.model.root.Head.CreeperEyes, models.model.Skull.CreeperEyes2}
 
 local depthObjects = {}
 
@@ -73,9 +73,9 @@ models.model.root.SadChair:setVisible(false)
 models.model.root.Head.CreeperEyes:setVisible(false)
 
 models.model.root.Head.Eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
-models.model.root.Skull.Eyes2:setPrimaryRenderType("CUTOUT")
+models.model.Skull.Eyes2:setPrimaryRenderType("CUTOUT")
 models.model.root.Head.CreeperEyes:setPrimaryRenderType("EYES")
-models.model.root.Skull.CreeperEyes2:setPrimaryRenderType("EMISSIVE")
+models.model.Skull.CreeperEyes2:setPrimaryRenderType("EMISSIVE")
 
 ------------------------------------------------------------------
 
@@ -118,8 +118,8 @@ end
 function pings.creeper()
 	models.model.root.Head.Eyes:setVisible(false)
 	models.model.root.Head.CreeperEyes:setVisible(true)
-	models.model.root.Skull.Eyes2:setVisible(false)
-	models.model.root.Skull.CreeperEyes2:setVisible(true)
+	models.model.Skull.Eyes2:setVisible(false)
+	models.model.Skull.CreeperEyes2:setVisible(true)
 	sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
 	animations.model.creeper:play()
 end
@@ -127,8 +127,8 @@ end
 function CreeperInstruction()
     models.model.root.Head.Eyes:setVisible(true)
 	models.model.root.Head.CreeperEyes:setVisible(false)
-	models.model.root.Skull.Eyes2:setVisible(true)
-	models.model.root.Skull.CreeperEyes2:setVisible(false)
+	models.model.Skull.Eyes2:setVisible(true)
+	models.model.Skull.CreeperEyes2:setVisible(false)
 end
 
 page:setKeepSlots(false)
