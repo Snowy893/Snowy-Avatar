@@ -85,8 +85,14 @@ smoothie:newEye(models.model.root.Head.Eyes)
 	:topOffsetStrength(0.25)
 	:bottomOffsetStrength(0.25)
 
-periodical:new(function() animations.model.blink:play() end)
-	:condition(function() return not isAfk and player:getPose() ~= "SLEEPING" end)
+periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
+	:condition(function()
+		if player:isLoaded() then
+			return not isAfk and player:getPose() ~= "SLEEPING"
+		else
+			return true
+		end
+	end)
 	:timing(100, 300)
 	:register()
 

@@ -39,27 +39,29 @@ events.SKULL_RENDER:register(function(_, block)
     table.insert(skulls, createSkull({ pos = block:getPos(), id = block.id }))
 end, "SkullTouch")
 
-events.TICK:register(function ()
-    for _, p in pairs(world.getPlayers()) do
-        local uuid = p:getUUID()
+local function tick()
+    for _, playr in pairs(world.getPlayers()) do
+        local uuid = playr:getUUID()
         local wasSwinging = playerWasSwinging[uuid]
         if wasSwinging == nil then
             wasSwinging = false
             playerWasSwinging[uuid] = wasSwinging
         end
-        if p:getSwingTime() == 1 then
+        if playr:getSwingTime() == 1 then
             if not wasSwinging then
                 for i, skull in ipairs(skulls) do
-                    local target = p:getTargetedBlock(true, 4)
-                    if target ~= nil and target:getPos() == skull.pos then
-                        if target.id == "minecraft:player_head" or target.id == "minecraft:player_wall_head" then
-                            for _, func in pairs(skullTouch.ALL) do func(skull) end
-                        else
-                            table.remove(skulls, i)
-                        end
+                    local worldSkull = world.getBlockState(skull.pos)
+                    if worldSkull.id ~= "minecraft:player_head" and worldSkull.id ~= "minecraft:player_wall_head" then
+                        table.remove(skulls, i)
+                        goto continue
                     end
-                    playerWasSwinging[uuid] = true
+                    local target = playr:getTargetedBlock(true, 4)
+                    if target ~= nil and target:getPos() == skull.pos then
+                        for _, func in pairs(skullTouch.ALL) do func(skull) end
+                    end
+                    ::continue::
                 end
+                playerWasSwinging[uuid] = true
             end
         else
             if wasSwinging then
@@ -69,6 +71,16 @@ events.TICK:register(function ()
     end
     if world.getTime() % 300 == 0 then
         skulls = {}
+    end
+end
+
+events.TICK:register(function ()
+    tick()
+end, "SkullTouch")
+
+events.WORLD_TICK:register(function()
+    if not player:isLoaded() then
+        tick()
     end
 end, "SkullTouch")
 
