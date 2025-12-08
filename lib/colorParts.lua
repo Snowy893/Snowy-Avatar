@@ -7,7 +7,7 @@ local util = require "lib.util"
 ---@return ColorParts.Obj
 function colorParts:new(parts)
     ---@class ColorParts.Obj
-    local interface = {}
+    local module = {}
 
     local layers = {}
     for _, v in pairs(parts) do
@@ -22,7 +22,7 @@ function colorParts:new(parts)
 
     ---@param type string
     ---@param color? Vector3 Resets color multiplier if nil
-    function interface:color(type, color)
+    function module:color(type, color)
         if type == "layers" then type = "depthLayers" end
         util.switch(type, {
             all = function ()
@@ -30,8 +30,8 @@ function colorParts:new(parts)
                     v:color()
                     v:color(color)
                 end
-                interface:color("depthLayers", color)
-                interface:color("depthBackground", color)
+                module:color("depthLayers", color)
+                module:color("depthBackground", color)
             end,
             depthLayers = function ()
                 for _, v in pairs(layers) do
@@ -61,7 +61,7 @@ function colorParts:new(parts)
         })
     end
 
-    return interface
+    return module
 end
 
 

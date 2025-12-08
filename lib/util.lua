@@ -20,33 +20,57 @@ function util.switch(value, cases)
     return match()
 end
 
+---Thank you `chloespacedout`!
+---@param part ModelPart
+---@param name? string
+---@param maxDepth? integer
+---@param currentDepth? integer
+---@return ModelPart
+function util.deepcopy(part, name, maxDepth, currentDepth)
+    if not currentDepth then
+        currentDepth = 1
+    end
+    if maxDepth and currentDepth > maxDepth then return part end
+    local copy
+    if name then
+        copy = part:copy(name)
+    else
+        copy = part:copy(part:getName())
+    end
+    for _, child in ipairs(part:getChildren()) do
+        copy:removeChild(child)
+        util.deepcopy(child, nil, maxDepth, currentDepth + 1):moveTo(copy)
+    end
+    return copy
+end
+
 ---@overload fun(func)
 ---@param func function
 ---@param initialValue any
----@return OnChange
+---@return Util.onChange
 function util:onChange(func, initialValue)
-    ---@class OnChange
-    local interface = {}
+    ---@class Util.onChange
+    local module = {}
 
     local oldValue = initialValue or nil
     local extraArg
 
     ---@param value any
-    ---@return OnChange
-    function interface:setExtraParam(value)
+    ---@return Util.onChange
+    function module:setExtraParam(value)
         extraArg = value
-        return interface
+        return module
     end
 
     ---@param value any
-    function interface:check(value)
+    function module:check(value)
         if oldValue ~= value then
             func(value, oldValue, extraArg)
         end
         oldValue = value
     end
 
-    return interface
+    return module
 end
 
 ---@param fromPage Page
@@ -76,6 +100,13 @@ local permissionLevels = {
 function util.comparePermissionLevel(targetLevel, currentLevel)
     local level = currentLevel or avatar:getPermissionLevel()
     return permissionLevels[level] >= permissionLevels[targetLevel]
+end
+
+---@param offHand? boolean
+---@param playr? Player
+function util.isHandEmpty(offHand, playr)
+    local p = playr or player
+    return p:getHeldItem(offHand).id ~= "minecraft:air"
 end
 
 return util

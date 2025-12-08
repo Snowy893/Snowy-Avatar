@@ -8,74 +8,74 @@ periodical.objs = 0
 ---@return Periodical.Obj
 function periodical:new(func, eventType)
     ---@class Periodical.Obj
-    local interface = {}
+    local module = {}
 
-    interface.func = func
-    interface.type = eventType or "TICK"
+    module.func = func
+    module.type = eventType or "TICK"
 
-    function interface:resetTickCounter()
-        if interface.maxTicks == nil or interface.minTicks == interface.maxTicks then
-            interface.tickCounter = interface.minTicks
+    function module:resetTickCounter()
+        if module.maxTicks == nil or module.minTicks == module.maxTicks then
+            module.tickCounter = module.minTicks
         else
-            interface.tickCounter = math.random(interface.minTicks, interface.maxTicks)
+            module.tickCounter = math.random(module.minTicks, module.maxTicks)
         end
-        return interface
+        return module
     end
 
     ---@overload fun(ticks)
     ---@param minTicks integer
     ---@param maxTicks integer
     ---@return Periodical.Obj
-    function interface:setTiming(minTicks, maxTicks)
-        interface.minTicks = minTicks
-        interface.maxTicks = maxTicks
-        interface:resetTickCounter()
-        return interface
+    function module:setTiming(minTicks, maxTicks)
+        module.minTicks = minTicks
+        module.maxTicks = maxTicks
+        module:resetTickCounter()
+        return module
     end
 
     ---@overload fun(ticks)
     ---@param minTicks integer
     ---@param maxTicks integer
     ---@return Periodical.Obj
-    function interface:timing(minTicks, maxTicks) return interface.setTiming(minTicks, maxTicks) end --- Alias
+    function module:timing(minTicks, maxTicks) return module.setTiming(minTicks, maxTicks) end --- Alias
 
     ---@param cond function
     ---@return Periodical.Obj
-    function interface:setCondition(cond)
-        interface.conditionFunc = cond
-        return interface
+    function module:setCondition(cond)
+        module.conditionFunc = cond
+        return module
     end
 
     ---@param cond function
     ---@return Periodical.Obj
-    function interface:condition(cond) return interface:setCondition(cond) end --- Alias
+    function module:condition(cond) return module:setCondition(cond) end --- Alias
 
-    function interface:register()
-        local tbl = {}
+    function module:register()
+        local mod = {}
 
-        interface.name = "Periodical."..tostring(periodical.objs+1)
+        module.name = "Periodical."..tostring(periodical.objs+1)
         
-        events[interface.type]:register(function()
-            if interface.conditionFunc() then
-                interface.tickCounter = interface.tickCounter - 1
-                if interface.tickCounter == 0 then
-                    interface.func()
-                    interface:resetTickCounter()
+        events[module.type]:register(function()
+            if module.conditionFunc() then
+                module.tickCounter = module.tickCounter - 1
+                if module.tickCounter == 0 then
+                    module.func()
+                    module:resetTickCounter()
                 end
             end
-        end, interface.name)
+        end, module.name)
         
-        function tbl:unRegister()
-            events[interface.type]:remove(interface.name)
+        function mod:unRegister()
+            events[module.type]:remove(module.name)
             periodical.objs = periodical.objs - 1
-            interface.name = nil
-            return interface
+            module.name = nil
+            return module
         end
 
-        return tbl
+        return mod
     end
 
-    return interface:setCondition(function() return true end):setTiming(100)
+    return module:setCondition(function() return true end):setTiming(100)
 end
 
 return periodical

@@ -13,34 +13,33 @@ local util = require "lib.util"
 ---@return Afk.Obj
 function afk:new(secondsUntilAfk)
     ---@class Afk.Obj
-    local interface = {}
+    local module = {}
 
-    interface.afkCheckTickRate = 5
-    interface.delay = secondsUntilAfk * interface.afkCheckTickRate
-    interface.isAfk = false
-    interface.afkTime = 0
+    module.afkCheckTickRate = 5
+    module.delay = secondsUntilAfk * module.afkCheckTickRate
+    module.isAfk = false
+    module.afkTime = 0
 
-    interface.events = {
+    module.events = {
         ON_CHANGE = {},
         ON_RENDER_LOOP = {},
         ON_TICK_NOT_AFK = {},
     }
 
-    interface.onAfkChange = util:onChange(function(toggle)
-        for _, func in pairs(interface.events.ON_CHANGE) do func(toggle) end
+    module.onAfkChange = util:onChange(function(toggle)
+        for _, func in pairs(module.events.ON_CHANGE) do func(toggle) end
     end)
 
     ---@param event Afk.Event
     ---@param func function
-    function interface:register(event, func)
-        local tbl = interface.events[event]
-        table.insert(tbl, func)
-        return interface
+    function module:register(event, func)
+        table.insert(module.events[event], func)
+        return module
     end
 
-    table.insert(afk.ALL, interface)
+    table.insert(afk.ALL, module)
 
-    return interface
+    return module
 end
 
 events.TICK:register(function()

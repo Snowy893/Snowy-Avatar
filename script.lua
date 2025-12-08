@@ -7,6 +7,7 @@ local afk = require "lib.afk"
 local periodical = require "lib.periodical"
 local enviLib = require "lib.enviLib"
 local colorParts = require "lib.colorParts"
+local skullTouch = require "lib.skullTouch"
 --#endregion
 local page = action_wheel:newPage()
 
@@ -28,14 +29,16 @@ local onAiming = util:onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
-local eyes = { models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye }
+local eyes = { models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye, models.model.root.Skull.Eyes2.RightEye2, models.model.root.Skull.Eyes2.LeftEye2 }
+
+local creeperEyes = {models.model.root.Head.CreeperEyes, models.model.root.Skull.CreeperEyes2}
 
 local depthObjects = {}
 
 local onPermissionChange = util:onChange(function(toggle)
 	if toggle then
 		local depthIncrement = 16
-		for _, eye in pairs(eyes) do
+		for i, eye in pairs(eyes) do
 			local index = 1
 			local layer = eye["layer" .. tostring(index)]
 			while layer do
@@ -70,17 +73,9 @@ models.model.root.SadChair:setVisible(false)
 models.model.root.Head.CreeperEyes:setVisible(false)
 
 models.model.root.Head.Eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
+models.model.root.Skull.Eyes2:setPrimaryRenderType("CUTOUT")
 models.model.root.Head.CreeperEyes:setPrimaryRenderType("EYES")
-
-------------------------------------------------------------------
-
-nameplate.ALL:setText(toJson {
-	text = "Snowy:blahaj:",
-	hoverEvent = {
-		action = "show_text",
-		contents = "${name}",
-	},
-})
+models.model.root.Skull.CreeperEyes2:setPrimaryRenderType("EMISSIVE")
 
 ------------------------------------------------------------------
 
@@ -117,13 +112,17 @@ end
 function pings.creeper()
 	models.model.root.Head.Eyes:setVisible(false)
 	models.model.root.Head.CreeperEyes:setVisible(true)
+	models.model.root.Skull.Eyes2:setVisible(false)
+	models.model.root.Skull.CreeperEyes2:setVisible(true)
 	sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
 	animations.model.creeper:play()
 end
 
 function CreeperInstruction()
     models.model.root.Head.Eyes:setVisible(true)
-    models.model.root.Head.CreeperEyes:setVisible(false)
+	models.model.root.Head.CreeperEyes:setVisible(false)
+	models.model.root.Skull.Eyes2:setVisible(true)
+	models.model.root.Skull.CreeperEyes2:setVisible(false)
 end
 
 page:setKeepSlots(false)
@@ -152,8 +151,8 @@ page:newAction()
 ---@param itemStack ItemStack
 ---@return boolean
 local function isCrossbowCharged(itemStack)
-	return itemStack:getTag()["ChargedProjectiles"] ~= nil and
-		itemStack:getTag()["ChargedProjectiles"][1] ~= nil
+	return itemStack:getTag().ChargedProjectiles ~= nil and
+		itemStack:getTag().ChargedProjectiles[1] ~= nil
 end
 
 ---Checks if the player is using an item with `action` that is either `"BOW"` or `"SPEAR"`. EXCLUDES CROSSBOWS!
@@ -169,18 +168,27 @@ end
 
 ------------------------------------------------------------------
 
+function events.ENTITY_INIT()
+	nameplate.ALL:setText(toJson {
+		text = "Snowy:blahaj:",
+		hoverEvent = {
+			action = "show_text",
+			contents = player:getName(),
+		},
+	})
+end
+
 function events.TICK()
 	onSleep:check(player:getPose() == "SLEEPING")
 end
 
-function events.RENDER(delta, context)
+function events.RENDER(delta)
 	local hasPermission = util.comparePermissionLevel("HIGH")
 	onPermissionChange:check(hasPermission)
-	if context ~= "FIRST_PERSON" and hasPermission then
-		for i, depthObject in pairs(depthObjects) do
-			local depth = math.cos((world.getTime(delta)) * 0.1 + i) * 4
-			depthObject:setDepth(depth)
-		end
+	if not hasPermission then return end
+	for i, depthObject in pairs(depthObjects) do
+		local depth = math.cos(world.getTime(delta) * 0.1 + i) * 4
+		depthObject:setDepth(depth)
 	end
 end
 
@@ -238,23 +246,41 @@ enviLib:register("DIMENSION", function(dim)
     dim = dim:sub(endIndex + 1, dim:len())
 	util.switch(dim, {
 		the_end = function()
-			models.model.root.Head.CreeperEyes:color()
-			models.model.root.Head.CreeperEyes:color(0.81, 0.96, 0.99)
+			for _, creeperEye in pairs(creeperEyes) do
+				creeperEye:color()
+				creeperEye:color(0.81, 0.96, 0.99)
+			end
 			eyeColor:color("all", vec(0.81, 0.96, 0.99))
 			eyeColor:color("depthBackground", vec(0.35, 0.1, 0.35))
 			eyeColor:color("layer1", vec(1, 1, 1))
 		end,
 		the_nether = function()
-			models.model.root.Head.CreeperEyes:color()
-			models.model.root.Head.CreeperEyes:color(vec(0.82, 0.2, 0.75))
+			for _, creeperEye in pairs(creeperEyes) do
+				creeperEye:color()
+				creeperEye:color(vec(0.82, 0.2, 0.75))
+			end
 			eyeColor:color("all", vec(0.91, 0.65, 0.88))
 			eyeColor:color("depthBackground", vec(0.82, 0.2, 0.75))
 		end,
 		default = function()
-			models.model.root.Head.CreeperEyes:color()
-			models.model.root.Head.CreeperEyes:color(vec(0.85, 0.66, 1))
+			for _, creeperEye in pairs(creeperEyes) do
+				creeperEye:color()
+				creeperEye:color(vec(0.85, 0.66, 1))
+			end
 			eyeColor:color("all", vec(0.85, 0.66, 1))
 			eyeColor:color("depthBackground", vec(0.75, 0.52, 0.9))
-		end,
+		end
 	})
+end)
+
+skullTouch:register(function(skull)
+	if animations.model.skullPat:isPlaying() then
+		animations.model.skullPat:stop()
+	end
+	animations.model.skullPat:play()
+	sounds:playSound(
+		"minecraft:entity.bat.hurt",
+		vec(skull.pos.x + 0.5, skull.pos.y, skull.pos.z + 0.5),
+		0.15
+	)
 end)
