@@ -9,6 +9,17 @@ local enviLib = require "lib.envi_lib"
 local colorParts = require "lib.color_parts"
 local skullTouch = require "lib.skull_touch"
 --#endregion
+
+local root = models.model.root
+local head = root.Head
+local body = root.Body
+local eyes = head.Eyes
+local creeperEyes = head.CreeperEyes
+local skull = models.model.Skull
+local skullEyes = skull.Eyes2
+local skullCreeperEyes = skull.CreeperEyes2
+local sadChair = root.SadChair
+
 local page = action_wheel:newPage()
 
 local isAfk = false
@@ -29,16 +40,15 @@ local onAiming = util:onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
-local eyes = { models.model.root.Head.Eyes.RightEye, models.model.root.Head.Eyes.LeftEye, models.model.Skull.Eyes2.RightEye2, models.model.Skull.Eyes2.LeftEye2 }
 
-local creeperEyes = { models.model.root.Head.CreeperEyes, models.model.Skull.CreeperEyes2 }
+local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
 ---@type auria.depth_effect.obj[]
 local depthObjects = {}
 ---@type ModelPart[]
 local layerObjects = {}
 
-for _, eye in pairs(eyes) do
+for _, eye in pairs({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 }) do
 	local index = 1
 	local layer = eye["layer" .. tostring(index)] or eye["depthLayer" .. tostring(index)]
 
@@ -51,25 +61,22 @@ for _, eye in pairs(eyes) do
 end
 
 local onPermissionChange = util:onChange(function(toggle)
-	local initalDepthIncrement = 16
-
 	if toggle then
-		for _, eye in pairs(eyes) do
-			local index = 1
-			local layer = eye["layer" .. tostring(index)] or eye["depthLayer" .. tostring(index)]
+		local initalDepthIncrement = 16
+		local depthIncrement = initalDepthIncrement
+		local index
 
-			local depthIncrement = initalDepthIncrement
+		for i, layer in ipairs(layerObjects) do
+			layer:setPos()
 
-			while layer do
-				if not eye["layer" .. tostring(index + 1)] then depthIncrement = -
-					initalDepthIncrement end
+			index = i
+			if index > #layerObjects / 2 then index = 1 end
 
-				table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+			if not next(layerObjects, index + 1) then depthIncrement = -initalDepthIncrement end
 
-				depthIncrement = depthIncrement * 2
-				index = index + 1
-				layer = eye["layer" .. tostring(index)] or eye["depthLayer" .. tostring(index)]
-			end
+			table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+
+			depthIncrement = depthIncrement * 2
 		end
 	else
 		for _, depthObj in pairs(depthObjects) do depthObj:remove() end
@@ -78,27 +85,27 @@ local onPermissionChange = util:onChange(function(toggle)
 	end
 end)
 
-local eyeColorParts = colorParts:new(eyes)
+local eyeColorParts = colorParts:new({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
 
-animatedText.new("afk", models.model.root.Body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
+animatedText.new("afk", body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
 		"BILLBOARD", "")
-animatedText.new("sleeping", models.model.root.Head, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
+animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
 		"BILLBOARD", "")
 
 vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
 
-models.model.root.SadChair:setVisible(false)
-models.model.root.Head.CreeperEyes:setVisible(false)
+sadChair:setVisible(false)
+creeperEyes:setVisible(false)
 
-models.model.root.Head.Eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
-models.model.Skull.Eyes2:setPrimaryRenderType("CUTOUT")
-models.model.root.Head.CreeperEyes:setPrimaryRenderType("EYES")
-models.model.Skull.CreeperEyes2:setPrimaryRenderType("EMISSIVE")
+eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
+skullEyes:setPrimaryRenderType("CUTOUT_CULL")
+creeperEyes:setPrimaryRenderType("EYES")
+skullCreeperEyes:setPrimaryRenderType("EMISSIVE")
 
 ------------------------------------------------------------------
 
-smoothie:newEye(models.model.root.Head.Eyes)
+smoothie:newEye(eyes)
 		:leftOffsetStrength(0.25)
 		:rightOffsetStrength(0.25)
 		:topOffsetStrength(0.25)
@@ -130,24 +137,24 @@ end
 
 ---@param toggle boolean
 function pings.sadChair(toggle)
-	models.model.root.SadChair:setVisible(toggle)
+	sadChair:setVisible(toggle)
 	animations.model.sadChair:setPlaying(toggle)
 end
 
 function pings.creeper()
-	models.model.root.Head.Eyes:setVisible(false)
-	models.model.root.Head.CreeperEyes:setVisible(true)
-	models.model.Skull.Eyes2:setVisible(false)
-	models.model.Skull.CreeperEyes2:setVisible(true)
+	eyes:setVisible(false)
+	creeperEyes:setVisible(true)
+	skullEyes:setVisible(false)
+	skullCreeperEyes:setVisible(true)
 	sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
 	animations.model.creeper:play()
 end
 
 function CreeperInstruction()
-    models.model.root.Head.Eyes:setVisible(true)
-	models.model.root.Head.CreeperEyes:setVisible(false)
-	models.model.Skull.Eyes2:setVisible(true)
-	models.model.Skull.CreeperEyes2:setVisible(false)
+    eyes:setVisible(true)
+	creeperEyes:setVisible(false)
+	skullEyes:setVisible(true)
+	skullCreeperEyes:setVisible(false)
 end
 
 page:setKeepSlots(false)
@@ -205,8 +212,8 @@ function events.RENDER(delta)
 		end
 	else
 		for i, layer in pairs(layerObjects) do
-			local depth = math.cos(world.getTime(delta) * 0.1 + i) * 4
-			layer:setPos(depth)
+			local depth = math.cos(world.getTime(delta) * 0.1 + i)
+			layer:setPos(vec(layer:getPos().x, layer:getPos().y, depth / 6))
 		end
 	end
 end
@@ -219,25 +226,24 @@ afk:new(180)
 			animations.model.afkStart:setPlaying(toggle)
 			if not toggle then
 				animations.model.afkLoop:stop()
-				models.model.root.Head:setOffsetRot(0)
+				head:setOffsetRot(0)
 			end
 		end)
 		:register("ON_RENDER_LOOP", function(delta)
 			if animations.model.afkStart:isStopped() then
 				animations.model.afkLoop:play()
 			end
-			models.model.root.Head:setOffsetRot(math.sin(world.getTime(delta) / 14))
+			head:setOffsetRot(math.sin(world.getTime(delta) / 14))
 		end)
 		:register("ON_TICK_NOT_AFK", function()
 			local aiming = false
+			local heldItem = player:getHeldItem()
+			local heldOffhandItem = player:getHeldItem(true)
 
 			if util.isHandEmpty() and util.isHandEmpty(true) then
 				aiming = false
 				goto continue
 			end
-
-			local heldItem = player:getHeldItem()
-			local heldOffhandItem = player:getHeldItem(true)
 
 			aiming = util.isCrossbowCharged(heldItem) or util.isCrossbowCharged(heldOffhandItem)
 
@@ -276,9 +282,9 @@ enviLib:register("DIMENSION", function(dimension)
 	
 	util.switch(dimension, {
 		the_end = function()
-			for _, creeperEye in pairs(creeperEyes) do
-				creeperEye:color()
-				creeperEye:color(0.81, 0.96, 0.99)
+			for _, part in pairs(creeperEyeParts) do
+				part:color()
+				part:color(0.81, 0.96, 0.99)
 			end
 			eyeColorParts:color({ color = vec(0.81, 0.96, 0.99) })
 			eyeColorParts:color({
@@ -292,9 +298,9 @@ enviLib:register("DIMENSION", function(dimension)
 			})
 		end,
 		the_nether = function()
-			for _, creeperEye in pairs(creeperEyes) do
-				creeperEye:color()
-				creeperEye:color(vec(0.82, 0.2, 0.75))
+			for _, part in pairs(creeperEyeParts) do
+				part:color()
+				part:color(vec(0.82, 0.2, 0.75))
 			end
 			eyeColorParts:color({ color = vec(0.91, 0.65, 0.88) })
 			eyeColorParts:color({
@@ -303,9 +309,9 @@ enviLib:register("DIMENSION", function(dimension)
 			})
 		end,
 		default = function()
-			for _, creeperEye in pairs(creeperEyes) do
-				creeperEye:color()
-				creeperEye:color(vec(0.85, 0.66, 1))
+			for _, part in pairs(creeperEyeParts) do
+				part:color()
+				part:color(vec(0.85, 0.66, 1))
 			end
 			eyeColorParts:color({ color = vec(0.85, 0.66, 1) })
 			eyeColorParts:color({
@@ -316,14 +322,14 @@ enviLib:register("DIMENSION", function(dimension)
 	})
 end)
 
----@param skull Skull
-skullTouch:register(function(skull)
+---@param playerHead Skull
+skullTouch:register(function(playerHead)
 	if animations.model.skullPat:isPlaying() then
 		animations.model.skullPat:stop()
 	end
 	animations.model.skullPat:play()
 
-	local pos = skull.position
-	pos.xz = pos.xz + 0.5
+	local pos = playerHead.position
+	pos = vec(pos.x + 0.5, pos.y, pos.z + 0.5)
 	sounds:playSound("minecraft:entity.bat.hurt", pos, 0.15)
 end)

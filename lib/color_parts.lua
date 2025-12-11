@@ -33,10 +33,7 @@ function colorParts:new(parts)
 
     ---@param tbl table
     function module:color(tbl)
-        if tbl.type ~= nil then
-            assert(type(tbl.type) == "ColorParts.type",
-                    "Expected 'tbl.type' to be of type: 'ColorParts.type', instead got: "..tostring(tbl.type))
-        end
+        tbl.type = tbl.type --[[@as ColorParts.type]]
 
         local cases = {}
 

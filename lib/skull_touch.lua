@@ -38,7 +38,7 @@ events.SKULL_RENDER:register(function(_, block)
         end
     end
 
-    table.insert(skulls, createSkull({ pos = block:getPos(), id = block.id }))
+    table.insert(skulls, createSkull({ position = pos, id = block.id }))
 end, "SkullTouch")
 
 local function tick()
@@ -46,17 +46,12 @@ local function tick()
         local uuid = playr:getUUID()
         local wasSwinging = playerWasSwinging[uuid]
 
-        if wasSwinging == nil then
-            wasSwinging = false
-            playerWasSwinging[uuid] = wasSwinging
-        end
-
         if playr:getSwingTime() == 1 then
             if not wasSwinging then
                 for i, skull in ipairs(skulls) do
                     local worldSkull = world.getBlockState(skull.position)
 
-                    if worldSkull.id ~= "minecraft:player_head" and worldSkull.id ~= "minecraft:player_wall_head" then
+                    if worldSkull.id ~= skull.id then
                         table.remove(skulls, i)
                         goto continue
                     end
