@@ -2,6 +2,7 @@
 local smoothie = require "lib.thirdparty.Smoothie"
 local animatedText = require "lib.thirdparty.animatedText"
 local depthEffect = require "lib.thirdparty.depth_effect"
+local runLater = require "lib.thirdparty.runLater"
 local util = require "lib.util"
 local afk = require "lib.afk"
 local periodical = require "lib.periodical"
@@ -9,7 +10,6 @@ local enviLib = require "lib.envi_lib"
 local colorParts = require "lib.color_parts"
 local skullTouch = require "lib.skull_touch"
 --#endregion
-
 local root = models.model.root
 local head = root.Head
 local body = root.Body
@@ -40,7 +40,6 @@ local onAiming = util:onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
-
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
 ---@type auria.depth_effect.obj[]
@@ -48,35 +47,54 @@ local depthObjects = {}
 ---@type ModelPart[]
 local layerObjects = {}
 
-for _, eye in pairs({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 }) do
-	local index = 1
-	local layer = eye["layer" .. tostring(index)] or eye["depthLayer" .. tostring(index)]
+local layerPartsCount = 0
 
-	while layer do
-		table.insert(layerObjects, layer)
+---@param parts ModelPart[]
+local function setLayers(parts)
+	layerPartsCount = #parts
+	for _, part in pairs(parts) do
+		local index = 1
+		local layer = part["layer" .. tostring(index)] or part["depthLayer" .. tostring(index)]
 
-		index = index + 1
-		layer = eye["layer" .. tostring(index)] or eye["depthLayer" .. tostring(index)]
+		while layer do
+			table.insert(layerObjects, layer)
+			index = index + 1
+			layer = part["layer" .. tostring(index)] or part["depthLayer" .. tostring(index)]
+		end
 	end
 end
 
+setLayers({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
+
+local initalDepthIncrement = 16
+
 local onPermissionChange = util:onChange(function(toggle)
 	if toggle then
-		local initalDepthIncrement = 16
 		local depthIncrement = initalDepthIncrement
-		local index
+		local index = 0
 
 		for i, layer in ipairs(layerObjects) do
-			layer:setPos()
+			runLater(i, function()
+				layer:setPos()
 
-			index = i
-			if index > #layerObjects / 2 then index = 1 end
+				index = index + 1
+				
+				if index > #layerObjects / layerPartsCount then index = 1 end
 
-			if not next(layerObjects, index + 1) then depthIncrement = -initalDepthIncrement end
+				if index + 1 > #layerObjects / layerPartsCount then
+					depthIncrement = -initalDepthIncrement
+				end
 
-			table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+				if index == 1 and depthIncrement == -initalDepthIncrement then
+					depthIncrement = -depthIncrement
+				end
 
-			depthIncrement = depthIncrement * 2
+				table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+
+				if depthIncrement ~= -initalDepthIncrement then
+					depthIncrement = depthIncrement * 2
+				end
+			end)
 		end
 	else
 		for _, depthObj in pairs(depthObjects) do depthObj:remove() end
@@ -212,8 +230,8 @@ function events.RENDER(delta)
 		end
 	else
 		for i, layer in pairs(layerObjects) do
-			local depth = math.cos(world.getTime(delta) * 0.1 + i)
-			layer:setPos(vec(layer:getPos().x, layer:getPos().y, depth / 6))
+			local depth = math.cos(world.getTime(delta) * 0.1 + i) / 6
+			layer:setPos(vec(layer:getPos().x, layer:getPos().y, depth))
 		end
 	end
 end
@@ -240,7 +258,7 @@ afk:new(180)
 			local heldItem = player:getHeldItem()
 			local heldOffhandItem = player:getHeldItem(true)
 
-			if util.isHandEmpty() and util.isHandEmpty(true) then
+			if util.isItemEmpty(heldItem) and util.isItemEmpty(heldOffhandItem) then
 				aiming = false
 				goto continue
 			end

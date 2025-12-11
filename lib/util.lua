@@ -100,11 +100,16 @@ function util.comparePermissionLevel(targetLevel, currentLevel)
     return permissionLevels[level] >= permissionLevels[targetLevel]
 end
 
+---@param itemStack ItemStack
+function util.isItemEmpty(itemStack)
+    return itemStack:getCount() == 0
+end
+
 ---@param offHand? boolean
 ---@param playr? Player
 function util.isHandEmpty(offHand, playr)
     local p = playr or player
-    return p:getHeldItem(offHand).id == "minecraft:air"
+    return util.isItemEmpty(p:getHeldItem(offHand))
 end
 
 ---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
