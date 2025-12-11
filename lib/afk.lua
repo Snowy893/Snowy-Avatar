@@ -44,7 +44,7 @@ end
 
 events.TICK:register(function()
     local time = world.getTime()
-    for i, obj in pairs(afk.ALL) do
+    for i, obj in ipairs(afk.ALL) do
         if (time + i) % obj.afkCheckTickRate == 0 then
             if (obj.position == obj.oldPosition)
                 and (obj.rotation == obj.oldRotation)

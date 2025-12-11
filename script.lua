@@ -42,56 +42,47 @@ end)
 
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
----@type auria.depth_effect.obj[]
-local depthObjects = {}
----@type ModelPart[]
-local layerObjects = {}
-
-local layerPartsCount = 0
-
 ---@param parts ModelPart[]
 local function setLayers(parts)
-	layerPartsCount = #parts
+	local tbl = {}
 	for _, part in pairs(parts) do
+		tbl[part:getName()] = {}
+
 		local index = 1
-		local layer = part["layer" .. tostring(index)] or part["depthLayer" .. tostring(index)]
+		local layer = part["layer" .. index] or part["depthLayer" .. index]
 
 		while layer do
-			table.insert(layerObjects, layer)
+			table.insert(tbl[part:getName()], layer)
 			index = index + 1
-			layer = part["layer" .. tostring(index)] or part["depthLayer" .. tostring(index)]
+			layer = part["layer" .. index] or part["depthLayer" .. index]
 		end
 	end
+	return tbl
 end
 
-setLayers({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
+---@type auria.depth_effect.obj[]
+local depthObjects = {}
+---@type table[]
+local layerObjects = setLayers({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
 
 local initalDepthIncrement = 16
 
 local onPermissionChange = util:onChange(function(toggle)
 	if toggle then
-		local depthIncrement = initalDepthIncrement
 		local index = 0
+		for _, tbl in pairs(layerObjects) do
+			index = index + 1
+			runLater(index, function ()
+				local depthIncrement = initalDepthIncrement
+				for i, layer in ipairs(tbl) do
+					layer:setPos()
 
-		for i, layer in ipairs(layerObjects) do
-			runLater(i, function()
-				layer:setPos()
+					if tbl[i + 1] == nil then
+						depthIncrement = -initalDepthIncrement
+					end
 
-				index = index + 1
-				
-				if index > #layerObjects / layerPartsCount then index = 1 end
+					table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
 
-				if index + 1 > #layerObjects / layerPartsCount then
-					depthIncrement = -initalDepthIncrement
-				end
-
-				if index == 1 and depthIncrement == -initalDepthIncrement then
-					depthIncrement = -depthIncrement
-				end
-
-				table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
-
-				if depthIncrement ~= -initalDepthIncrement then
 					depthIncrement = depthIncrement * 2
 				end
 			end)
@@ -229,9 +220,11 @@ function events.RENDER(delta)
 			depthObject:setDepth(depth)
 		end
 	else
-		for i, layer in pairs(layerObjects) do
-			local depth = math.cos(world.getTime(delta) * 0.1 + i) / 6
-			layer:setPos(vec(layer:getPos().x, layer:getPos().y, depth))
+		for _, part in pairs(layerObjects) do
+			for i, layer in ipairs(part) do
+				local depth = math.cos(world.getTime(delta) * 0.1 + i) / 6
+				layer:setPos(vec(layer:getPos().x, layer:getPos().y, depth))
+			end
 		end
 	end
 end
