@@ -12,7 +12,7 @@ local playerWasSwinging = {}
 ---@return Skull
 local function createSkull(tbl)
     ---@class Skull
-    ---@field pos Vector3
+    ---@field position Vector3
     ---@field id Minecraft.blockID
     local skull = {}
 
@@ -33,7 +33,7 @@ events.SKULL_RENDER:register(function(_, block)
     local pos = block:getPos()
 
     for _, skull in pairs(skulls) do
-        if pos == skull.pos then
+        if pos == skull.position then
             return
         end
     end
@@ -54,7 +54,7 @@ local function tick()
         if playr:getSwingTime() == 1 then
             if not wasSwinging then
                 for i, skull in ipairs(skulls) do
-                    local worldSkull = world.getBlockState(skull.pos)
+                    local worldSkull = world.getBlockState(skull.position)
 
                     if worldSkull.id ~= "minecraft:player_head" and worldSkull.id ~= "minecraft:player_wall_head" then
                         table.remove(skulls, i)
@@ -63,7 +63,7 @@ local function tick()
 
                     local target = playr:getTargetedBlock(true, 4)
 
-                    if target ~= nil and target:getPos() == skull.pos then
+                    if target ~= nil and target:getPos() == skull.position then
                         for _, func in pairs(skullTouch.ALL) do func(skull) end
                     end
 

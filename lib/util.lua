@@ -104,7 +104,26 @@ end
 ---@param playr? Player
 function util.isHandEmpty(offHand, playr)
     local p = playr or player
-    return p:getHeldItem(offHand).id ~= "minecraft:air"
+    return p:getHeldItem(offHand).id == "minecraft:air"
+end
+
+---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
+---@param itemStack ItemStack
+---@return boolean
+function util.isCrossbowCharged(itemStack)
+    local projectiles = itemStack:getTag().ChargedProjectiles
+    return projectiles ~= nil and next(projectiles) ~= nil
+end
+
+---Checks if the player is using an item with `action` that is either `"BOW"` or `"SPEAR"`. EXCLUDES CROSSBOWS!
+---@param itemStack ItemStack
+---@return boolean
+function util.isRangedWeaponDrawn(itemStack)
+    if player:isUsingItem() then
+        local useAction = itemStack:getUseAction()
+        return (useAction == "BOW") or (useAction == "SPEAR")
+    end
+    return false
 end
 
 return util
