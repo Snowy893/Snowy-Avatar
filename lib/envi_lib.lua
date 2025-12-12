@@ -1,10 +1,9 @@
+local util = require "lib.util"
 ---@class EnviLib
 local enviLib = {}
 
 enviLib.DIMENSION = { ON_CHANGE = {}, REGISTERED = {} }
 enviLib.BIOME = { ON_CHANGE = {}, REGISTERED = {} }
-
-local util = require "lib.util"
 
 ---@alias EnviLib.Type string
 ---| "DIMENSION"

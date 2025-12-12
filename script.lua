@@ -220,8 +220,8 @@ function events.RENDER(delta)
 			depthObject:setDepth(depth)
 		end
 	else
-		for _, part in pairs(layerObjects) do
-			for i, layer in ipairs(part) do
+		for _, tbl in pairs(layerObjects) do
+			for i, layer in ipairs(tbl) do
 				local depth = math.cos(world.getTime(delta) * 0.1 + i) / 6
 				layer:setPos(vec(layer:getPos().x, layer:getPos().y, depth))
 			end

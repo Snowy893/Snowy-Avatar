@@ -1,7 +1,6 @@
+local util = require "lib.util"
 ---@class ColorParts
 local colorParts = {}
-
-local util = require "lib.util"
 
 local hasDepthEffect = require("lib.thirdparty.depth_effect") ~= nil
 

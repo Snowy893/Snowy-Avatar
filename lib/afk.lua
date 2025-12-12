@@ -1,8 +1,7 @@
+local util = require "lib.util"
 ---@class Afk
 local afk = {}
 afk.ALL = {}
-
-local util = require "lib.util"
 
 ---@alias Afk.Event
 ---| "ON_CHANGE"
