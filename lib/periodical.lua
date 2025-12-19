@@ -75,7 +75,7 @@ function periodical:new(func, eventType)
         return mod
     end
 
-    return module:setCondition(function() return true end):setTiming(100)
+    return module:setCondition(world.exists):setTiming(100)
 end
 
 return periodical

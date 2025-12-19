@@ -20,8 +20,6 @@ local skullEyes = skull.Eyes2
 local skullCreeperEyes = skull.CreeperEyes2
 local sadChair = root.SadChair
 
-local page = action_wheel:newPage()
-
 local isAfk = false
 
 local onSleep = util:onChange(function (toggle)
@@ -36,14 +34,30 @@ local onSleep = util:onChange(function (toggle)
 	end
 end)
 
+---@param vehicle Entity?
+local onVehicle = util:onChange(function(vehicle)
+	-- local isBoat = vehicle and vehicle:getType():find("boat")
+	-- -- local isDriving = vehicle and vehicle:getControllingPassenger() == player
+	
+	-- if host:isHost() then
+	-- 	avatar:store("isInBoat", util.asBoolean(isBoat))
+	-- end
+
+	-- renderer:setRenderVehicle(not isBoat)
+
+	-- -- models.model.boat:setVisible(isBoat and isDriving)
+end)
+
 local onAiming = util:onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
----@param parts ModelPart[]
-local function setLayers(parts)
+---@type auria.depth_effect.obj[]
+local depthObjects = {}
+---@type table[]
+local layerObjects = (function(parts)
 	local tbl = {}
 	for _, part in pairs(parts) do
 		tbl[part:getName()] = {}
@@ -58,22 +72,20 @@ local function setLayers(parts)
 		end
 	end
 	return tbl
-end
-
----@type auria.depth_effect.obj[]
-local depthObjects = {}
----@type table[]
-local layerObjects = setLayers({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
+end)({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
 
 local initalDepthIncrement = 16
 
 local onPermissionChange = util:onChange(function(toggle)
 	if toggle then
 		local index = 0
+
 		for _, tbl in pairs(layerObjects) do
 			index = index + 1
+
 			runLater(index, function ()
 				local depthIncrement = initalDepthIncrement
+
 				for i, layer in ipairs(tbl) do
 					layer:setPos()
 
@@ -88,8 +100,12 @@ local onPermissionChange = util:onChange(function(toggle)
 			end)
 		end
 	else
-		for _, depthObj in pairs(depthObjects) do depthObj:remove() end
+		for _, depthObj in pairs(depthObjects) do
+			depthObj:remove()
+		end
+
 		depthObjects = {}
+
 		return
 	end
 end)
@@ -122,69 +138,67 @@ smoothie:newEye(eyes)
 
 periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
 		:condition(function()
-			if player:isLoaded() then
-				return not isAfk and player:getPose() ~= "SLEEPING"
-			else
-				return true
-			end
+			return (not player:isLoaded()) or (not isAfk and player:getPose() ~= "SLEEPING")
 		end)
 		:timing(100, 300)
 		:register()
 
 ------------------------------------------------------------------
 
-action_wheel:setPage(page)
+---This is global because it runs in `animations.model.creeper`'s instruction keyframe
+function CreeperEyesVisible(toggle)
+	eyes:setVisible(not toggle)
+	creeperEyes:setVisible(toggle)
+	skullEyes:setVisible(not toggle)
+	skullCreeperEyes:setVisible(toggle)
+end
 
----@param toggle boolean
-local function notchShader(toggle)
-	if toggle then
-		renderer:setPostEffect("notch")
-	else
-		renderer:setPostEffect()
+if host:isHost() then
+	local page = action_wheel:newPage()
+
+	action_wheel:setPage(page)
+
+	---@param toggle boolean
+	local function notchShader(toggle)
+		if toggle then
+			renderer:setPostEffect("notch")
+		else
+			renderer:setPostEffect()
+		end
 	end
+
+	---@param toggle boolean
+	function pings.sadChair(toggle)
+		sadChair:setVisible(toggle)
+		animations.model.sadChair:setPlaying(toggle)
+	end
+
+	function pings.creeper()
+		CreeperEyesVisible(true)
+		sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
+		animations.model.creeper:play()
+	end
+
+	page:setKeepSlots(false)
+
+	page:newAction()
+			:title("Dither")
+			:item("minecraft:apple")
+			:hoverColor(1, 0, 1)
+			:onToggle(notchShader)
+
+	page:newAction()
+			:title("Sad Chair")
+			:item("minecraft:smooth_quartz_stairs")
+			:hoverColor(1, 0, 1)
+			:onToggle(pings.sadChair)
+
+	page:newAction()
+			:title("Creeper")
+			:item("minecraft:creeper_head")
+			:hoverColor(1, 0, 1)
+			:onLeftClick(pings.creeper)
 end
-
----@param toggle boolean
-function pings.sadChair(toggle)
-	sadChair:setVisible(toggle)
-	animations.model.sadChair:setPlaying(toggle)
-end
-
-function pings.creeper()
-	eyes:setVisible(false)
-	creeperEyes:setVisible(true)
-	skullEyes:setVisible(false)
-	skullCreeperEyes:setVisible(true)
-	sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
-	animations.model.creeper:play()
-end
-
-function CreeperInstruction()
-    eyes:setVisible(true)
-	creeperEyes:setVisible(false)
-	skullEyes:setVisible(true)
-	skullCreeperEyes:setVisible(false)
-end
-
-page:setKeepSlots(false)
-
-page:newAction()
-		:title("Dither")
-		:item("minecraft:apple")
-		:hoverColor(1, 0, 1)
-		:onToggle(notchShader)
-
-page:newAction()
-		:title("Sad Chair")
-		:item("minecraft:smooth_quartz_stairs")
-		:hoverColor(1, 0, 1)
-		:onToggle(pings.sadChair)
-
-page:newAction()
-		:title("Creeper")
-		:item("minecraft:creeper_head")
-		:hoverColor(1, 0, 1)
-		:onLeftClick(pings.creeper)
 
 ------------------------------------------------------------------
 
@@ -199,7 +213,8 @@ function events.ENTITY_INIT()
 end
 
 function events.TICK()
-	onSleep:check(player:getPose() == "SLEEPING")
+    onSleep:check(player:getPose() == "SLEEPING")
+	onVehicle:check(player:getVehicle())
 end
 
 function events.RENDER(delta)
@@ -215,7 +230,7 @@ function events.RENDER(delta)
 	local hasPermission = util.comparePermissionLevel("HIGH")
 	onPermissionChange:check(hasPermission)
 	if hasPermission then
-		for i, depthObject in pairs(depthObjects) do
+		for i, depthObject in ipairs(depthObjects) do
 			local depth = math.cos(world.getTime(delta) * 0.1 + i) * 4
 			depthObject:setDepth(depth)
 		end
@@ -287,9 +302,9 @@ afk:new(210)
 			end
 		end)
 
-enviLib:register("DIMENSION", function(dimension)
-	local _, endIndex = dimension:find(":")
-	dimension = dimension:sub(endIndex + 1, dimension:len())
+enviLib:register("DIMENSION", function(id)
+	local _, endIndex = id:find(":")
+	local dimension = id:sub(endIndex + 1, id:len())
 	
 	util.switch(dimension, {
 		the_end = function()
@@ -339,8 +354,5 @@ skullTouch:register(function(playerHead)
 		animations.model.skullPat:stop()
 	end
 	animations.model.skullPat:play()
-
-	local pos = playerHead.position
-	pos = vec(pos.x + 0.5, pos.y, pos.z + 0.5)
-	sounds:playSound("minecraft:entity.bat.hurt", pos, 0.15)
+	sounds:playSound("minecraft:entity.bat.hurt", playerHead.centeredPosition, 0.15)
 end)

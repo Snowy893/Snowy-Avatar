@@ -13,7 +13,8 @@ local playerWasSwinging = {}
 local function createSkull(tbl)
     ---@class Skull
     ---@field position Vector3
-    ---@field id Minecraft.blockID
+    ---@field centeredPosition Vector3
+    ---@field blockID Minecraft.blockID
     local skull = {}
 
     for k, v in pairs(tbl) do
@@ -38,7 +39,11 @@ events.SKULL_RENDER:register(function(_, block)
         end
     end
 
-    table.insert(skulls, createSkull({ position = pos, id = block.id }))
+    table.insert(skulls, createSkull({
+        position = pos,
+        centeredPosition = vec(pos.x + 0.5, pos.y, pos.z + 0.5),
+        blockID = block.id,
+    }))
 end, "SkullTouch")
 
 local function tick()
@@ -51,7 +56,7 @@ local function tick()
                 for i, skull in ipairs(skulls) do
                     local worldSkull = world.getBlockState(skull.position)
 
-                    if worldSkull.id ~= skull.id then
+                    if worldSkull.id ~= skull.blockID then
                         table.remove(skulls, i)
                         goto continue
                     end

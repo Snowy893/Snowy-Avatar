@@ -20,6 +20,13 @@ function util.switch(value, cases)
     return match()
 end
 
+---Returns an explicit boolean value out of a value that is truthy or falsy
+---@param value any
+---@return boolean
+function util.asBoolean(value)
+    if value then return true else return false end
+end
+
 ---Thank you `chloespacedout`!
 ---@param part ModelPart
 ---@param name? string
