@@ -8,7 +8,7 @@ local afk = require "lib.afk"
 local periodical = require "lib.periodical"
 local enviLib = require "lib.envi_lib"
 local colorParts = require "lib.color_parts"
-local skullTouch = require "lib.skull_touch"
+local patpat = require "lib.thirdparty.patpat"
 --#endregion
 local root = models.model.root
 local head = root.Head
@@ -251,6 +251,7 @@ afk:new(180)
 			isAfk = toggle
 			animations.model.afkStart:setPlaying(toggle)
 			if not toggle then
+				animations.model.afkStart:stop()
 				animations.model.afkLoop:stop()
 				head:setOffsetRot(0)
 			end
@@ -302,9 +303,10 @@ afk:new(210)
 			end
 		end)
 
+---@param id Minecraft.dimensionID
 enviLib:register("DIMENSION", function(id)
-	local _, endIndex = id:find(":")
-	local dimension = id:sub(endIndex + 1, id:len())
+	local endIndex = id:find(":")[2]
+	local dimension = id:sub(endIndex + 1)
 	
 	util.switch(dimension, {
 		the_end = function()
@@ -348,11 +350,15 @@ enviLib:register("DIMENSION", function(id)
 	})
 end)
 
----@param playerHead Skull
-skullTouch:register(function(playerHead)
+---@param headPos Vector3
+table.insert(patpat.head.oncePat, function(_, headPos)
 	if animations.model.skullPat:isPlaying() then
 		animations.model.skullPat:stop()
 	end
 	animations.model.skullPat:play()
-	sounds:playSound("minecraft:entity.bat.hurt", playerHead.centeredPosition, 0.15)
+	sounds:playSound("minecraft:entity.bat.hurt", headPos, 0.15)
+end)
+
+table.insert(patpat.oncePat, function()
+	sounds:playSound("minecraft:entity.bat.hurt", player:getPos(), 0.15)
 end)
