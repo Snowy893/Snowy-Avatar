@@ -9,12 +9,11 @@ enviLib.BIOME = { ON_CHANGE = {}, REGISTERED = {} }
 ---| "DIMENSION"
 ---| "BIOME"
 
----@overload fun(type, func)
 ---@param type EnviLib.Type
 ---@param func function
----@param id string
+---@param id? string
 function enviLib:register(type, func, id)
-    if id == nil then
+    if not id then
         table.insert(enviLib[type].ON_CHANGE, func)
     else
         if not util.contains(enviLib[type].REGISTERED, id) then
