@@ -350,10 +350,8 @@ enviLib:register("DIMENSION", function(id)
 	})
 end)
 
-patpat.config.patDelay = 5
-
 ---@param headPos Vector3
-table.insert(patpat.playerEvents.head.oncePat, function(_, headPos)
+table.insert(patpat.head.oncePat, function(_, headPos)
 	if animations.model.skullPat:isPlaying() then
 		animations.model.skullPat:stop()
 	end
@@ -362,6 +360,6 @@ table.insert(patpat.playerEvents.head.oncePat, function(_, headPos)
 	sounds:playSound("minecraft:entity.bat.hurt", headPos, 0.15)
 end)
 
-table.insert(patpat.playerEvents.player, function()
-	sounds:playSound("minecraft:entity.bat.hurt", player:getPos(), 0.15)
+table.insert(patpat.oncePat, function()
+	sounds:playSound("minecraft:entity.cat.purr", player:getPos(), 0.15)
 end)
