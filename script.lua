@@ -213,7 +213,7 @@ function events.ENTITY_INIT()
 end
 
 function events.TICK()
-    onSleep:check(player:getPose() == "SLEEPING")
+	onSleep:check(player:getPose() == "SLEEPING")
 	onVehicle:check(player:getVehicle())
 end
 
@@ -305,7 +305,7 @@ afk:new(210)
 
 ---@param id Minecraft.dimensionID
 enviLib:register("DIMENSION", function(id)
-	local endIndex = id:find(":")[2]
+	local endIndex = select(2, id:find(":"))
 	local dimension = id:sub(endIndex + 1)
 	
 	util.switch(dimension, {
@@ -350,15 +350,18 @@ enviLib:register("DIMENSION", function(id)
 	})
 end)
 
+patpat.config.patDelay = 5
+
 ---@param headPos Vector3
-table.insert(patpat.head.oncePat, function(_, headPos)
+table.insert(patpat.playerEvents.head.oncePat, function(_, headPos)
 	if animations.model.skullPat:isPlaying() then
 		animations.model.skullPat:stop()
 	end
 	animations.model.skullPat:play()
+	headPos.x_z = headPos.x_z + 0.5
 	sounds:playSound("minecraft:entity.bat.hurt", headPos, 0.15)
 end)
 
-table.insert(patpat.oncePat, function()
+table.insert(patpat.playerEvents.player, function()
 	sounds:playSound("minecraft:entity.bat.hurt", player:getPos(), 0.15)
 end)
