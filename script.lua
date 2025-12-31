@@ -142,6 +142,7 @@ periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
 		end)
 		:timing(100, 300)
 		:register()
+		
 
 ------------------------------------------------------------------
 
@@ -213,8 +214,8 @@ function events.ENTITY_INIT()
 end
 
 function events.TICK()
-	onSleep:check(player:getPose() == "SLEEPING")
-	onVehicle:check(player:getVehicle())
+	onSleep(player:getPose() == "SLEEPING")
+	onVehicle(player:getVehicle())
 end
 
 function events.RENDER(delta)
@@ -228,7 +229,7 @@ function events.RENDER(delta)
 		end
 	end
 	local hasPermission = util.comparePermissionLevel("HIGH")
-	onPermissionChange:check(hasPermission)
+	onPermissionChange(hasPermission)
 	if hasPermission then
 		for i, depthObject in ipairs(depthObjects) do
 			local depth = math.cos(world.getTime(delta) * 0.1 + i) * 4
@@ -246,7 +247,7 @@ end
 
 ------------------------------------------------------------------
 
-afk:new(180)
+afk:new(5)
 		:register("ON_CHANGE", function(toggle)
 			isAfk = toggle
 			animations.model.afkStart:setPlaying(toggle)
@@ -279,10 +280,10 @@ afk:new(180)
 			end
 
 			::continue::
-			onAiming:check(aiming)
+			onAiming(aiming)
 		end)
 
-afk:new(210)
+afk:new(10)
 		:register("ON_CHANGE", function(toggle)
 			if toggle then
 				animatedText.setText("afk", { text = "Zzz", color = "#605b85" })

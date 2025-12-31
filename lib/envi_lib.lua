@@ -2,8 +2,16 @@ local util = require "lib.util"
 ---@class EnviLib
 local enviLib = {}
 
-enviLib.DIMENSION = { ON_CHANGE = {}, REGISTERED = {} }
-enviLib.BIOME = { ON_CHANGE = {}, REGISTERED = {} }
+local metaEvent = {
+    __call = function(tbl, ...)
+        for _, func in pairs(tbl) do func(...) end
+    end
+}
+
+local enviLibEvents = {
+    DIMENSION = { ON_CHANGE = setmetatable({}, metaEvent), REGISTERED = {} },
+    BIOME = { ON_CHANGE = setmetatable({}, metaEvent), REGISTERED = {} },
+}
 
 ---@alias EnviLib.Type string
 ---| "DIMENSION"
@@ -14,12 +22,12 @@ enviLib.BIOME = { ON_CHANGE = {}, REGISTERED = {} }
 ---@param id? string
 function enviLib:register(type, func, id)
     if not id then
-        table.insert(enviLib[type].ON_CHANGE, func)
+        table.insert(enviLibEvents[type].ON_CHANGE, func)
     else
         if not util.contains(enviLib[type].REGISTERED, id) then
-            table.insert(enviLib[type].REGISTERED, id)
+            table.insert(enviLibEvents[type].REGISTERED, id)
         end
-        table.insert(enviLib[type][id], func)
+        table.insert(enviLibEvents[type][id], func)
     end
 end
 
@@ -29,9 +37,9 @@ end
 local function onChange(type, currentEnvi, oldID)
     local id = currentEnvi
     if type == "BIOME" then id = currentEnvi.id end
-    for _, func in pairs(enviLib[type].ON_CHANGE) do func(currentEnvi) end
-    for _, registeredId in pairs(enviLib[type].REGISTERED) do
-        for _, func in pairs(enviLib[type][registeredId]) do
+    enviLibEvents[type].ON_CHANGE(currentEnvi)
+    for _, registeredId in pairs(enviLibEvents[type].REGISTERED) do
+        for _, func in pairs(enviLibEvents[type][registeredId]) do
             if oldID == registeredId or id == registeredId then
                 func(currentEnvi, registeredId == id)
             end
@@ -53,8 +61,8 @@ end)
 
 events.TICK:register(function()
     local biome = world.getBiome(player:getPos())
-    onDimensionChange:check(world.getDimension())
-    onBiomeChange:setExtraParam(biome):check(biome.id)
+    onDimensionChange(world.getDimension())
+    onBiomeChange:setExtraParam(biome)(biome.id)
 end, "EnviLib")
 
 return enviLib

@@ -67,15 +67,14 @@ function util:onChange(func, initialValue)
         return module
     end
 
-    ---@param value any
-    function module:check(value)
-        if oldValue ~= value then
-            func(value, oldValue, extraArg)
+    return setmetatable(module, {
+        __call = function(_, value)
+            if oldValue ~= value then
+                func(value, oldValue, extraArg)
+            end
+            oldValue = value
         end
-        oldValue = value
-    end
-
-    return module
+    })
 end
 
 ---@param fromPage Page

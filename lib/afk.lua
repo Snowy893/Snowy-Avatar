@@ -1,9 +1,38 @@
 ---@diagnostic disable: undefined-field
 local util = require "lib.util"
 ---@class Afk
-local afk = {}
----@type Afk.Obj[]
-afk.ALL = {}
+local Afk = {}
+---@type Afk
+Afk.ALL = {}
+
+Afk.isAfk = false
+Afk.afkTime = 0
+
+Afk.events = {
+    ON_CHANGE = setmetatable({}, {
+        __call = function(tbl, isAfk)
+            for _, func in pairs(tbl) do
+                func(isAfk)
+            end
+        end,
+    }),
+    ON_RENDER_LOOP = setmetatable({}, {
+        __call = function(tbl, delta, context)
+            for _, func in pairs(tbl) do
+                func(delta, context)
+            end
+        end,
+    }),
+    ON_TICK_NOT_AFK = setmetatable({}, {
+        __call = function(tbl)
+            for _, func in pairs(tbl) do
+                func()
+            end
+        end
+    }),
+}
+
+Afk.onAfkChange = util:onChange(Afk.events.ON_CHANGE --[[@as function]])
 
 ---@alias Afk.Event
 ---| "ON_CHANGE"
@@ -12,53 +41,45 @@ afk.ALL = {}
 
 ---@param secondsUntilAfk integer
 ---@param includeRotation? boolean
+---@param afkCheckTickRate? integer
 ---@return Afk.Obj
-function afk:new(secondsUntilAfk, includeRotation)
+function Afk:new(secondsUntilAfk, includeRotation, afkCheckTickRate)
+    ---@class Afk
+    local module = self
+
+    module.afkCheckTickRate = afkCheckTickRate or 5
+    module.delay = secondsUntilAfk * module.afkCheckTickRate
+    module.includeRotation = includeRotation or true
+
     ---@class Afk.Obj
-    local module = {}
-
-    module._afkCheckTickRate = 5
-    module._delay = secondsUntilAfk * module._afkCheckTickRate
-    module._isAfk = false
-    module._afkTime = 0
-    module._includeRotation = includeRotation or true
-
-    module._events = {
-        ON_CHANGE = {},
-        ON_RENDER_LOOP = {},
-        ON_TICK_NOT_AFK = {},
-    }
-
-    module._onAfkChange = util:onChange(function(toggle)
-        for _, func in pairs(module._events.ON_CHANGE) do func(toggle) end
-    end)
+    local obj = {}
 
     ---@param event Afk.Event
     ---@param func function
-    function module:register(event, func)
-        table.insert(module._events[event], func)
-        return module
+    ---@return Afk.Obj
+    function obj:register(event, func)
+        table.insert(module.events[event], func)
+        return obj
     end
 
-    table.insert(afk.ALL, module)
-
-    return module
+    table.insert(Afk.ALL, setmetatable(module, Afk))
+    return obj
 end
 
----@param obj Afk.Obj
+---@param afk Afk
 ---@return boolean
-local function afkEval(obj)
-    local posUnchanged = obj._position == obj._oldPosition
+local function afkEval(afk)
+    local posUnchanged = afk.position == afk.oldPosition
     local isAfk = posUnchanged and player:getPose() ~= "SLEEPING"
 
-    obj._oldPosition = obj._position
-    obj._position = player:getPos()
+    afk.oldPosition = afk.position
+    afk.position = player:getPos()
 
-    if obj._includeRotation then
-        local rotUnchanged = obj._rotation == obj._oldRotation
+    if afk.includeRotation then
+        local rotUnchanged = afk.rotation == afk.oldRotation
 
-        obj._oldRotation = obj._rotation
-        obj._rotation = player:getRot()
+        afk.oldRotation = afk.rotation
+        afk.rotation = player:getRot()
 
         return isAfk and rotUnchanged
     end
@@ -68,40 +89,40 @@ end
 
 events.TICK:register(function()
     local time = world.getTime()
-    for i, obj in ipairs(afk.ALL) do
-        if (time + i) % obj._afkCheckTickRate == 0 then
-            if afkEval(obj) then
-                obj._afkTime = obj._afkTime + 1
+    for i, afk in ipairs(Afk.ALL) do
+        if (time + i) % afk.afkCheckTickRate == 0 then
+            if afkEval(afk) then
+                afk.afkTime = afk.afkTime + 1
             else
-                obj._afkTime = 0
+                afk.afkTime = 0
             end
 
-            if obj._afkTime ~= 0 then
-                if obj._afkTime >= obj._delay then
-                    obj._isAfk = true
+            if afk.afkTime ~= 0 then
+                if afk.afkTime >= afk.delay then
+                    afk.isAfk = true
                 end
             else
-                if obj._oldAfkTime ~= 0 then
-                    obj._isAfk = false
+                if afk.oldAfkTime ~= 0 then
+                    afk.isAfk = false
                 end
             end
 
-            obj._oldAfkTime = obj._afkTime
+            afk.oldAfkTime = afk.afkTime
 
-            obj._onAfkChange:check(obj._isAfk)
+            afk.onAfkChange(afk.isAfk)
         end
 
-        if not obj._isAfk then
-            for _, func in pairs(obj._events.ON_TICK_NOT_AFK) do func() end
+        if not afk.isAfk then
+            afk.events.ON_TICK_NOT_AFK()
         end
     end
 end, "Afk")
 
 events.RENDER:register(function(delta, context)
-    for _, obj in pairs(afk.ALL) do
-        if not obj._isAfk then return end
-        for _, func in pairs(obj._events.ON_RENDER_LOOP) do func(delta, context) end
+    for _, afk in pairs(Afk.ALL) do
+        if not afk.isAfk then return end
+        afk.events.ON_RENDER_LOOP(delta, context)
     end
 end, "Afk")
 
-return afk
+return Afk
