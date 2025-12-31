@@ -9,8 +9,14 @@ local metaEvent = {
 }
 
 local enviLibEvents = {
-    DIMENSION = { ON_CHANGE = setmetatable({}, metaEvent), REGISTERED = {} },
-    BIOME = { ON_CHANGE = setmetatable({}, metaEvent), REGISTERED = {} },
+    DIMENSION = {
+        ON_CHANGE = setmetatable({}, metaEvent),
+        REGISTERED = {},
+    },
+    BIOME = {
+        ON_CHANGE = setmetatable({}, metaEvent),
+        REGISTERED = {},
+    },
 }
 
 ---@alias EnviLib.Type string

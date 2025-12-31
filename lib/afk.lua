@@ -1,4 +1,3 @@
----@diagnostic disable: undefined-field
 local util = require "lib.util"
 ---@class Afk
 local Afk = {}
@@ -8,28 +7,18 @@ Afk.ALL = {}
 Afk.isAfk = false
 Afk.afkTime = 0
 
-Afk.events = {
-    ON_CHANGE = setmetatable({}, {
-        __call = function(tbl, isAfk)
-            for _, func in pairs(tbl) do
-                func(isAfk)
-            end
-        end,
-    }),
-    ON_RENDER_LOOP = setmetatable({}, {
-        __call = function(tbl, delta, context)
-            for _, func in pairs(tbl) do
-                func(delta, context)
-            end
-        end,
-    }),
-    ON_TICK_NOT_AFK = setmetatable({}, {
-        __call = function(tbl)
-            for _, func in pairs(tbl) do
-                func()
-            end
+local metaEvent = {
+    __call = function(tbl, ...)
+        for _, func in pairs(tbl) do
+            func(...)
         end
-    }),
+    end
+}
+
+Afk.events = {
+    ON_CHANGE = setmetatable({}, metaEvent),
+    ON_RENDER_LOOP = setmetatable({}, metaEvent),
+    ON_TICK_NOT_AFK = setmetatable({}, metaEvent),
 }
 
 Afk.onAfkChange = util:onChange(Afk.events.ON_CHANGE --[[@as function]])
