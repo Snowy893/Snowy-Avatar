@@ -22,7 +22,7 @@ local sadChair = root.SadChair
 
 local isAfk = false
 
-local onSleep = util:onChange(function (toggle)
+local onSleep = util.onChange(function (toggle)
 	animations.model.afkLoop:setPlaying(toggle)
 	if toggle then
 		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
@@ -35,7 +35,7 @@ local onSleep = util:onChange(function (toggle)
 end)
 
 ---@param vehicle Entity?
-local onVehicle = util:onChange(function(vehicle)
+local onVehicle = util.onChange(function(vehicle)
 	-- local isBoat = vehicle and vehicle:getType():find("boat")
 	-- -- local isDriving = vehicle and vehicle:getControllingPassenger() == player
 	
@@ -48,7 +48,7 @@ local onVehicle = util:onChange(function(vehicle)
 	-- -- models.model.boat:setVisible(isBoat and isDriving)
 end)
 
-local onAiming = util:onChange(function (toggle)
+local onAiming = util.onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
@@ -76,7 +76,7 @@ end)({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
 
 local initalDepthIncrement = 16
 
-local onPermissionChange = util:onChange(function(toggle)
+local onPermissionChange = util.onChange(function(toggle)
 	if toggle then
 		local index = 0
 

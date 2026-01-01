@@ -52,29 +52,29 @@ end
 ---@overload fun(func)
 ---@param func function
 ---@param initialValue any
----@return Util.onChange
-function util:onChange(func, initialValue)
-    ---@class Util.onChange
-    local module = {}
-
+---@return function
+function util.onChange(func, initialValue)
     local oldValue = initialValue or nil
-    local extraArg
 
-    ---@param value any
-    ---@return Util.onChange
-    function module:setExtraParam(value)
-        extraArg = value
-        return module
-    end
-
-    return setmetatable(module, {
-        __call = function(_, value)
-            if oldValue ~= value then
-                func(value, oldValue, extraArg)
-            end
-            oldValue = value
+    return function(value, ...)
+        if oldValue ~= value then
+            func(value, oldValue, ...)
         end
-    })
+        oldValue = value
+    end
+end
+
+---@param tbl? table
+---@param metaTable? table
+---@return FunctionTable
+function util.functionTable(tbl, metaTable)
+    tbl = tbl or {}
+    local mtbl = metaTable or {}
+    mtbl.__call = function(t, ...)
+        for _, func in pairs(t) do func(...) end
+    end
+    ---@class FunctionTable
+    return setmetatable(tbl, mtbl)
 end
 
 ---@param fromPage Page

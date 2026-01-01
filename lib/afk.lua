@@ -7,21 +7,13 @@ Afk.ALL = {}
 Afk.isAfk = false
 Afk.afkTime = 0
 
-local metaEvent = {
-    __call = function(tbl, ...)
-        for _, func in pairs(tbl) do
-            func(...)
-        end
-    end
-}
-
 Afk.events = {
-    ON_CHANGE = setmetatable({}, metaEvent),
-    ON_RENDER_LOOP = setmetatable({}, metaEvent),
-    ON_TICK_NOT_AFK = setmetatable({}, metaEvent),
+    ON_CHANGE = util.functionTable(),
+    ON_RENDER_LOOP = util.functionTable(),
+    ON_TICK_NOT_AFK = util.functionTable(),
 }
 
-Afk.onAfkChange = util:onChange(Afk.events.ON_CHANGE --[[@as function]])
+Afk.onAfkChange = util.onChange(Afk.events.ON_CHANGE --[[@as function]])
 
 ---@alias Afk.Event
 ---| "ON_CHANGE"
