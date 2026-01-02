@@ -1,16 +1,6 @@
 ---@class Util
 local util = {}
 
----@param tbl table
----@param value any
----@return boolean
-function util.contains(tbl, value)
-    for _, v in pairs(tbl) do
-        if value == v then return true end
-    end
-    return false
-end
-
 ---Thank you `u/Serious-Accident8443`!
 ---@param value any
 ---@param cases table
@@ -23,30 +13,8 @@ end
 ---Returns an explicit boolean value out of a value that is truthy or falsy
 ---@param value any
 ---@return boolean
-function util.asBoolean(value)
+function util.toboolean(value)
     if value then return true else return false end
-end
-
----Thank you `chloespacedout`!
----@param part ModelPart
----@param name? string
----@param maxDepth? integer
----@param currentDepth? integer
----@return ModelPart
-function util.deepcopy(part, name, maxDepth, currentDepth)
-    local depth = currentDepth or 1
-    if maxDepth and depth > maxDepth then return part end
-    local copy
-    if name then
-        copy = part:copy(name)
-    else
-        copy = part:copy(part:getName())
-    end
-    for _, child in ipairs(part:getChildren()) do
-        copy:removeChild(child)
-        util.deepcopy(child, nil, maxDepth, depth + 1):moveTo(copy)
-    end
-    return copy
 end
 
 ---@overload fun(func)
@@ -68,13 +36,13 @@ end
 ---@param metaTable? table
 ---@return FunctionTable
 function util.functionTable(tbl, metaTable)
-    tbl = tbl or {}
+    local t = tbl or {}
     local mtbl = metaTable or {}
-    mtbl.__call = function(t, ...)
-        for _, func in pairs(t) do func(...) end
+    mtbl.__call = function(tble, ...)
+        for _, func in pairs(tble) do func(...) end
     end
     ---@class FunctionTable
-    return setmetatable(tbl, mtbl)
+    return setmetatable(t, mtbl)
 end
 
 ---@param fromPage Page

@@ -40,7 +40,7 @@ local onVehicle = util.onChange(function(vehicle)
 	-- -- local isDriving = vehicle and vehicle:getControllingPassenger() == player
 	
 	-- if host:isHost() then
-	-- 	avatar:store("isInBoat", util.asBoolean(isBoat))
+	-- 	avatar:store("isInBoat", util.toboolean(isBoat))
 	-- end
 
 	-- renderer:setRenderVehicle(not isBoat)
@@ -255,7 +255,6 @@ afk:new(180)
 			isAfk = toggle
 			animations.model.afkStart:setPlaying(toggle)
 			if not toggle then
-				animations.model.afkStart:stop()
 				animations.model.afkLoop:stop()
 				head:setOffsetRot(0)
 			end
@@ -272,7 +271,6 @@ afk:new(180)
 			local heldOffhandItem = player:getHeldItem(true)
 
 			if util.isItemEmpty(heldItem) and util.isItemEmpty(heldOffhandItem) then
-				aiming = false
 				goto continue
 			end
 

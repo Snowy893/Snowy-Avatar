@@ -35,7 +35,7 @@ end
 ---@param type EnviLib.Type
 ---@param currentEnvi string | table
 ---@param oldID string
-local function environmentChange(type, currentEnvi, oldID)
+local function enviChange(type, currentEnvi, oldID)
     local id = currentEnvi
     if type == "BIOME" then id = currentEnvi.id end
     enviLibEvents[type].ON_CHANGE(currentEnvi)
@@ -49,13 +49,13 @@ end
 ---@param dim Minecraft.dimensionID
 ---@param oldDim Minecraft.dimensionID
 local onDimensionChange = util.onChange(function(dim, oldDim)
-    environmentChange("DIMENSION", dim, oldDim)
+    enviChange("DIMENSION", dim, oldDim)
 end)
 
 ---@param oldBiomeID Minecraft.biomeID
 ---@param biome Biome
 local onBiomeChange = util.onChange(function(_, oldBiomeID, biome)
-    environmentChange("BIOME", biome, oldBiomeID)
+    enviChange("BIOME", biome, oldBiomeID)
 end)
 
 events.TICK:register(function()
