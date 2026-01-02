@@ -219,17 +219,20 @@ function events.TICK()
 end
 
 function events.RENDER(delta)
-	if player:getPose() == "SLEEPING" then
-		for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
-			animatedText.transform(
-				"sleeping",
-				vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
-				v
-			)
-		end
-	end
-	local hasPermission = util.comparePermissionLevel("HIGH")
-	onPermissionChange(hasPermission)
+    if player:getPose() == "SLEEPING" then
+        for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
+            animatedText.transform(
+                "sleeping",
+                vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
+                v
+            )
+        end
+    end
+	
+    local hasPermission = util.comparePermissionLevel("HIGH")
+	
+    onPermissionChange(hasPermission)
+	
 	if hasPermission then
 		for i, depthObject in ipairs(depthObjects) do
 			local depth = math.cos(world.getTime(delta) * 0.1 + i) * 4

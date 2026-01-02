@@ -1,7 +1,7 @@
 local util = require "lib.util"
 ---@class Afk
 local Afk = {}
----@type Afk
+---@type Afk[]
 Afk.ALL = {}
 
 Afk.isAfk = false
