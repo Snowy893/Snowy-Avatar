@@ -68,6 +68,7 @@ local permissionLevels = {
 ---Returns true if the current permission level is greater than or equal to the input permission level
 ---@overload fun(targetLevel)
 ---@param targetLevel AvatarAPI.permissionLevel
+---@param currentLevel AvatarAPI.permissionLevel
 ---@return boolean 
 function util.comparePermissionLevel(targetLevel, currentLevel)
     local level = currentLevel or avatar:getPermissionLevel()
