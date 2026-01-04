@@ -251,7 +251,7 @@ end
 
 ------------------------------------------------------------------
 
-afk:new(180)
+afk.new(5)
 		:register("ON_CHANGE", function(toggle)
 			isAfk = toggle
 			animations.model.afkStart:setPlaying(toggle)
@@ -285,7 +285,7 @@ afk:new(180)
 			onAiming(aiming)
 		end)
 
-afk:new(210)
+afk.new(10)
 		:register("ON_CHANGE", function(toggle)
 			if toggle then
 				animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
@@ -307,7 +307,7 @@ afk:new(210)
 		end)
 
 ---@param id Minecraft.dimensionID
-enviLib:register("DIMENSION", function(id)
+enviLib.register("DIMENSION", function(id)
 	local endIndex = select(2, id:find(":"))
 	local dimension = id:sub(endIndex + 1)
 	

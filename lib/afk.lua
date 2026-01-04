@@ -4,16 +4,11 @@ local Afk = {}
 ---@type Afk[]
 Afk.ALL = {}
 
-Afk.isAfk = false
-Afk.afkTime = 0
-
-Afk.events = {
-    ON_CHANGE = util.functionTable(),
-    ON_RENDER_LOOP = util.functionTable(),
-    ON_TICK_NOT_AFK = util.functionTable(),
-}
-
-Afk.onAfkChange = util.onChange(Afk.events.ON_CHANGE --[[@as function]])
+local onSneakChange = util.onChange(function()
+    for _, afk in pairs(Afk.ALL) do
+        afk.didSneakChange = true
+    end
+end)
 
 ---@alias Afk.Event
 ---| "ON_CHANGE"
@@ -24,13 +19,23 @@ Afk.onAfkChange = util.onChange(Afk.events.ON_CHANGE --[[@as function]])
 ---@param includeRotation? boolean
 ---@param afkCheckTickRate? integer
 ---@return Afk.Obj
-function Afk:new(secondsUntilAfk, includeRotation, afkCheckTickRate)
+function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     ---@class Afk
-    local module = self
+    local module = {}
 
+    module.isAfk = false
+    module.afkTime = 0
     module.afkCheckTickRate = afkCheckTickRate or 5
     module.delay = secondsUntilAfk * module.afkCheckTickRate
     module.includeRotation = includeRotation or true
+
+    module.events = {
+        ON_CHANGE = util.functionTable(),
+        ON_RENDER_LOOP = util.functionTable(),
+        ON_TICK_NOT_AFK = util.functionTable(),
+    }
+
+    module.onAfkChange = util.onChange(module.events.ON_CHANGE --[[@as function]])
 
     ---@class Afk.Obj
     local obj = {}
@@ -43,7 +48,7 @@ function Afk:new(secondsUntilAfk, includeRotation, afkCheckTickRate)
         return obj
     end
 
-    table.insert(Afk.ALL, setmetatable(module, Afk))
+    table.insert(Afk.ALL, module)
     return obj
 end
 
@@ -51,8 +56,7 @@ end
 ---@return boolean
 local function afkEval(afk)
     local posUnchanged = afk.position == afk.oldPosition
-    local isAfk = posUnchanged and player:getPose() ~= "SLEEPING"
-
+    local isAfk = posUnchanged and (player:getPose() ~= "SLEEPING")
     afk.oldPosition = afk.position
     afk.position = player:getPos()
 
@@ -70,11 +74,14 @@ end
 
 events.TICK:register(function()
     local time = world.getTime()
+    onSneakChange(player:isSneaking())
+
     for i, afk in ipairs(Afk.ALL) do
         if (time + i) % afk.afkCheckTickRate == 0 then
-            if afkEval(afk) then
+            if not afk.didSneakChange and afkEval(afk) then
                 afk.afkTime = afk.afkTime + 1
             else
+                afk.didSneakChange = false
                 afk.afkTime = 0
             end
 

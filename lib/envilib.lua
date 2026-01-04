@@ -20,7 +20,7 @@ local enviLibEvents = {
 ---@param type EnviLib.Type
 ---@param func function
 ---@param id? string
-function enviLib:register(type, func, id)
+function enviLib.register(type, func, id)
     if not id then
         table.insert(enviLibEvents[type].ON_CHANGE, func)
     else
