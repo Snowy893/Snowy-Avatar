@@ -113,9 +113,9 @@ end)
 local eyeColorParts = colorParts:new({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
 
 animatedText.new("afk", body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
-		"BILLBOARD", "")
+	"BILLBOARD", "")
 animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
-		"BILLBOARD", "")
+	"BILLBOARD", "")
 
 vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
@@ -133,17 +133,17 @@ skullCreeperEyes:setPrimaryRenderType("EMISSIVE")
 ------------------------------------------------------------------
 
 smoothie:newEye(eyes)
-		:leftOffsetStrength(0.25)
-		:rightOffsetStrength(0.25)
-		:topOffsetStrength(0.25)
-		:bottomOffsetStrength(0.25)
+	:leftOffsetStrength(0.25)
+	:rightOffsetStrength(0.25)
+	:topOffsetStrength(0.25)
+	:bottomOffsetStrength(0.25)
 
 periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
-		:condition(function()
-			return (not player:isLoaded()) or (not isAfk and player:getPose() ~= "SLEEPING")
-		end)
-		:timing(100, 300)
-		:register()
+	:condition(function()
+		return (not player:isLoaded()) or (not isAfk and player:getPose() ~= "SLEEPING")
+	end)
+	:timing(100, 300)
+	:register()
 
 ------------------------------------------------------------------
 
@@ -184,22 +184,22 @@ if host:isHost() then
 	page:setKeepSlots(false)
 
 	page:newAction()
-			:title("Dither")
-			:item("minecraft:apple")
-			:hoverColor(1, 0, 1)
-			:onToggle(notchShader)
+		:title("Dither")
+		:item("minecraft:apple")
+		:hoverColor(1, 0, 1)
+		:onToggle(notchShader)
 
 	page:newAction()
-			:title("Sad Chair")
-			:item("minecraft:smooth_quartz_stairs")
-			:hoverColor(1, 0, 1)
-			:onToggle(pings.sadChair)
+		:title("Sad Chair")
+		:item("minecraft:smooth_quartz_stairs")
+		:hoverColor(1, 0, 1)
+		:onToggle(pings.sadChair)
 
 	page:newAction()
-			:title("Creeper")
-			:item("minecraft:creeper_head")
-			:hoverColor(1, 0, 1)
-			:onLeftClick(pings.creeper)
+		:title("Creeper")
+		:item("minecraft:creeper_head")
+		:hoverColor(1, 0, 1)
+		:onLeftClick(pings.creeper)
 end
 
 ------------------------------------------------------------------
@@ -252,59 +252,59 @@ end
 ------------------------------------------------------------------
 
 afk.new(180)
-		:register("ON_CHANGE", function(toggle)
-			isAfk = toggle
-			animations.model.afkStart:setPlaying(toggle)
-			if not toggle then
-				animations.model.afkLoop:stop()
-				head:setOffsetRot(0)
-			end
-		end)
-		:register("ON_RENDER_LOOP", function(delta)
-			if animations.model.afkStart:isStopped() then
-				animations.model.afkLoop:play()
-			end
-			head:setOffsetRot(math.sin(world.getTime(delta) / 14))
-		end)
-		:register("ON_TICK_NOT_AFK", function()
-			local aiming = false
-			local heldItem = player:getHeldItem()
-			local heldOffhandItem = player:getHeldItem(true)
+	:register("ON_CHANGE", function(toggle)
+		isAfk = toggle
+		animations.model.afkStart:setPlaying(toggle)
+		if not toggle then
+			animations.model.afkLoop:stop()
+			head:setOffsetRot(0)
+		end
+	end)
+	:register("ON_RENDER_LOOP", function(delta)
+		if animations.model.afkStart:isStopped() then
+			animations.model.afkLoop:play()
+		end
+		head:setOffsetRot(math.sin(world.getTime(delta) / 14))
+	end)
+	:register("ON_TICK_NOT_AFK", function()
+		local aiming = false
+		local heldItem = player:getHeldItem()
+		local heldOffhandItem = player:getHeldItem(true)
 
-			if util.isItemEmpty(heldItem) and util.isItemEmpty(heldOffhandItem) then
-				goto continue
-			end
+		if util.isItemEmpty(heldItem) and util.isItemEmpty(heldOffhandItem) then
+			goto continue
+		end
 
-			aiming = util.isCrossbowCharged(heldItem) or util.isCrossbowCharged(heldOffhandItem)
+		aiming = util.isCrossbowCharged(heldItem) or util.isCrossbowCharged(heldOffhandItem)
 
-			if not aiming then
-				aiming = util.isRangedWeaponDrawn(heldItem) or util.isRangedWeaponDrawn(heldOffhandItem)
-			end
+		if not aiming then
+			aiming = util.isRangedWeaponDrawn(heldItem) or util.isRangedWeaponDrawn(heldOffhandItem)
+		end
 
-			::continue::
-			onAiming(aiming)
-		end)
+		::continue::
+		onAiming(aiming)
+	end)
 
 afk.new(210)
-		:register("ON_CHANGE", function(toggle)
-			if toggle then
-				animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
-				for _, v in pairs(animatedText.getTask("afk").textTasks) do
-					v.task:outline(true)
-				end
-			else
-				animatedText.setText("afk", "")
+	:register("ON_CHANGE", function(toggle)
+		if toggle then
+			animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
+			for _, v in pairs(animatedText.getTask("afk").textTasks) do
+				v.task:outline(true)
 			end
-		end)
-		:register("ON_RENDER_LOOP", function(delta)
-			for i, v in ipairs(animatedText.getTask("afk").textTasks) do
-				animatedText.transform(
-					"afk",
-					vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
-					v
-				)
-			end
-		end)
+		else
+			animatedText.setText("afk", "")
+		end
+	end)
+	:register("ON_RENDER_LOOP", function(delta)
+		for i, v in ipairs(animatedText.getTask("afk").textTasks) do
+			animatedText.transform(
+				"afk",
+				vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
+				v
+			)
+		end
+	end)
 
 ---@param id Minecraft.dimensionID
 enviLib.register("DIMENSION", function(id)
