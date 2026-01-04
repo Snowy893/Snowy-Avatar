@@ -19,7 +19,7 @@ function SyncedPings:new(pingFunc, ...)
 end
 
 events.TICK:register(function ()
-    for i, sPing in pairs(SyncedPings.ALL) do
+    for i, sPing in ipairs(SyncedPings.ALL) do
         if world.getTime() % (SyncedPings.ticks + i) == 0 then
             sPing.pingFunc(sPing.args)
         end

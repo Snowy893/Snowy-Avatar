@@ -9,6 +9,7 @@ local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
 local colorParts = require "lib.colorparts"
 local patpat = require "lib.thirdparty.patpat"
+local syncedpings = require "lib.syncedpings"
 --#endregion
 local root = models.model.root
 local head = root.Torso.Head
@@ -115,7 +116,9 @@ local eyeColorParts = colorParts:new({ eyes.RightEye, eyes.LeftEye, skullEyes.Ri
 animatedText.new("afk", body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
 	"BILLBOARD", "")
 animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
-	"BILLBOARD", "")
+    "BILLBOARD", "")
+
+syncedpings.ticks = 100
 
 vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
@@ -193,7 +196,7 @@ if host:isHost() then
 		:title("Sad Chair")
 		:item("minecraft:smooth_quartz_stairs")
 		:hoverColor(1, 0, 1)
-		:onToggle(pings.sadChair)
+        :onToggle(syncedpings:new(pings.sadChair, false))
 
 	page:newAction()
 		:title("Creeper")
