@@ -6,13 +6,13 @@ local runLater = require "lib.thirdparty.runLater"
 local util = require "lib.util"
 local afk = require "lib.afk"
 local periodical = require "lib.periodical"
-local enviLib = require "lib.envi_lib"
-local colorParts = require "lib.color_parts"
+local enviLib = require "lib.envilib"
+local colorParts = require "lib.colorparts"
 local patpat = require "lib.thirdparty.patpat"
 --#endregion
 local root = models.model.root
-local head = root.Head
-local body = root.Body
+local head = root.Torso.Head
+local body = root.Torso.Waist.Body
 local eyes = head.Eyes
 local creeperEyes = head.CreeperEyes
 local skull = models.model.Skull
