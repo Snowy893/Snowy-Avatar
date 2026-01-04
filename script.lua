@@ -72,7 +72,7 @@ local layerObjects = (function(parts)
 		end
 	end
 	return tbl
-end)({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
+end)({ eyes.RightEye, eyes.LeftEye, })
 
 local initalDepthIncrement = 16
 
@@ -120,19 +120,15 @@ animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
 vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
 
+skull:setVisible(true)
 sadChair:setVisible(false)
 creeperEyes:setVisible(false)
+skullCreeperEyes:setVisible(false)
 
 eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
-skullEyes:setPrimaryRenderType("CUTOUT_CULL")
+skullEyes:setPrimaryRenderType("EMISSIVE")
 creeperEyes:setPrimaryRenderType("EYES")
 skullCreeperEyes:setPrimaryRenderType("EMISSIVE")
-
-------------------------------------------------------------------
-
-if client.isModLoaded("jigcompats") and client.isModLoaded("create") then
-	
-end
 
 ------------------------------------------------------------------
 
