@@ -251,7 +251,7 @@ end
 
 ------------------------------------------------------------------
 
-afk.new(5)
+afk.new(180)
 		:register("ON_CHANGE", function(toggle)
 			isAfk = toggle
 			animations.model.afkStart:setPlaying(toggle)
@@ -285,7 +285,7 @@ afk.new(5)
 			onAiming(aiming)
 		end)
 
-afk.new(10)
+afk.new(210)
 		:register("ON_CHANGE", function(toggle)
 			if toggle then
 				animatedText.setText("afk", { text = "Zzz", color = "#605b85" })

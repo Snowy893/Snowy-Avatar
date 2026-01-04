@@ -28,6 +28,7 @@ function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     module.afkCheckTickRate = afkCheckTickRate or 5
     module.delay = secondsUntilAfk * module.afkCheckTickRate
     module.includeRotation = includeRotation or true
+    module.didSneakChange = false
 
     module.events = {
         ON_CHANGE = util.functionTable(),
@@ -56,7 +57,7 @@ end
 ---@return boolean
 local function afkEval(afk)
     local posUnchanged = afk.position == afk.oldPosition
-    local isAfk = posUnchanged and (player:getPose() ~= "SLEEPING")
+    local isAfk = posUnchanged and (player:getPose() ~= "SLEEPING") and not afk.didSneakChange
     afk.oldPosition = afk.position
     afk.position = player:getPos()
 
@@ -78,7 +79,7 @@ events.TICK:register(function()
 
     for i, afk in ipairs(Afk.ALL) do
         if (time + i) % afk.afkCheckTickRate == 0 then
-            if not afk.didSneakChange and afkEval(afk) then
+            if afkEval(afk) then
                 afk.afkTime = afk.afkTime + 1
             else
                 afk.didSneakChange = false
