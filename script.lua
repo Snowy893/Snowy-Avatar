@@ -130,6 +130,12 @@ skullCreeperEyes:setPrimaryRenderType("EMISSIVE")
 
 ------------------------------------------------------------------
 
+if client.isModLoaded("jigcompats") and client.isModLoaded("create") then
+	
+end
+
+------------------------------------------------------------------
+
 smoothie:newEye(eyes)
 		:leftOffsetStrength(0.25)
 		:rightOffsetStrength(0.25)
@@ -142,7 +148,6 @@ periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
 		end)
 		:timing(100, 300)
 		:register()
-		
 
 ------------------------------------------------------------------
 
