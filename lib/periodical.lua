@@ -1,12 +1,12 @@
 ---@class Periodical
-local periodical = {}
-periodical.objs = 0
+local Periodical = {}
+Periodical.objs = 0
 
 ---@overload fun(func)
 ---@param func function
 ---@param eventType string
 ---@return Periodical.Obj
-function periodical:new(func, eventType)
+function Periodical:new(func, eventType)
     ---@class Periodical.Obj
     local module = {}
 
@@ -37,7 +37,7 @@ function periodical:new(func, eventType)
     ---@param minTicks integer
     ---@param maxTicks integer
     ---@return Periodical.Obj
-    function module:timing(minTicks, maxTicks) return module.setTiming(minTicks, maxTicks) end --- Alias
+    function module:timing(minTicks, maxTicks) return module:setTiming(minTicks, maxTicks) end --- Alias
 
     ---@param cond function
     ---@return Periodical.Obj
@@ -50,10 +50,12 @@ function periodical:new(func, eventType)
     ---@return Periodical.Obj
     function module:condition(cond) return module:setCondition(cond) end --- Alias
 
+    ---@return Periodical.RegisteredObj
     function module:register()
-        local mod = {}
+        ---@class Periodical.RegisteredObj
+        local registeredModule = {}
 
-        module.name = "Periodical."..tostring(periodical.objs+1)
+        module.name = "Periodical."..tostring(Periodical.objs+1)
         
         events[module.type]:register(function()
             if module.conditionFunc() then
@@ -65,17 +67,18 @@ function periodical:new(func, eventType)
             end
         end, module.name)
         
-        function mod:unRegister()
+        ---@return Periodical.Obj
+        function registeredModule:unRegister()
             events[module.type]:remove(module.name)
-            periodical.objs = periodical.objs - 1
+            Periodical.objs = Periodical.objs - 1
             module.name = nil
             return module
         end
 
-        return mod
+        return registeredModule
     end
 
     return module:setCondition(world.exists):setTiming(100)
 end
 
-return periodical
+return Periodical
