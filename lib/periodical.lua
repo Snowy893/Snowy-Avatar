@@ -1,6 +1,8 @@
 ---@class Periodical
 local Periodical = {}
-Periodical.objs = 0
+Periodical.registeredEvents = {}
+---@type Periodical.Obj[]
+Periodical.objs = {}
 
 ---@overload fun(func)
 ---@param func function
@@ -55,23 +57,28 @@ function Periodical:new(func, eventType)
         ---@class Periodical.RegisteredObj
         local registeredModule = {}
 
-        module.name = "Periodical."..tostring(Periodical.objs+1)
-        
-        events[module.type]:register(function()
-            if module.conditionFunc() then
-                module.tickCounter = module.tickCounter - 1
-                if module.tickCounter == 0 then
-                    module.func()
-                    module:resetTickCounter()
+        if Periodical.registeredEvents[module.type] == nil then
+            Periodical.objs[module.type] = {}
+            Periodical.registeredEvents[module.type] = events[module.type]:register(function()
+                for _, obj in pairs(Periodical.objs[module.type]) do
+                    if obj.conditionFunc() then
+                        obj.tickCounter = obj.tickCounter - 1
+                        if obj.tickCounter == 0 then
+                            obj.func()
+                            obj:resetTickCounter()
+                        end
+                    end
                 end
-            end
-        end, module.name)
+            end)
+        end
+
+        module.index = #Periodical.objs[module.type] + 1
+
+        table.insert(Periodical.objs[module.type], module.index, module)
         
         ---@return Periodical.Obj
         function registeredModule:unRegister()
-            events[module.type]:remove(module.name)
-            Periodical.objs = Periodical.objs - 1
-            module.name = nil
+            table.remove(Periodical.objs, module.index)
             return module
         end
 
