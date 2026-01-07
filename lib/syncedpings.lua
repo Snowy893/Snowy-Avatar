@@ -2,7 +2,6 @@
 local SyncedPings = {}
 ---@type SyncedPings[]
 SyncedPings.ALL = {}
-
 SyncedPings.ticks = 200
 
 ---@param pingFunc function
@@ -18,7 +17,7 @@ function SyncedPings:new(pingFunc, ...)
     end
 end
 
-events.TICK:register(function ()
+events.WORLD_TICK:register(function ()
     for i, sPing in ipairs(SyncedPings.ALL) do
         if world.getTime() % (SyncedPings.ticks + i) == 0 then
             sPing.pingFunc(sPing.args)
