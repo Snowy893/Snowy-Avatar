@@ -9,7 +9,7 @@ local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
 local colorParts = require "lib.colorparts"
 local patpat = require "lib.thirdparty.patpat"
-local syncedpings = require "lib.syncedpings"
+local syncedPings = require "lib.syncedpings"
 --#endregion
 local root = models.model.root
 local head = root.Torso.Head
@@ -118,7 +118,7 @@ animatedText.new("afk", body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
 animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
     "BILLBOARD", "")
 
-syncedpings.ticks = 100
+syncedPings.ticks = 100
 
 vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
@@ -180,7 +180,9 @@ if host:isHost() then
 
 	function pings.creeper()
 		CreeperEyesVisible(true)
-		sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
+		if player:isLoaded() then
+			sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
+		end
 		animations.model.creeper:play()
 	end
 
@@ -196,7 +198,7 @@ if host:isHost() then
 		:title("Sad Chair")
 		:item("minecraft:smooth_quartz_stairs")
 		:hoverColor(1, 0, 1)
-        :onToggle(syncedpings:new(pings.sadChair, false))
+        :onToggle(syncedPings:new(pings.sadChair, false))
 
 	page:newAction()
 		:title("Creeper")
