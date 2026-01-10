@@ -3,12 +3,12 @@ local smoothie = require "lib.thirdparty.Smoothie"
 local animatedText = require "lib.thirdparty.animatedText"
 local depthEffect = require "lib.thirdparty.depth_effect"
 local runLater = require "lib.thirdparty.runLater"
+local patpat = require "lib.thirdparty.patpat"
 local util = require "lib.util"
 local afk = require "lib.afk"
 local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
 local colorParts = require "lib.colorparts"
-local patpat = require "lib.thirdparty.patpat"
 local syncedPings = require "lib.syncedpings"
 --#endregion
 local root = models.model.root
