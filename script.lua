@@ -177,7 +177,7 @@ if host:isHost() then
 		animations.model.creeper:play()
 	end
 
-	if not util.compareVersion("1.20.5") then
+	if util.compareVersion("1.20.5") == false then
 		---@param toggle boolean
 		local function notchShader(toggle)
 			if toggle then

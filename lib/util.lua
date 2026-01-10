@@ -48,6 +48,7 @@ end
 ---Thanks `user973713` on stackoverflow!
 ---@param inputStr string
 ---@param seperator string
+---@return ...
 function util.splitString(inputStr, seperator)
     if seperator == nil then
         seperator = "%s"
@@ -59,9 +60,10 @@ function util.splitString(inputStr, seperator)
     return table.unpack(t)
 end
 
----Returns false if it's a non-standard Minecraft version (e.g., snapshots)
+---Checks if `targetVersion` is greater than or equal to `currentVersion`. Returns nil if it's a non-standard Minecraft version (e.g., snapshots)
 ---@param targetVersion string
 ---@param currentVersion? string
+---@return boolean?
 function util.compareVersion(targetVersion, currentVersion)
     local version = currentVersion or client.getVersion()
     local condition = false
@@ -69,7 +71,7 @@ function util.compareVersion(targetVersion, currentVersion)
     local _, update, hotfix = util.splitString(version, ".")
     update = tonumber(update)
     if not update then
-        return false
+        return nil
     end
     hotfix = tonumber(hotfix)
 
