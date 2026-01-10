@@ -164,15 +164,6 @@ if host:isHost() then
 	action_wheel:setPage(page)
 
 	---@param toggle boolean
-	local function notchShader(toggle)
-		if toggle then
-			renderer:setPostEffect("notch")
-		else
-			renderer:setPostEffect()
-		end
-	end
-
-	---@param toggle boolean
 	function pings.sadChair(toggle)
 		sadChair:setVisible(toggle)
 		animations.model.sadChair:setPlaying(toggle)
@@ -186,13 +177,22 @@ if host:isHost() then
 		animations.model.creeper:play()
 	end
 
-	page:setKeepSlots(false)
+	if not util.compareVersion("1.20.5") then
+		---@param toggle boolean
+		local function notchShader(toggle)
+			if toggle then
+				renderer:setPostEffect("notch")
+			else
+				renderer:setPostEffect()
+			end
+		end
 
-	page:newAction()
-		:title("Dither")
-		:item("minecraft:apple")
-		:hoverColor(1, 0, 1)
-		:onToggle(notchShader)
+		page:newAction()
+			:title("Dither")
+			:item("minecraft:apple")
+			:hoverColor(1, 0, 1)
+			:onToggle(notchShader)
+	end
 
 	page:newAction()
 		:title("Sad Chair")

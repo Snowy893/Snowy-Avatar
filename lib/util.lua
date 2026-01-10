@@ -45,6 +45,47 @@ function util.functionTable(tbl, metaTable)
     return setmetatable(t, mtbl)
 end
 
+---Thanks `user973713` on stackoverflow!
+---@param inputStr string
+---@param seperator string
+function util.splitString(inputStr, seperator)
+    if seperator == nil then
+        seperator = "%s"
+    end
+    local t = {}
+    for str in string.gmatch(inputStr, "([^" .. seperator .. "]+)") do
+        table.insert(t, str)
+    end
+    return table.unpack(t)
+end
+
+---Returns false if it's a non-standard Minecraft version (e.g., snapshots)
+---@param targetVersion string
+---@param currentVersion? string
+function util.compareVersion(targetVersion, currentVersion)
+    local version = currentVersion or client.getVersion()
+    local condition = false
+
+    local _, update, hotfix = util.splitString(version, ".")
+    update = tonumber(update)
+    if not update then
+        return false
+    end
+    hotfix = tonumber(hotfix)
+
+    local _, targetUpdate, targetHotfix = util.splitString(targetVersion, ".")
+    targetUpdate = tonumber(targetUpdate)
+    if targetUpdate then
+        condition = update >= targetUpdate
+    end
+    targetHotfix = tonumber(targetHotfix)
+    if targetHotfix then
+        condition = condition and hotfix >= targetHotfix
+    end
+
+    return condition
+end
+
 ---@param fromPage Page
 ---@param toPage Page
 ---@param title string
