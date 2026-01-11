@@ -9,7 +9,6 @@ local afk = require "lib.afk"
 local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
 local colorParts = require "lib.colorparts"
-local syncedPings = require "lib.syncedpings"
 --#endregion
 local root = models.model.root
 local head = root.Torso.Head
@@ -23,6 +22,7 @@ local sadChair = root.SadChair
 
 local isAfk = false
 
+---@param toggle boolean
 local onSleep = util.onChange(function (toggle)
 	animations.model.afkLoop:setPlaying(toggle)
 	if toggle then
@@ -49,6 +49,7 @@ local onVehicle = util.onChange(function(vehicle)
 	-- -- models.model.boat:setVisible(isBoat and isDriving)
 end)
 
+---@param toggle boolean
 local onAiming = util.onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
@@ -57,7 +58,8 @@ local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
 ---@type auria.depth_effect.obj[]
 local depthObjects = {}
----@type table[]
+---@param parts ModelPart[]
+---@return table[]
 local layerObjects = (function(parts)
 	local tbl = {}
 	for _, part in pairs(parts) do
@@ -77,6 +79,7 @@ end)({ eyes.RightEye, eyes.LeftEye, })
 
 local initalDepthIncrement = 16
 
+---@param toggle boolean
 local onPermissionChange = util.onChange(function(toggle)
 	if toggle then
 		local index = 0
@@ -118,8 +121,6 @@ animatedText.new("afk", body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
 animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
     "BILLBOARD", "")
 
-syncedPings.ticks = 100
-
 vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
 
@@ -151,60 +152,12 @@ periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
 ------------------------------------------------------------------
 
 ---This is global because it runs in `animations.model.creeper`'s instruction keyframe
+---@param toggle boolean
 function CreeperEyesVisible(toggle)
 	eyes:setVisible(not toggle)
 	creeperEyes:setVisible(toggle)
 	skullEyes:setVisible(not toggle)
 	skullCreeperEyes:setVisible(toggle)
-end
-
-if host:isHost() then
-	local page = action_wheel:newPage()
-
-	action_wheel:setPage(page)
-
-	---@param toggle boolean
-	function pings.sadChair(toggle)
-		sadChair:setVisible(toggle)
-		animations.model.sadChair:setPlaying(toggle)
-	end
-
-	function pings.creeper()
-		CreeperEyesVisible(true)
-		if player:isLoaded() then
-			sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
-		end
-		animations.model.creeper:play()
-	end
-
-	if util.compareVersion("1.20.5") == false then
-		---@param toggle boolean
-		local function notchShader(toggle)
-			if toggle then
-				renderer:setPostEffect("notch")
-			else
-				renderer:setPostEffect()
-			end
-		end
-
-		page:newAction()
-			:title("Dither")
-			:item("minecraft:apple")
-			:hoverColor(1, 0, 1)
-			:onToggle(notchShader)
-	end
-
-	page:newAction()
-		:title("Sad Chair")
-		:item("minecraft:smooth_quartz_stairs")
-		:hoverColor(1, 0, 1)
-        :onToggle(syncedPings:new(pings.sadChair, false))
-
-	page:newAction()
-		:title("Creeper")
-		:item("minecraft:creeper_head")
-		:hoverColor(1, 0, 1)
-		:onLeftClick(pings.creeper)
 end
 
 ------------------------------------------------------------------

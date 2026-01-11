@@ -60,34 +60,6 @@ function util.splitString(inputStr, seperator)
     return table.unpack(t)
 end
 
----Checks if `targetVersion` is greater than or equal to `currentVersion`. Returns nil if it's a non-standard Minecraft version (e.g., snapshots)
----@param targetVersion string
----@param currentVersion? string
----@return boolean?
-function util.compareVersion(targetVersion, currentVersion)
-    local version = currentVersion or client.getVersion()
-    local condition = false
-
-    local _, update, hotfix = util.splitString(version, ".")
-    update = tonumber(update)
-    if not update then
-        return nil
-    end
-    hotfix = tonumber(hotfix)
-
-    local _, targetUpdate, targetHotfix = util.splitString(targetVersion, ".")
-    targetUpdate = tonumber(targetUpdate)
-    if targetUpdate then
-        condition = update >= targetUpdate
-    end
-    targetHotfix = tonumber(targetHotfix)
-    if targetHotfix then
-        condition = condition and hotfix >= targetHotfix
-    end
-
-    return condition
-end
-
 ---@param fromPage Page
 ---@param toPage Page
 ---@param title string
