@@ -36,7 +36,7 @@ function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
         ON_TICK_NOT_AFK = util.functionTable(),
     }
 
-    module.onAfkChange = util.onChange(module.events.ON_CHANGE --[[@as function]])
+    module.onAfkChange = util.onChange(module.events.ON_CHANGE --[[@as fun(toggle: boolean)]])
 
     ---@class Afk.Obj
     local obj = {}

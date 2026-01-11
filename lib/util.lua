@@ -17,10 +17,10 @@ function util.toboolean(value)
     if value then return true else return false end
 end
 
----@overload fun(func)
----@param func function
----@param initialValue any
----@return function
+---@generic T
+---@param func fun(value: T, oldValue: T, ...)
+---@param initialValue? any
+---@return fun(value: T, ...)
 function util.onChange(func, initialValue)
     local oldValue = initialValue or nil
 
@@ -109,7 +109,7 @@ local permissionLevels = {
 }
 
 ---Returns true if the current permission level is greater than or equal to the input permission level
----@overload fun(targetLevel)
+---@overload fun(targetLevel: AvatarAPI.permissionLevel)
 ---@param targetLevel AvatarAPI.permissionLevel
 ---@param currentLevel AvatarAPI.permissionLevel
 ---@return boolean 
