@@ -18,7 +18,6 @@ local creeperEyes = head.CreeperEyes
 local skull = models.model.Skull
 local skullEyes = skull.Eyes2
 local skullCreeperEyes = skull.CreeperEyes2
-local sadChair = root.SadChair
 
 local isAfk = false
 
