@@ -10,14 +10,15 @@ local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
 local colorParts = require "lib.colorparts"
 --#endregion
-local root = models.model.root
-local head = root.Torso.Head
-local body = root.Torso.Waist.Body
-local eyes = head.Eyes
-local creeperEyes = head.CreeperEyes
-local skull = models.model.Skull
-local skullEyes = skull.Eyes2
-local skullCreeperEyes = skull.CreeperEyes2
+local model = models.model
+local root = model.root
+local head = root.torso.Head
+local body = root.torso.waist.Body
+local eyes = head.eyes
+local creeperEyes = head.creepereyes
+local skull = model.Skull
+local skullEyes = skull.eyes2
+local skullCreeperEyes = skull.creepereyes2
 
 local isAfk = false
 
