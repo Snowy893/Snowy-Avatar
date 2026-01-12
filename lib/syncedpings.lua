@@ -4,9 +4,10 @@ local SyncedPings = {}
 SyncedPings.ALL = {}
 SyncedPings.ticks = 200
 
----@param pingFunc function
----@param ... any
----@return function
+---@generic T
+---@param pingFunc fun(...: T?)
+---@param ... T?
+---@return fun(...: T?)
 function SyncedPings:new(pingFunc, ...)
     self.pingFunc = pingFunc
     self.args = ...
