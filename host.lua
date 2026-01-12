@@ -2,6 +2,8 @@ if not host:isHost() then return end
 --#region imports
 local syncedPings = require "lib.syncedpings"
 --#endregion
+---@type Minecraft.keyCode
+local unlockCursorKey = "key.mouse.5"
 local page = action_wheel:newPage()
 local sadChair = models.model.root.SadChair
 local hasSuperSecretShaders = client.compareVersions(client.getVersion(), "1.20.5") ~= 1
@@ -52,3 +54,11 @@ page:newAction()
     :item("minecraft:creeper_head")
     :hoverColor(1, 0, 1)
     :onLeftClick(pings.creeper)
+
+local isCursorUnlocked = false
+
+keybinds:newKeybind("unlockCursor", unlockCursorKey)
+    :onPress(function()
+        isCursorUnlocked = not isCursorUnlocked
+        host.unlockCursor = isCursorUnlocked
+    end)
