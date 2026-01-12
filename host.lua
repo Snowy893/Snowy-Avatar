@@ -1,10 +1,9 @@
 if not host:isHost() then return end
---#region imports
 local syncedPings = require "lib.syncedpings"
---#endregion
+
 local unlockCursorKey = "key.mouse.5" ---@type Minecraft.keyCode
 local page = action_wheel:newPage()
-local sadChair = models.model.root.SadChair
+local sadChair = models.model.root.sadchair
 local hasSuperSecretShaders = client.compareVersions(client.getVersion(), "1.20.5") ~= 1
 
 syncedPings.ticks = 20
