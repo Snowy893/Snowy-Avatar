@@ -59,7 +59,7 @@ local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 ---@type auria.depth_effect.obj[]
 local depthObjects = {}
 ---@param parts ModelPart[]
----@return table[]
+---@return ModelPart[][]
 local layerObjects = (function(parts)
 	local tbl = {}
 	for _, part in pairs(parts) do
@@ -84,16 +84,16 @@ local onPermissionChange = util.onChange(function(toggle)
 	if toggle then
 		local index = 0
 
-		for _, tbl in pairs(layerObjects) do
+		for _, parts in pairs(layerObjects) do
 			index = index + 1
 
 			runLater(index, function ()
 				local depthIncrement = initalDepthIncrement
 
-				for i, layer in ipairs(tbl) do
+				for i, layer in ipairs(parts) do
 					layer:setPos()
 
-					if tbl[i + 1] == nil then
+					if parts[i + 1] == nil then
 						depthIncrement = -initalDepthIncrement
 					end
 
@@ -123,16 +123,6 @@ animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
 
 vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
-
-skull:setVisible(true)
-sadChair:setVisible(false)
-creeperEyes:setVisible(false)
-skullCreeperEyes:setVisible(false)
-
-eyes:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
-skullEyes:setPrimaryRenderType("EMISSIVE")
-creeperEyes:setPrimaryRenderType("EYES")
-skullCreeperEyes:setPrimaryRenderType("EMISSIVE")
 
 ------------------------------------------------------------------
 

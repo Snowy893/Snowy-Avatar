@@ -1,8 +1,29 @@
 {
   "name": "Snowy",
   "description": "Snowy's Avatar",
-  "authors": [
-    "Snowy893"
-  ],
-  "color": "#27aae0"
+  "author": "Snowy893",
+  "color": "#27aae0",
+  "autoScripts": ["script", "host"],
+  "customizations": {
+    "model.root.Torso.Head.Eyes": {
+      "primaryRenderType": "CUTOUT_EMISSIVE_SOLID"
+    },
+    "model.root.Torso.Head.CreeperEyes": {
+      "primaryRenderType": "EYES",
+      "visible": false
+    },
+    "model.Skull": {
+      "visible": true
+    },
+    "model.Skull.Eyes2": {
+      "primaryRenderType": "EMISSIVE"
+    },
+    "model.Skull.CreeperEyes2": {
+      "primaryRenderType": "EMISSIVE",
+      "visible": false
+    },
+    "model.root.SadChair": {
+      "visible": false
+    }
+  }
 }

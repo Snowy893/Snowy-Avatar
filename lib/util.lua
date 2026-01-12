@@ -3,7 +3,9 @@ local util = {}
 
 ---Thank you `u/Serious-Accident8443`!
 ---@param value any
----@param cases table
+---@param cases {
+---     default: function,
+---}
 ---@return any
 function util.switch(value, cases)
     local match = cases[value] or cases.default or function() end
@@ -32,7 +34,7 @@ function util.onChange(func, initialValue)
     end
 end
 
----@param tbl? table
+---@param tbl? function[]
 ---@param metaTable? table
 ---@return FunctionTable
 function util.functionTable(tbl, metaTable)

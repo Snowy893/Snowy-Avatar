@@ -30,7 +30,12 @@ function colorParts:new(parts)
     ---| "depthBackground"
     ---| "background" -- Alias
 
-    ---@param tbl table
+    ---@param tbl {
+    ---     color: Vector3,
+    ---     type?: ColorParts.type,
+    ---     depthLayer?: string,
+    ---     layer?: string, -- Alias of depthLayer
+    ---}
     function module:color(tbl)
         tbl.type = tbl.type --[[@as ColorParts.type]]
 

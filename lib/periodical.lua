@@ -24,7 +24,7 @@ function Periodical:new(func, eventType)
         return module
     end
 
-    ---@overload fun(ticks)
+    ---@overload fun(ticks: integer)
     ---@param minTicks integer
     ---@param maxTicks integer
     ---@return Periodical.Obj
