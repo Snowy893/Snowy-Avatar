@@ -132,7 +132,14 @@ smoothie:newEye(eyes)
 	:topOffsetStrength(0.25)
 	:bottomOffsetStrength(0.25)
 
-periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
+function pings.blink()
+	animations.model.blink:play()
+end
+
+periodical:new({
+	func = pings.blink,
+	eventType = "WORLD_TICK",
+})
 	:condition(function()
 		return (not player:isLoaded()) or (not isAfk and player:getPose() ~= "SLEEPING")
 	end)
