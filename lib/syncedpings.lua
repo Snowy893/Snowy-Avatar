@@ -18,9 +18,10 @@ function SyncedPings:new(pingFunc, ...)
     end
 end
 
-events.WORLD_TICK:register(function ()
-    for i, sPing in ipairs(SyncedPings.ALL) do
-        if world.getTime() % (SyncedPings.ticks + i) == 0 then
+events.WORLD_TICK:register(function()
+    for i = 1, #SyncedPings.ALL do
+        local sPing = SyncedPings.ALL[i]
+        if world.getTime() % (SyncedPings.ticks + (i - 1)) == 0 then
             sPing.pingFunc(sPing.args)
         end
     end

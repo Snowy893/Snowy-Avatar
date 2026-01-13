@@ -77,7 +77,8 @@ events.TICK:register(function()
     local time = world.getTime()
     onSneakChange(player:isSneaking())
 
-    for i, afk in ipairs(Afk.ALL) do
+    for i = 1, #Afk.ALL do
+        local afk = Afk.ALL[i]
         if (time + i) % afk.afkCheckTickRate == 0 then
             if afkEval(afk) then
                 afk.afkTime = afk.afkTime + 1
