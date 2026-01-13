@@ -75,7 +75,7 @@ local layerObjects = (function(parts)
 		end
 	end
 	return tbl
-end)({ eyes.RightEye, eyes.LeftEye, })
+end)({ eyes.righteye, eyes.lefteye, })
 
 local initalDepthIncrement = 16
 
@@ -114,7 +114,7 @@ local onPermissionChange = util.onChange(function(toggle)
 	end
 end)
 
-local eyeColorParts = colorParts:new({ eyes.RightEye, eyes.LeftEye, skullEyes.RightEye2, skullEyes.LeftEye2 })
+local eyeColorParts = colorParts:new({ eyes.righteye, eyes.lefteye, skullEyes.righteye2, skullEyes.lefteye2 })
 
 animatedText.new("afk", body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
 	"BILLBOARD", "")
