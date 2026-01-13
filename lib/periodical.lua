@@ -4,31 +4,26 @@ Periodical.registeredEvents = {}
 ---@type Periodical.Obj[]
 Periodical.objs = {}
 
----@param constructor {
----     func: function?,
----     wrapFuncInPing: boolean,
----     eventType: string?,
----}
+---@overload fun(func: function)
+---@param func function
+---@param eventType string?
 ---@return Periodical.Obj
-function Periodical:new(constructor)
+function Periodical:new(func, eventType)
     ---@class Periodical.Obj
     local module = {}
 
-    if constructor.wrapFuncInPing then
-        local index = #pings + 1
-        table.insert(pings, index, constructor.func)
-        module.func = pings[index]
-    else
-        module.func = constructor.func
-    end
+    module.func = func
+    module.type = eventType or "TICK"
 
-    module.type = constructor.eventType or "TICK"
+    function pings.setTickCounter(ticks)
+        module.tickCounter = ticks
+    end
 
     function module:resetTickCounter()
         if module.maxTicks == nil or module.minTicks == module.maxTicks then
             module.tickCounter = module.minTicks
         else
-            module.tickCounter = math.random(module.minTicks, module.maxTicks)
+            pings.setTickCounter(math.random(module.minTicks, module.maxTicks))
         end
         return module
     end
