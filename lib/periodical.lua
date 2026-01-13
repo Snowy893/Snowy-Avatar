@@ -45,14 +45,14 @@ function Periodical:new(func, eventType)
     ---@return Periodical.Obj
     function module:timing(minTicks, maxTicks) return module:setTiming(minTicks, maxTicks) end --- Alias
 
-    ---@param cond function
+    ---@param cond fun(): boolean
     ---@return Periodical.Obj
     function module:setCondition(cond)
         module.conditionFunc = cond
         return module
     end
 
-    ---@param cond function
+    ---@param cond fun(): boolean
     ---@return Periodical.Obj
     function module:condition(cond) return module:setCondition(cond) end --- Alias
 

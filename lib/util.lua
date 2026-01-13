@@ -4,7 +4,7 @@ local util = {}
 ---Thank you `u/Serious-Accident8443`!
 ---@param value any
 ---@param cases {
----     default: function,
+---     default: function?,
 ---}
 ---@return any
 function util.switch(value, cases)
