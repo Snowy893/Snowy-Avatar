@@ -37,8 +37,6 @@ function colorParts:new(parts)
     ---     layer?: string, -- Alias of depthLayer
     ---}
     function module:color(tbl)
-        tbl.type = tbl.type --[[@as ColorParts.type]]
-
         local cases = {}
 
         if not hasDepthEffect then
