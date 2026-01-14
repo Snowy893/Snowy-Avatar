@@ -6,7 +6,7 @@ local page = action_wheel:newPage()
 local sadChair = models.model.root.sadchair
 local hasSuperSecretShaders = client.compareVersions(client.getVersion(), "1.20.5") ~= 1
 
-syncedPings.ticks = 20
+syncedPings.ticks = 4 * 20
 
 action_wheel:setPage(page)
 
