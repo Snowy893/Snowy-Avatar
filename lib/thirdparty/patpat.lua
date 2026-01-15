@@ -11,7 +11,11 @@ local config = {
       "minecraft:player_head", "minecraft:player_wall_head"
    },
    disabledEntities = { -- list of entites that will be ignored when trying to pat them
-      "minecraft:boat", "minecraft:chest_boat", "minecraft:minecart", "minecraft:area_effect_cloud", "minecraft:interaction"
+      "minecraft:boat",
+      "minecraft:chest_boat",
+      "minecraft:minecart",
+      "minecraft:area_effect_cloud",
+      "minecraft:interaction",
    },
 
    noPats = false,

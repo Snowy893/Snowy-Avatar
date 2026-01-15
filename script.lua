@@ -311,6 +311,6 @@ table.insert(patpat.head.oncePat, function(_, headPos)
 	sounds:playSound("minecraft:entity.bat.hurt", headPos, 0.15)
 end)
 
-table.insert(patpat.oncePat, function()
+table.insert(patpat.player.oncePat, function()
 	sounds:playSound("minecraft:entity.cat.purr", player:getPos(), 0.15)
 end)
