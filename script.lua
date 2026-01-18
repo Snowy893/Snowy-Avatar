@@ -19,6 +19,10 @@ local creeperEyes = head.creepereyes
 local skull = model.Skull
 local skullEyes = skull.eyes2
 local skullCreeperEyes = skull.creepereyes2
+local rightArm = root.torso.waist.RightArm
+local leftArm = root.torso.waist.LeftArm
+local rightItemPivot = rightArm.RightItemPivot
+local leftItemPivot = leftArm.LeftItemPivot
 
 local isAfk = false
 
@@ -52,6 +56,26 @@ end)
 ---@param toggle boolean
 local onAiming = util.onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
+end)
+
+---@param toggle boolean
+---@param inLeftHand boolean
+local onAimingBowWhileCrouching = util.onChange(function(toggle, _, inLeftHand)
+	if toggle then
+		local rot = vec(15, 50, 15)
+		if not inLeftHand then
+			rightItemPivot:setRot(rightItemPivot:getRot():add(rot))
+			rightItemPivot:setPos(rightItemPivot:getPos():add(vec(-2.5, -3, -1)))
+		elseif inLeftHand then
+			leftItemPivot:setRot(leftItemPivot:getRot():sub(rot))
+			leftItemPivot:setPos(leftItemPivot:getPos():add(vec(2.5, -3, 1)))
+		end
+	else
+		rightItemPivot:setRot()
+		rightItemPivot:setPos()
+		leftItemPivot:setRot()
+		leftItemPivot:setPos()
+	end
 end)
 
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
@@ -160,6 +184,9 @@ function events.ENTITY_INIT()
 			contents = player:getName(),
 		},
 	})
+	function events.ITEM_RENDER(item, mode, pos, rot, scale, leftHanded)
+		onAimingBowWhileCrouching(item:getUseAction() == "BOW" and player:isUsingItem() and player:isCrouching(), leftHanded)
+	end
 end
 
 function events.TICK()
@@ -168,15 +195,15 @@ function events.TICK()
 end
 
 function events.RENDER(delta)
-    if player:getPose() == "SLEEPING" then
-        for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
-            animatedText.transform(
-                "sleeping",
-                vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
-                v
-            )
-        end
-    end
+	if player:getPose() == "SLEEPING" then
+		for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
+			animatedText.transform(
+				"sleeping",
+				vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
+				v
+			)
+		end
+	end
 	
     local hasPermission = util.comparePermissionLevel("HIGH")
 	
