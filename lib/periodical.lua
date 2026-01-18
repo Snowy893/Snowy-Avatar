@@ -15,6 +15,8 @@ function Periodical:new(func, eventType)
     module.func = func
     module.type = eventType or "TICK"
 
+    if events[module.type] == nil then error("Event \"" .. module.type .. "\" does not exist!") end
+
     function pings.setTickCounter(ticks)
         module.tickCounter = ticks
     end
