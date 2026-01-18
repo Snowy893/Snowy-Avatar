@@ -1,5 +1,4 @@
 --#region imports
-local smoothie = require "lib.thirdparty.Smoothie"
 local animatedText = require "lib.thirdparty.animatedText"
 local depthEffect = require "lib.thirdparty.depth_effect"
 local runLater = require "lib.thirdparty.runLater"
