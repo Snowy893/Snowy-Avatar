@@ -80,13 +80,13 @@ end)
 
 local onSpyglass = util.onChange(function(toggle)
 	if toggle == "truefalse" then
-		eyes.righteye:setPos(vec(0, 0, -11.087))
+		eyes.righteye:setPos(vec(0, 0, -11.2))
 		eyes.righteye:setScale(vec(1.95, 0.95, 1))
 		eyes.lefteye:setPos()
 		eyes.lefteye:setScale()
 	elseif toggle == "truetrue" then
-		eyes.lefteye:setPos(vec(0, 0, -11.4))
-		eyes.lefteye:setScale(vec(2, 1, 1))
+		eyes.lefteye:setPos(vec(0, 0, -11.2))
+		eyes.lefteye:setScale(vec(1.95, 0.95, 1))
 		eyes.righteye:setPos()
 		eyes.righteye:setScale()
 	else
@@ -106,19 +106,21 @@ local depthObjects = {}
 local layerObjects = (function(parts)
 	local tbl = {}
 	for _, part in pairs(parts) do
-		tbl[part:getName()] = {}
+		local name = part:getName()
+		
+		tbl[name] = {}
 
 		local index = 1
 		local layer = part["layer" .. index] or part["depthLayer" .. index]
 
 		while layer do
-			table.insert(tbl[part:getName()], layer)
+			table.insert(tbl[name], layer)
 			index = index + 1
 			layer = part["layer" .. index] or part["depthLayer" .. index]
 		end
 	end
 	return tbl
-end)({ eyes.righteye, eyes.lefteye, })
+end)({ eyes.righteye, eyes.lefteye })
 
 local initalDepthIncrement = 16
 
