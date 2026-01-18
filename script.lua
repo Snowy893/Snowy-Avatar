@@ -62,12 +62,12 @@ local onAimingBow = util.onChange(function(toggle)
 	local rot = vec(15, 50, 15)
 	if toggle == "truefalse" then
 		rightItemPivot:setRot(rightItemPivot:getRot():add(rot))
-		rightItemPivot:setPos(rightItemPivot:getPos():add(vec(-2.5, -3, -1)))
+		rightItemPivot:setPos(rightItemPivot:getPos():add(vec(-2.5, 0, -1)))
 		leftItemPivot:setRot()
 		leftItemPivot:setPos()
 	elseif toggle == "truetrue" then
 		leftItemPivot:setRot(leftItemPivot:getRot():add(vec(rot.x, -rot.y, -rot.z)))
-		leftItemPivot:setPos(leftItemPivot:getPos():add(vec(2.5, -3, -1)))
+		leftItemPivot:setPos(leftItemPivot:getPos():add(vec(2.5, 0, -1)))
 		rightItemPivot:setRot()
 		rightItemPivot:setPos()
 	else
