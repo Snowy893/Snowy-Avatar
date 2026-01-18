@@ -16,6 +16,7 @@ local config = {
       "minecraft:minecart",
       "minecraft:area_effect_cloud",
       "minecraft:interaction",
+      "minecraft:arrow",
    },
 
    noPats = false,
