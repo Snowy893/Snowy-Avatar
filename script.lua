@@ -58,18 +58,18 @@ local onAiming = util.onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
----@param toggle boolean
----@param inLeftHand boolean
-local onAimingBowWhileCrouching = util.onChange(function(toggle, _, inLeftHand)
-	if toggle then
-		local rot = vec(15, 50, 15)
-		if not inLeftHand then
-			rightItemPivot:setRot(rightItemPivot:getRot():add(rot))
-			rightItemPivot:setPos(rightItemPivot:getPos():add(vec(-2.5, -3, -1)))
-		elseif inLeftHand then
-			leftItemPivot:setRot(leftItemPivot:getRot():sub(rot))
-			leftItemPivot:setPos(leftItemPivot:getPos():add(vec(2.5, -3, 1)))
-		end
+local onAimingBow = util.onChange(function(toggle)
+	local rot = vec(15, 50, 15)
+	if toggle == "truefalse" then
+		rightItemPivot:setRot(rightItemPivot:getRot():add(rot))
+		rightItemPivot:setPos(rightItemPivot:getPos():add(vec(-2.5, -3, -1)))
+		leftItemPivot:setRot()
+		leftItemPivot:setPos()
+	elseif toggle == "truetrue" then
+		leftItemPivot:setRot(leftItemPivot:getRot():sub(rot))
+		leftItemPivot:setPos(leftItemPivot:getPos():add(vec(1, -3, 2.5)))
+		rightItemPivot:setRot()
+		rightItemPivot:setPos()
 	else
 		rightItemPivot:setRot()
 		rightItemPivot:setPos()
@@ -185,7 +185,10 @@ function events.ENTITY_INIT()
 		},
 	})
 	function events.ITEM_RENDER(item, mode, pos, rot, scale, leftHanded)
-		onAimingBowWhileCrouching(item:getUseAction() == "BOW" and player:isUsingItem() and player:isCrouching(), leftHanded)
+		local usingBow = item:getUseAction() == "BOW" and player:isUsingItem()
+		local crouching = player:isCrouching()
+
+		onAimingBow(tostring(usingBow and crouching)..tostring(leftHanded))
 	end
 end
 
