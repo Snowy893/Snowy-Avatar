@@ -78,6 +78,25 @@ local onAimingBow = util.onChange(function(toggle)
 	end
 end)
 
+local onSpyglass = util.onChange(function(toggle)
+	if toggle == "truefalse" then
+		eyes.righteye:setPos(vec(0, 0, -11.087))
+		eyes.righteye:setScale(vec(1.95, 0.95, 1))
+		eyes.lefteye:setPos()
+		eyes.lefteye:setScale()
+	elseif toggle == "truetrue" then
+		eyes.lefteye:setPos(vec(0, 0, -11.4))
+		eyes.lefteye:setScale(vec(2, 1, 1))
+		eyes.righteye:setPos()
+		eyes.righteye:setScale()
+	else
+		eyes.righteye:setPos()
+		eyes.righteye:setScale()
+		eyes.lefteye:setPos()
+		eyes.lefteye:setScale()
+	end
+end)
+
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
 ---@type auria.depth_effect.obj[]
@@ -149,12 +168,6 @@ vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
 
 ------------------------------------------------------------------
-
-smoothie:newEye(eyes)
-	:leftOffsetStrength(0.25)
-	:rightOffsetStrength(0.25)
-	:topOffsetStrength(0.25)
-	:bottomOffsetStrength(0.25)
 
 periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
 	:condition(function()
@@ -245,18 +258,27 @@ afk.new(180)
 		head:setOffsetRot(math.sin(world.getTime(delta) / 14))
 	end)
 	:register("ON_TICK_NOT_AFK", function()
-		local aiming = false
-		local heldItem = player:getHeldItem()
-		local heldOffhandItem = player:getHeldItem(true)
+        local aiming = false
+		local leftHanded = player:isLeftHanded()
+		local heldItemRight = player:getHeldItem(leftHanded)
+		local heldItemLeft = player:getHeldItem(not leftHanded)
 
-		if util.isItemEmpty(heldItem) and util.isItemEmpty(heldOffhandItem) then
+		if util.isItemEmpty(heldItemRight) and util.isItemEmpty(heldItemLeft) then
 			goto continue
 		end
 
-		aiming = util.isCrossbowCharged(heldItem) or util.isCrossbowCharged(heldOffhandItem)
+		aiming = util.isCrossbowCharged(heldItemRight) or util.isCrossbowCharged(heldItemLeft)
 
-		if not aiming then
-			aiming = util.isRangedWeaponDrawn(heldItem) or util.isRangedWeaponDrawn(heldOffhandItem)
+        if not aiming then
+            aiming = util.isRangedWeaponDrawn(heldItemRight) or util.isRangedWeaponDrawn(heldItemLeft)
+        end
+
+		if player:isUsingItem() and heldItemRight:getUseAction() == "SPYGLASS" then
+			onSpyglass("truefalse")
+		elseif player:isUsingItem() and heldItemLeft:getUseAction() == "SPYGLASS" then
+			onSpyglass("truetrue")
+		else
+			onSpyglass("falsefalse")
 		end
 
 		::continue::
