@@ -120,27 +120,21 @@ local layerObjects = (function(parts)
 	return tbl
 end)({ eyes.righteye, eyes.lefteye })
 
-local depthLayerSetup = (function()
-	local initalDepthIncrement = 16
+local initalDepthIncrement = 16
 
-	local index = 0
+for _, obj in pairs(layerObjects) do
+	local depthIncrement = initalDepthIncrement
 
-	for _, obj in pairs(layerObjects) do
-		index = index + 1
-
-		local depthIncrement = initalDepthIncrement
-
-		for i, layer in ipairs(obj) do
-			if obj[i + 1] == nil then
-				depthIncrement = -initalDepthIncrement
-			end
-
-			table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
-
-			depthIncrement = depthIncrement * 2
+	for i, layer in ipairs(obj) do
+		if obj[i + 1] == nil then
+			depthIncrement = -initalDepthIncrement
 		end
+
+		table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+
+		depthIncrement = depthIncrement * 2
 	end
-end)()
+end
 
 local eyeColorParts = colorParts:new({ eyes.righteye, eyes.lefteye, skullEyes.righteye2, skullEyes.lefteye2 })
 
