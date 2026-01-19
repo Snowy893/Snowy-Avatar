@@ -1,7 +1,6 @@
 --#region imports
 local animatedText = require "lib.thirdparty.animatedText"
 local depthEffect = require "lib.thirdparty.depth_effect"
-local runLater = require "lib.thirdparty.runLater"
 local patpat = require "lib.thirdparty.patpat"
 local util = require "lib.util"
 local afk = require "lib.afk"
@@ -121,20 +120,18 @@ local layerObjects = (function(parts)
 	return tbl
 end)({ eyes.righteye, eyes.lefteye })
 
-local initalDepthIncrement = 16
+local depthLayerSetup = (function()
+	local initalDepthIncrement = 16
 
-local index = 0
+	local index = 0
 
-for _, parts in pairs(layerObjects) do
-	index = index + 1
+	for _, obj in pairs(layerObjects) do
+		index = index + 1
 
-	runLater(index, function()
 		local depthIncrement = initalDepthIncrement
 
-		for i, layer in ipairs(parts) do
-			layer:setPos()
-
-			if parts[i + 1] == nil then
+		for i, layer in ipairs(obj) do
+			if obj[i + 1] == nil then
 				depthIncrement = -initalDepthIncrement
 			end
 
@@ -142,8 +139,8 @@ for _, parts in pairs(layerObjects) do
 
 			depthIncrement = depthIncrement * 2
 		end
-	end)
-end
+	end
+end)()
 
 local eyeColorParts = colorParts:new({ eyes.righteye, eyes.lefteye, skullEyes.righteye2, skullEyes.lefteye2 })
 
