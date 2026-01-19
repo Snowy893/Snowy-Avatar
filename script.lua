@@ -123,40 +123,27 @@ end)({ eyes.righteye, eyes.lefteye })
 
 local initalDepthIncrement = 16
 
----@param toggle boolean
-local onPermissionChange = util.onChange(function(toggle)
-	if toggle then
-		local index = 0
+local index = 0
 
-		for _, parts in pairs(layerObjects) do
-			index = index + 1
+for _, parts in pairs(layerObjects) do
+	index = index + 1
 
-			runLater(index, function ()
-				local depthIncrement = initalDepthIncrement
+	runLater(index, function()
+		local depthIncrement = initalDepthIncrement
 
-				for i, layer in ipairs(parts) do
-					layer:setPos()
+		for i, layer in ipairs(parts) do
+			layer:setPos()
 
-					if parts[i + 1] == nil then
-						depthIncrement = -initalDepthIncrement
-					end
+			if parts[i + 1] == nil then
+				depthIncrement = -initalDepthIncrement
+			end
 
-					table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+			table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
 
-					depthIncrement = depthIncrement * 2
-				end
-			end)
+			depthIncrement = depthIncrement * 2
 		end
-	else
-		for _, depthObj in pairs(depthObjects) do
-			depthObj:remove()
-		end
-
-		depthObjects = {}
-
-		return
-	end
-end)
+	end)
+end
 
 local eyeColorParts = colorParts:new({ eyes.righteye, eyes.lefteye, skullEyes.righteye2, skullEyes.lefteye2 })
 
@@ -222,22 +209,9 @@ function events.RENDER(delta)
 		end
 	end
 	
-    local hasPermission = util.comparePermissionLevel("HIGH")
-	
-    onPermissionChange(hasPermission)
-	
-	if hasPermission then
-		for i, depthObject in ipairs(depthObjects) do
-			local depth = math.cos(world.getTime(delta) * 0.1 + i) * 4
-			depthObject:setDepth(depth)
-		end
-	else
-		for _, tbl in pairs(layerObjects) do
-			for i, layer in ipairs(tbl) do
-				local depth = math.cos(world.getTime(delta) * 0.1 + i) / 6
-				layer:setPos(vec(layer:getPos().x, layer:getPos().y, depth))
-			end
-		end
+	for i, depthObject in ipairs(depthObjects) do
+		local depth = math.cos(world.getTime(delta) * 0.1 + i) * 4
+		depthObject:setDepth(depth)
 	end
 end
 
