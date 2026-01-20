@@ -247,7 +247,8 @@ afk.new(180)
         local aiming = false
 		local leftHanded = player:isLeftHanded()
 		local heldItemRight = player:getHeldItem(leftHanded)
-		local heldItemLeft = player:getHeldItem(not leftHanded)
+        local heldItemLeft = player:getHeldItem(not leftHanded)
+		local usingItem = player:isUsingItem()
 
 		if util.isItemEmpty(heldItemRight) and util.isItemEmpty(heldItemLeft) then
 			goto continue
@@ -259,15 +260,17 @@ afk.new(180)
             aiming = util.isRangedWeaponDrawn(heldItemRight) or util.isRangedWeaponDrawn(heldItemLeft)
         end
 
-		if player:isUsingItem() then
-			if heldItemRight:getUseAction() == "SPYGLASS" then
-				onSpyglass("RIGHT")
-			elseif heldItemLeft:getUseAction() == "SPYGLASS" then
-				onSpyglass("LEFT")
+		local spyglassState = "NONE" ---@type HandedItemState
+
+		if usingItem then
+			if usingItem and heldItemRight:getUseAction() == "SPYGLASS" then
+				spyglassState = "RIGHT"
+			elseif usingItem and heldItemLeft:getUseAction() == "SPYGLASS" then
+				spyglassState = "LEFT"
 			end
-		else
-			onSpyglass("NONE")
 		end
+
+		onSpyglass(spyglassState)
 
 		::continue::
 		onAiming(aiming)
