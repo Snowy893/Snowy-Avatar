@@ -8,6 +8,7 @@ local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
 local colorParts = require "lib.colorparts"
 --#endregion
+--#region modelpart variables
 local model = models.model
 local root = model.root
 local head = root.torso.Head
@@ -21,8 +22,11 @@ local rightArm = root.torso.waist.RightArm
 local leftArm = root.torso.waist.LeftArm
 local rightItemPivot = rightArm.RightItemPivot
 local leftItemPivot = leftArm.LeftItemPivot
+--#endregion
 
 local isAfk = false
+
+------------------------------------------------------------------
 
 ---@param toggle boolean
 local onSleep = util.onChange(function (toggle)
@@ -50,6 +54,11 @@ local onVehicleChange = util.onChange(function(vehicle)
 
 	-- -- models.model.boat:setVisible(isBoat and isDriving)
 end)
+
+---@alias Hand
+---| -1 -- LEFT
+---| false -- NONE
+---| 1 -- RIGHT
 
 ---@param state Hand
 local onAimingBowWhileCrouching = util.onChange(function(state)
@@ -108,7 +117,7 @@ local onCrossbowChargedWhileCrouching = util.onChange(function(state)
 	vanilla_model.LEFT_ARM:setOffsetRot(armRot)
 end)
 
-local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
+------------------------------------------------------------------
 
 ---@type auria.depth_effect.obj[]
 local depthObjects = {}
@@ -136,18 +145,22 @@ end)({ eyes.righteye, eyes.lefteye })
 local initalDepthIncrement = 16
 
 for _, obj in pairs(layerObjects) do
-	local depthIncrement = initalDepthIncrement
+    local depthIncrement = initalDepthIncrement
 
-	for i, layer in ipairs(obj) do
-		if obj[i + 1] == nil then
-			depthIncrement = -initalDepthIncrement
-		end
+    for i, layer in ipairs(obj) do
+        if obj[i + 1] == nil then
+            depthIncrement = -initalDepthIncrement
+        end
 
-		table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+        table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
 
-		depthIncrement = depthIncrement * 2
-	end
+        depthIncrement = depthIncrement * 2
+    end
 end
+
+------------------------------------------------------------------
+
+local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
 local eyeColorParts = colorParts:new({ eyes.righteye, eyes.lefteye, skullEyes.righteye2, skullEyes.lefteye2 })
 
@@ -157,7 +170,9 @@ animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
     "BILLBOARD", "")
 
 vanilla_model.PLAYER:setVisible(false)
-vanilla_model.ARMOR:setVisible(true)
+root.sadchair:setVisible(false)
+creeperEyes:setVisible(false)
+skullCreeperEyes:setVisible(false)
 
 ------------------------------------------------------------------
 
@@ -180,11 +195,6 @@ function CreeperEyesVisible(toggle)
 end
 
 ------------------------------------------------------------------
-
----@alias Hand
----| -1 -- LEFT
----| false -- NONE
----| 1 -- RIGHT
 
 function events.ENTITY_INIT()
 	nameplate.ALL:setText(toJson {
