@@ -57,14 +57,15 @@ local onAiming = util.onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
-local onAimingBow = util.onChange(function(toggle)
+---@param state HandedItemState
+local onAimingBow = util.onChange(function(state)
 	local rot = vec(15, 50, 15)
-	if toggle == "truefalse" then
+	if state == "RIGHT" then
 		rightItemPivot:setRot(rightItemPivot:getRot():add(rot))
 		rightItemPivot:setPos(rightItemPivot:getPos():add(vec(-2.5, 0, -1)))
 		leftItemPivot:setRot()
 		leftItemPivot:setPos()
-	elseif toggle == "truetrue" then
+	elseif state == "LEFT" then
 		leftItemPivot:setRot(leftItemPivot:getRot():add(vec(rot.x, -rot.y, -rot.z)))
 		leftItemPivot:setPos(leftItemPivot:getPos():add(vec(2.5, 0, -1)))
 		rightItemPivot:setRot()
@@ -77,13 +78,14 @@ local onAimingBow = util.onChange(function(toggle)
 	end
 end)
 
-local onSpyglass = util.onChange(function(toggle)
-	if toggle == "truefalse" then
+---@param state HandedItemState
+local onSpyglass = util.onChange(function(state)
+	if state == "RIGHT" then
 		eyes.righteye:setPos(vec(0, 0, -11.2))
 		eyes.righteye:setScale(vec(1.95, 0.95, 1))
 		eyes.lefteye:setPos()
 		eyes.lefteye:setScale()
-	elseif toggle == "truetrue" then
+	elseif state == "LEFT" then
 		eyes.lefteye:setPos(vec(0, 0, -11.2))
 		eyes.lefteye:setScale(vec(1.95, 0.95, 1))
 		eyes.righteye:setPos()
@@ -175,6 +177,11 @@ end
 
 ------------------------------------------------------------------
 
+---@alias HandedItemState
+---| "RIGHT"
+---| "LEFT"
+---| "NONE"
+
 function events.ENTITY_INIT()
 	nameplate.ALL:setText(toJson {
 		text = "Snowy:blahaj:",
@@ -185,9 +192,15 @@ function events.ENTITY_INIT()
 	})
 	function events.ITEM_RENDER(item, mode, pos, rot, scale, leftHanded)
 		local usingBow = item:getUseAction() == "BOW" and player:isUsingItem()
-		local crouching = player:isCrouching()
+        local crouching = player:isCrouching()
+		
+        local state = "NONE" ---@type HandedItemState
+		
+		if usingBow and crouching then
+			state = leftHanded and "LEFT" or "RIGHT"
+		end
 
-		onAimingBow(tostring(usingBow and crouching)..tostring(leftHanded))
+		onAimingBow(state)
 	end
 end
 
@@ -246,12 +259,14 @@ afk.new(180)
             aiming = util.isRangedWeaponDrawn(heldItemRight) or util.isRangedWeaponDrawn(heldItemLeft)
         end
 
-		if player:isUsingItem() and heldItemRight:getUseAction() == "SPYGLASS" then
-			onSpyglass("truefalse")
-		elseif player:isUsingItem() and heldItemLeft:getUseAction() == "SPYGLASS" then
-			onSpyglass("truetrue")
+		if player:isUsingItem() then
+			if heldItemRight:getUseAction() == "SPYGLASS" then
+				onSpyglass("RIGHT")
+			elseif heldItemLeft:getUseAction() == "SPYGLASS" then
+				onSpyglass("LEFT")
+			end
 		else
-			onSpyglass("falsefalse")
+			onSpyglass("NONE")
 		end
 
 		::continue::
