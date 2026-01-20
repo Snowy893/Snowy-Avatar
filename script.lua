@@ -106,22 +106,11 @@ local onSpyglass = util.onChange(function(state)
 	end
 end)
 
----@param state Hand
-local onLoadedCrossbowWhileCrouching = util.onChange(function(state)
-	local rot = vec(25, 0, 0)
-	local pos = vec(0, -1.5, -2)
-	if state == 1 then
-		rightItemPivot:setRot(rot)
-		rightItemPivot:setPos(pos)
-	elseif state == -1 then
-		leftItemPivot:setRot(rot)
-		leftItemPivot:setPos(pos)
-	else
-		rightItemPivot:setRot()
-		leftItemPivot:setRot()
-		rightItemPivot:setPos()
-		leftItemPivot:setPos()
-	end
+---@param state boolean
+local onCrossbowChargedWhileCrouching = util.onChange(function(state)
+	local armRot = state and 20 or nil
+	vanilla_model.RIGHT_ARM:setOffsetRot(armRot)
+	vanilla_model.LEFT_ARM:setOffsetRot(armRot)
 end)
 
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
@@ -219,39 +208,32 @@ function events.TICK()
 	local crouching = player:isCrouching()
 	local shouldSquint = false
 	local spyglassHand = false ---@type Hand
-	local bowHand = false ---@type Hand
-	local crossbowHand = false ---@type Hand
+	local bowWhileCrouchingHand = false ---@type Hand
+	local crossbowCharged = false
 	local hand = player:getActiveHand() == "MAIN_HAND" and 1 or -1 ---@type Hand
 	if leftHanded then hand = -hand end
 
-	if activeItem == "minecraft:air" then
-		goto continue
+	if crouching then
+		crossbowCharged = util.crossbowCharged(player:getHeldItem(leftHanded))
+			or util.crossbowCharged(player:getHeldItem(not leftHanded))
 	end
 
+	if activeItem == "minecraft:air" then goto continue end
+
 	if useAction == "BOW" and crouching then
-		bowHand = hand
+		bowWhileCrouchingHand = hand
 	elseif useAction == "SPYGLASS" then
 		spyglassHand = hand
 	end
 
 	if isAfk or spyglassHand then goto continue end
-	
-	if util.isCrossbowCharged(player:getHeldItem(leftHanded)) then
-		if crouching then crossbowHand = leftHanded and -1 or 1 end
-		shouldSquint = true
-	elseif util.isCrossbowCharged(player:getHeldItem(not leftHanded)) then
-		if crouching then crossbowHand = not leftHanded and -1 or 1 end
-		shouldSquint = true
-	end
 
-	if not shouldSquint and player:getActiveItemTime() >= 50 then
-		shouldSquint = util.checkUseAction("BOW", "SPEAR")
-	end
+	shouldSquint = player:getActiveItemTime() >= 50 and util.checkUseAction("BOW", "SPEAR")
 
 	::continue::
 	onAiming(shouldSquint)
-	onAimingBowWhileCrouching(bowHand)
-	onLoadedCrossbowWhileCrouching(crossbowHand)
+	onAimingBowWhileCrouching(bowWhileCrouchingHand)
+	onCrossbowChargedWhileCrouching(crossbowCharged and crouching)
 	onSpyglass(spyglassHand)
 
 	onSleep(player:getPose() == "SLEEPING")

@@ -12,10 +12,11 @@ function util.switch(value, cases)
     return match()
 end
 
----Returns an explicit boolean value out of a value that is truthy or falsy
+---Returns an explicit boolean value out of a value that is truthy or falsy (and values I'd like to treat as falsy)
 ---@param value any
 ---@return boolean
 function util.toboolean(value)
+    if value == 0 or value == "" or value == "minecraft:air" then return false end
     if value then return true else return false end
 end
 
@@ -93,20 +94,20 @@ function util.comparePermissionLevel(targetLevel, currentLevel)
 end
 
 ---@param itemStack ItemStack
-function util.isItemEmpty(itemStack)
+function util.itemEmpty(itemStack)
     return itemStack:getCount() == 0
 end
 
 ---@param playr? Player
 function util.handsEmpty(playr)
     local p = playr or player
-    return util.isItemEmpty(p:getHeldItem()) and util.isItemEmpty(p:getHeldItem(true))
+    return util.itemEmpty(p:getHeldItem()) and util.itemEmpty(p:getHeldItem(true))
 end
 
 ---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
 ---@param itemStack ItemStack
 ---@return boolean
-function util.isCrossbowCharged(itemStack)
+function util.crossbowCharged(itemStack)
     local projectiles = itemStack:getTag().ChargedProjectiles
     return projectiles ~= nil and next(projectiles) ~= nil
 end
