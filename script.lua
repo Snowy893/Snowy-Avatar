@@ -233,8 +233,8 @@ function events.TICK()
 	::continue::
 	onAiming(shouldSquint)
 	onAimingBowWhileCrouching(bowWhileCrouchingHand)
-	onCrossbowChargedWhileCrouching(crossbowCharged and crouching)
 	onSpyglass(spyglassHand)
+	onCrossbowChargedWhileCrouching(crossbowCharged and crouching)
 
 	onSleep(player:getPose() == "SLEEPING")
 	onVehicle(player:getVehicle())
