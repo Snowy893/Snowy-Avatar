@@ -1,5 +1,4 @@
 --#region imports
-local smoothie = require "lib.thirdparty.Smoothie"
 local animatedText = require "lib.thirdparty.animatedText"
 local depthEffect = require "lib.thirdparty.depth_effect"
 local patpat = require "lib.thirdparty.patpat"
@@ -150,12 +149,6 @@ vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(true)
 
 ------------------------------------------------------------------
-
-smoothie:newEye(eyes)
-	:leftOffsetStrength(0.25)
-	:rightOffsetStrength(0.25)
-	:topOffsetStrength(0.25)
-	:bottomOffsetStrength(0.25)
 
 periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
 	:condition(function()
