@@ -53,8 +53,8 @@ end)
 
 ---@param state Hand
 local onAimingBowWhileCrouching = util.onChange(function(state)
-	local rot = vec(15, 50, 15)
-	local pos = vec(-2.5, 0, -1)
+	local rot = vec(30, 50, 30)
+	local pos = vec(-2.5, 0, -0.5)
 	if state == 1 then
 		rightItemPivot:setRot(rot)
 		rightItemPivot:setPos(pos)
