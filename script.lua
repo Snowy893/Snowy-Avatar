@@ -244,7 +244,8 @@ afk.new(180)
 		head:setOffsetRot(math.sin(world.getTime(delta) / 14))
 	end)
 	:register("ON_TICK_NOT_AFK", function()
-        local aiming = false
+		local aiming = false
+		local spyglassState = "NONE" ---@type HandedItemState
 		local leftHanded = player:isLeftHanded()
 		local heldItemRight = player:getHeldItem(leftHanded)
         local heldItemLeft = player:getHeldItem(not leftHanded)
@@ -259,8 +260,6 @@ afk.new(180)
             aiming = util.isRangedWeaponDrawn(heldItemRight) or util.isRangedWeaponDrawn(heldItemLeft)
         end
 
-		local spyglassState = "NONE" ---@type HandedItemState
-
 		if player:isUsingItem() then
 			if heldItemRight:getUseAction() == "SPYGLASS" then
 				spyglassState = "RIGHT"
@@ -269,9 +268,8 @@ afk.new(180)
 			end
 		end
 
-		onSpyglass(spyglassState)
-
 		::continue::
+		onSpyglass(spyglassState)
 		onAiming(aiming)
 	end)
 
