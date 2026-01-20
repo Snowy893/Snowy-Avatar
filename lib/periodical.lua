@@ -6,7 +6,7 @@ Periodical.objs = {}
 
 ---@overload fun(func: function)
 ---@param func function
----@param eventType string?
+---@param eventType "TICK"|"WORLD_TICK"
 ---@return Periodical.Obj
 function Periodical:new(func, eventType)
     ---@class Periodical.Obj
