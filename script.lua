@@ -248,7 +248,6 @@ afk.new(180)
 		local leftHanded = player:isLeftHanded()
 		local heldItemRight = player:getHeldItem(leftHanded)
         local heldItemLeft = player:getHeldItem(not leftHanded)
-		local usingItem = player:isUsingItem()
 
 		if util.isItemEmpty(heldItemRight) and util.isItemEmpty(heldItemLeft) then
 			goto continue
@@ -262,10 +261,10 @@ afk.new(180)
 
 		local spyglassState = "NONE" ---@type HandedItemState
 
-		if usingItem then
-			if usingItem and heldItemRight:getUseAction() == "SPYGLASS" then
+		if player:isUsingItem() then
+			if heldItemRight:getUseAction() == "SPYGLASS" then
 				spyglassState = "RIGHT"
-			elseif usingItem and heldItemLeft:getUseAction() == "SPYGLASS" then
+			elseif heldItemLeft:getUseAction() == "SPYGLASS" then
 				spyglassState = "LEFT"
 			end
 		end
