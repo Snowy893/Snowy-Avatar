@@ -38,7 +38,7 @@ local onSleep = util.onChange(function (toggle)
 end)
 
 ---@param vehicle Entity?
-local onVehicle = util.onChange(function(vehicle)
+local onVehicleChange = util.onChange(function(vehicle)
 	-- local isBoat = vehicle and vehicle:getType():find("boat")
 	-- -- local isDriving = vehicle and vehicle:getControllingPassenger() == player
 	
@@ -49,11 +49,6 @@ local onVehicle = util.onChange(function(vehicle)
 	-- renderer:setRenderVehicle(not isBoat)
 
 	-- -- models.model.boat:setVisible(isBoat and isDriving)
-end)
-
----@param toggle boolean
-local onAiming = util.onChange(function (toggle)
-	animations.model.aiming:setPlaying(toggle)
 end)
 
 ---@param state Hand
@@ -206,38 +201,37 @@ function events.TICK()
 	local useAction = activeItem:getUseAction()
 	local leftHanded = player:isLeftHanded()
 	local crouching = player:isCrouching()
-	local shouldSquint = false
-	local spyglassHand = false ---@type Hand
-	local bowWhileCrouchingHand = false ---@type Hand
 	local crossbowCharged = false
 	local hand = player:getActiveHand() == "MAIN_HAND" and 1 or -1 ---@type Hand
 	if leftHanded then hand = -hand end
+
+	local bowHand = useAction == "BOW" and hand or false ---@type Hand
+	local spyglassHand = useAction == "SPYGLASS" and hand or false ---@type Hand
 
 	if crouching then
 		crossbowCharged = util.crossbowCharged(player:getHeldItem(leftHanded))
 			or util.crossbowCharged(player:getHeldItem(not leftHanded))
 	end
-
-	if activeItem == "minecraft:air" then goto continue end
-
-	if useAction == "BOW" and crouching then
-		bowWhileCrouchingHand = hand
-	elseif useAction == "SPYGLASS" then
-		spyglassHand = hand
-	end
-
+	
 	if isAfk or spyglassHand then goto continue end
-
-	shouldSquint = player:getActiveItemTime() >= 50 and util.checkUseAction("BOW", "SPEAR")
-
-	::continue::
-	onAiming(shouldSquint)
-	onAimingBowWhileCrouching(bowWhileCrouchingHand)
+	
+    ::continue::
+	if player:getActiveItemTime() == 50 then
+		if util.checkUseAction("BOW", "SPEAR") then
+			animations.model.aiming:play()
+		end
+	elseif player:getActiveItemTime() <= 50 then
+		animations.model.aiming:stop()
+	end
+	if crouching then
+		onAimingBowWhileCrouching(bowHand)
+	else
+		onAimingBowWhileCrouching(false)
+	end
 	onSpyglass(spyglassHand)
 	onCrossbowChargedWhileCrouching(crossbowCharged and crouching)
-
 	onSleep(player:getPose() == "SLEEPING")
-	onVehicle(player:getVehicle())
+	onVehicleChange(player:getVehicle())
 end
 
 function events.RENDER(delta)
