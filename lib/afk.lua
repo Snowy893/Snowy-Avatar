@@ -74,6 +74,8 @@ local function afkEval(afk)
 end
 
 events.TICK:register(function()
+    if not next(Afk.ALL) then return end
+
     local time = world.getTime()
     onSneakChange(player:isSneaking())
 
