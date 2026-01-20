@@ -59,14 +59,15 @@ end)
 ---@param state Hand
 local onAimingBowWhileCrouching = util.onChange(function(state)
 	local rot = vec(15, 50, 15)
+	local pos = vec(-2.5, 0, -1)
 	if state == 1 then
-		rightItemPivot:setRot(rightItemPivot:getRot():add(rot))
-		rightItemPivot:setPos(rightItemPivot:getPos():add(vec(-2.5, 0, -1)))
+		rightItemPivot:setRot(rot)
+		rightItemPivot:setPos(pos)
 		leftItemPivot:setRot()
 		leftItemPivot:setPos()
 	elseif state == -1 then
-		leftItemPivot:setRot(leftItemPivot:getRot():add(vec(rot.x, -rot.y, -rot.z)))
-		leftItemPivot:setPos(leftItemPivot:getPos():add(vec(2.5, 0, -1)))
+		leftItemPivot:setRot(vec(rot.x, -rot.y, -rot.z))
+		leftItemPivot:setPos(vec(-pos.x, pos.y, pos.z))
 		rightItemPivot:setRot()
 		rightItemPivot:setPos()
 	else
@@ -79,16 +80,18 @@ end)
 
 ---@param state Hand
 local onSpyglass = util.onChange(function(state)
+	local pos = vec(0, 0, -11.2)
+	local scale = vec(1.95, 0.95, 1)
 	if state == 1 then
-		eyes.righteye:setPos(vec(0, 0, -11.2))
-		eyes.righteye:setScale(vec(1.95, 0.95, 1))
+		eyes.righteye:setPos(pos)
+		eyes.righteye:setScale(scale)
 		eyes.lefteye:setPos()
 		eyes.lefteye:setScale()
 		animations.model.squintleft:play()
 		animations.model.squintright:stop()
 	elseif state == -1 then
-		eyes.lefteye:setPos(vec(0, 0, -11.2))
-		eyes.lefteye:setScale(vec(1.95, 0.95, 1))
+		eyes.lefteye:setPos(pos)
+		eyes.lefteye:setScale(scale)
 		eyes.righteye:setPos()
         eyes.righteye:setScale()
 		animations.model.squintright:play()
@@ -100,6 +103,24 @@ local onSpyglass = util.onChange(function(state)
 		eyes.lefteye:setScale()
 		animations.model.squintleft:stop()
 		animations.model.squintright:stop()
+	end
+end)
+
+---@param state Hand
+local onLoadedCrossbowWhileCrouching = util.onChange(function(state)
+	local rot = vec(25, 0, 0)
+	local pos = vec(0, -1.5, -2)
+	if state == 1 then
+		rightItemPivot:setRot(rot)
+		rightItemPivot:setPos(pos)
+	elseif state == -1 then
+		leftItemPivot:setRot(rot)
+		leftItemPivot:setPos(pos)
+	else
+		rightItemPivot:setRot()
+		leftItemPivot:setRot()
+		rightItemPivot:setPos()
+		leftItemPivot:setPos()
 	end
 end)
 
@@ -199,7 +220,9 @@ function events.TICK()
 	local shouldSquint = false
 	local spyglassHand = false ---@type Hand
 	local bowHand = false ---@type Hand
+	local crossbowHand = false ---@type Hand
 	local hand = player:getActiveHand() == "MAIN_HAND" and 1 or -1 ---@type Hand
+	if leftHanded then hand = -hand end
 
 	if activeItem == "minecraft:air" then
 		goto continue
@@ -211,18 +234,24 @@ function events.TICK()
 		spyglassHand = hand
 	end
 
-	if isAfk or spyglassHand or player:getActiveItemTime() < 50 then goto continue end
+	if isAfk or spyglassHand then goto continue end
+	
+	if util.isCrossbowCharged(player:getHeldItem(leftHanded)) then
+		if crouching then crossbowHand = leftHanded and -1 or 1 end
+		shouldSquint = true
+	elseif util.isCrossbowCharged(player:getHeldItem(not leftHanded)) then
+		if crouching then crossbowHand = not leftHanded and -1 or 1 end
+		shouldSquint = true
+	end
 
-	shouldSquint = util.isCrossbowCharged(player:getHeldItem(leftHanded)) or
-		util.isCrossbowCharged(player:getHeldItem(not leftHanded))
-
-	if not shouldSquint then
+	if not shouldSquint and player:getActiveItemTime() >= 50 then
 		shouldSquint = util.checkUseAction("BOW", "SPEAR")
 	end
 
 	::continue::
 	onAiming(shouldSquint)
 	onAimingBowWhileCrouching(bowHand)
+	onLoadedCrossbowWhileCrouching(crossbowHand)
 	onSpyglass(spyglassHand)
 
 	onSleep(player:getPose() == "SLEEPING")
