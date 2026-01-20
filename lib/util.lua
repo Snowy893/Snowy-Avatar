@@ -97,11 +97,10 @@ function util.isItemEmpty(itemStack)
     return itemStack:getCount() == 0
 end
 
----@param offHand? boolean
 ---@param playr? Player
-function util.isHandEmpty(offHand, playr)
+function util.handsEmpty(playr)
     local p = playr or player
-    return util.isItemEmpty(p:getHeldItem(offHand))
+    return util.isItemEmpty(p:getHeldItem()) and util.isItemEmpty(p:getHeldItem(true))
 end
 
 ---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
@@ -112,13 +111,17 @@ function util.isCrossbowCharged(itemStack)
     return projectiles ~= nil and next(projectiles) ~= nil
 end
 
----Checks if the player is using an item with `action` that is either `"BOW"` or `"SPEAR"`. EXCLUDES CROSSBOWS!
----@param itemStack ItemStack
+---@param ... ItemStack.useAction
 ---@return boolean
-function util.isRangedWeaponDrawn(itemStack)
+function util.checkUseAction(...)
     if player:isUsingItem() then
-        local useAction = itemStack:getUseAction()
-        return (useAction == "BOW") or (useAction == "SPEAR")
+        local useAction = player:getActiveItem():getUseAction()
+        if select("#", ...) == 1 then
+            return useAction == ...
+        end
+        for _, action in pairs(table.pack(...)) do
+            if useAction == action then return true end
+        end
     end
     return false
 end
