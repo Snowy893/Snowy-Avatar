@@ -56,15 +56,15 @@ local onAiming = util.onChange(function (toggle)
 	animations.model.aiming:setPlaying(toggle)
 end)
 
----@param state HandedItemState
-local onAimingBow = util.onChange(function(state)
+---@param state Hand
+local onAimingBowWhileCrouching = util.onChange(function(state)
 	local rot = vec(15, 50, 15)
-	if state == "RIGHT" then
+	if state == 1 then
 		rightItemPivot:setRot(rightItemPivot:getRot():add(rot))
 		rightItemPivot:setPos(rightItemPivot:getPos():add(vec(-2.5, 0, -1)))
 		leftItemPivot:setRot()
 		leftItemPivot:setPos()
-	elseif state == "LEFT" then
+	elseif state == -1 then
 		leftItemPivot:setRot(leftItemPivot:getRot():add(vec(rot.x, -rot.y, -rot.z)))
 		leftItemPivot:setPos(leftItemPivot:getPos():add(vec(2.5, 0, -1)))
 		rightItemPivot:setRot()
@@ -77,23 +77,29 @@ local onAimingBow = util.onChange(function(state)
 	end
 end)
 
----@param state HandedItemState
+---@param state Hand
 local onSpyglass = util.onChange(function(state)
-	if state == "RIGHT" then
+	if state == 1 then
 		eyes.righteye:setPos(vec(0, 0, -11.2))
 		eyes.righteye:setScale(vec(1.95, 0.95, 1))
 		eyes.lefteye:setPos()
 		eyes.lefteye:setScale()
-	elseif state == "LEFT" then
+		animations.model.squintleft:play()
+		animations.model.squintright:stop()
+	elseif state == -1 then
 		eyes.lefteye:setPos(vec(0, 0, -11.2))
 		eyes.lefteye:setScale(vec(1.95, 0.95, 1))
 		eyes.righteye:setPos()
-		eyes.righteye:setScale()
+        eyes.righteye:setScale()
+		animations.model.squintright:play()
+		animations.model.squintleft:stop()
 	else
 		eyes.righteye:setPos()
 		eyes.righteye:setScale()
 		eyes.lefteye:setPos()
 		eyes.lefteye:setScale()
+		animations.model.squintleft:stop()
+		animations.model.squintright:stop()
 	end
 end)
 
@@ -170,10 +176,10 @@ end
 
 ------------------------------------------------------------------
 
----@alias HandedItemState
----| "RIGHT"
----| "LEFT"
----| "NONE"
+---@alias Hand
+---| -1 -- LEFT
+---| false -- NONE
+---| 1 -- RIGHT
 
 function events.ENTITY_INIT()
 	nameplate.ALL:setText(toJson {
@@ -183,21 +189,42 @@ function events.ENTITY_INIT()
 			contents = player:getName(),
 		},
 	})
-	function events.ITEM_RENDER(item, mode, pos, rot, scale, leftHanded)
-		local usingBow = item:getUseAction() == "BOW" and player:isUsingItem()
-        local crouching = player:isCrouching()
-		
-        local state = "NONE" ---@type HandedItemState
-		
-		if usingBow and crouching then
-			state = leftHanded and "LEFT" or "RIGHT"
-		end
-
-		onAimingBow(state)
-	end
 end
 
 function events.TICK()
+	local activeItem = player:getActiveItem()
+	local useAction = activeItem:getUseAction()
+	local leftHanded = player:isLeftHanded()
+	local crouching = player:isCrouching()
+	local shouldSquint = false
+	local spyglassHand = false ---@type Hand
+	local bowHand = false ---@type Hand
+	local hand = player:getActiveHand() == "MAIN_HAND" and 1 or -1 ---@type Hand
+
+	if activeItem == "minecraft:air" then
+		goto continue
+	end
+
+	if useAction == "BOW" and crouching then
+		bowHand = hand
+	elseif useAction == "SPYGLASS" then
+		spyglassHand = hand
+	end
+
+	if isAfk or spyglassHand or player:getActiveItemTime() < 50 then goto continue end
+
+	shouldSquint = util.isCrossbowCharged(player:getHeldItem(leftHanded)) or
+		util.isCrossbowCharged(player:getHeldItem(not leftHanded))
+
+	if not shouldSquint then
+		shouldSquint = util.checkUseAction("BOW", "SPEAR")
+	end
+
+	::continue::
+	onAiming(shouldSquint)
+	onAimingBowWhileCrouching(bowHand)
+	onSpyglass(spyglassHand)
+
 	onSleep(player:getPose() == "SLEEPING")
 	onVehicle(player:getVehicle())
 end
@@ -227,7 +254,7 @@ afk.new(180)
 		animations.model.afkStart:setPlaying(toggle)
 		if not toggle then
 			animations.model.afkLoop:stop()
-			head:setOffsetRot(0)
+			head:setOffsetRot()
 		end
 	end)
 	:register("ON_RENDER_LOOP", function(delta)
@@ -235,35 +262,6 @@ afk.new(180)
 			animations.model.afkLoop:play()
 		end
 		head:setOffsetRot(math.sin(world.getTime(delta) / 14))
-	end)
-	:register("ON_TICK_NOT_AFK", function()
-		local aiming = false
-		local spyglassState = "NONE" ---@type HandedItemState
-		local leftHanded = player:isLeftHanded()
-		local heldItemRight = player:getHeldItem(leftHanded)
-        local heldItemLeft = player:getHeldItem(not leftHanded)
-
-		if util.isItemEmpty(heldItemRight) and util.isItemEmpty(heldItemLeft) then
-			goto continue
-		end
-
-		aiming = util.isCrossbowCharged(heldItemRight) or util.isCrossbowCharged(heldItemLeft)
-
-        if not aiming then
-            aiming = util.isRangedWeaponDrawn(heldItemRight) or util.isRangedWeaponDrawn(heldItemLeft)
-        end
-
-		if player:isUsingItem() then
-			if heldItemRight:getUseAction() == "SPYGLASS" then
-				spyglassState = "RIGHT"
-			elseif heldItemLeft:getUseAction() == "SPYGLASS" then
-				spyglassState = "LEFT"
-			end
-		end
-
-		::continue::
-		onSpyglass(spyglassState)
-		onAiming(aiming)
 	end)
 
 afk.new(210)
