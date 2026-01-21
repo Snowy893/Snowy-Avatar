@@ -16,7 +16,6 @@ end
 ---@param value any
 ---@return boolean
 function util.toboolean(value)
-    if value == 0 or value == "" or value == "minecraft:air" then return false end
     if value then return true else return false end
 end
 
