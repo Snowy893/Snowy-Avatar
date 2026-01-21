@@ -31,7 +31,7 @@ local onSleep = util.onChange(function (toggle)
 	animations.model.afkLoop:setPlaying(toggle)
 	if toggle then
 		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
-		for _, v in pairs(animatedText.getTask("afk").textTasks) do
+		for _, v in pairs(animatedText.getTask("sleeping").textTasks) do
 			v.task:outline(true)
 		end
 	else
@@ -273,7 +273,7 @@ afk.new(180)
 
 afk.new(210)
 	:register("ON_CHANGE", function(toggle)
-		if toggle then
+    	if toggle then
 			animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
 			for _, v in pairs(animatedText.getTask("afk").textTasks) do
 				v.task:outline(true)
@@ -281,8 +281,8 @@ afk.new(210)
 		else
 			animatedText.setText("afk", "")
 		end
-	end)
-	:register("ON_RENDER_LOOP", function(delta)
+    end)
+    :register("ON_RENDER_LOOP", function(delta, context)
 		for i, v in ipairs(animatedText.getTask("afk").textTasks) do
 			animatedText.transform(
 				"afk",
