@@ -57,6 +57,7 @@ end)
 ---| -1 -- LEFT
 ---| false -- NONE
 ---| 1 -- RIGHT
+---| 2 -- BOTH
 
 ---@param state Hand
 local onAimingBowWhileCrouching = util.onChange(function(state)
@@ -108,11 +109,12 @@ local onSpyglass = util.onChange(function(state)
 	end
 end)
 
----@param toggle boolean
-local onCrossbowChargedWhileCrouching = util.onChange(function(toggle)
-	local armRot = toggle and 20 or nil
-	vanilla_model.RIGHT_ARM:setOffsetRot(armRot)
-	vanilla_model.LEFT_ARM:setOffsetRot(armRot)
+---@param state Hand
+local onCrouchArmOffsetRot = util.onChange(function (state)
+	local rightRot = (state == 2 or state == 1) and 20 or nil
+	local leftRot = (state == 2 or state == -1) and 20 or nil
+	vanilla_model.RIGHT_ARM:setOffsetRot(rightRot)
+	vanilla_model.LEFT_ARM:setOffsetRot(leftRot)
 end)
 
 ------------------------------------------------------------------
@@ -208,7 +210,8 @@ function events.TICK()
 	local crouching = player:isCrouching()
 	local sleeping = player:getPose() == "SLEEPING"
 	local vehicle = player:getVehicle()
-	local useAction = player:getActiveItem():getUseAction()
+	local activeItem = player:getActiveItem()
+	local useAction = activeItem:getUseAction()
 	local useTime = player:getActiveItemTime()
 	local leftHanded = player:isLeftHanded()
 	local rightItem = player:getHeldItem(leftHanded)
@@ -216,22 +219,27 @@ function events.TICK()
 	local hand = (player:getActiveHand() == "MAIN_HAND") and 1 or -1 ---@type Hand
 	if leftHanded then hand = -hand end
 
-	local bowHand = (useAction == "BOW" and crouching) and hand or false ---@type Hand
+	local bowCrouchHand = (useAction == "BOW" and crouching) and hand or false ---@type Hand
 	local spyglassHand = (useAction == "SPYGLASS") and hand or false ---@type Hand
+	local hornCrouchHand = (useAction == "TOOT_HORN" and crouching) and hand or false ---@type Hand
+	local tridentCrouchHand = (useAction == "SPEAR" and crouching) and hand or false ---@type Hand
 
 	local crossbowCharged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
+	--Use Actions should take priority over charged crossbow offset rot
+	local crossbowCrouchHand = (crouching and crossbowCharged and activeItem:getCount() == 0)
+		and 2 or false ---@type Hand
 	
-	if useTime == 50 then
+	if useTime == 80 then
 		if util.checkUseAction("BOW", "SPEAR") then
 			animations.model.aiming:play()
 		end
-	elseif useTime < 50 then
+	elseif useTime < 80 then
 		animations.model.aiming:stop()
 	end
 
-	onAimingBowWhileCrouching(bowHand)
+	onAimingBowWhileCrouching(bowCrouchHand)
 	onSpyglass(spyglassHand)
-	onCrossbowChargedWhileCrouching(crossbowCharged and crouching)
+	onCrouchArmOffsetRot(crossbowCrouchHand or hornCrouchHand or tridentCrouchHand)
 	onSleep(sleeping)
 	onVehicleChange(vehicle)
 end
