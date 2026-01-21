@@ -32,9 +32,9 @@ function colorParts:new(parts)
 
     ---@param tbl {
     ---     color: Vector3,
-    ---     type?: ColorParts.type,
-    ---     depthLayer?: string,
-    ---     layer?: string, -- Alias of depthLayer
+    ---     type: ColorParts.type?,
+    ---     depthLayer: string?,
+    ---     layer: string?, -- Alias of depthLayer
     ---}
     function module:color(tbl)
         local cases = {}
