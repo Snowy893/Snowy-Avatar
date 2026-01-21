@@ -8,7 +8,6 @@ local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
 local colorParts = require "lib.colorparts"
 --#endregion
---#region modelpart variables
 local model = models.model
 local root = model.root
 local head = root.torso.Head
@@ -22,7 +21,6 @@ local rightArm = root.torso.waist.RightArm
 local leftArm = root.torso.waist.LeftArm
 local rightItemPivot = rightArm.RightItemPivot
 local leftItemPivot = leftArm.LeftItemPivot
---#endregion
 
 local isAfk = false
 
@@ -110,9 +108,9 @@ local onSpyglass = util.onChange(function(state)
 	end
 end)
 
----@param state boolean
-local onCrossbowChargedWhileCrouching = util.onChange(function(state)
-	local armRot = state and 20 or nil
+---@param toggle boolean
+local onCrossbowChargedWhileCrouching = util.onChange(function(toggle)
+	local armRot = toggle and 20 or nil
 	vanilla_model.RIGHT_ARM:setOffsetRot(armRot)
 	vanilla_model.LEFT_ARM:setOffsetRot(armRot)
 end)
@@ -207,41 +205,35 @@ function events.ENTITY_INIT()
 end
 
 function events.TICK()
-	local activeItem = player:getActiveItem()
-	local useAction = activeItem:getUseAction()
-	local leftHanded = player:isLeftHanded()
 	local crouching = player:isCrouching()
-	local crossbowCharged = false
-	local hand = player:getActiveHand() == "MAIN_HAND" and 1 or -1 ---@type Hand
+	local sleeping = player:getPose() == "SLEEPING"
+	local vehicle = player:getVehicle()
+	local useAction = player:getActiveItem():getUseAction()
+	local useTime = player:getActiveItemTime()
+	local leftHanded = player:isLeftHanded()
+	local rightItem = player:getHeldItem(leftHanded)
+	local leftItem = player:getHeldItem(not leftHanded)
+	local hand = (player:getActiveHand() == "MAIN_HAND") and 1 or -1 ---@type Hand
 	if leftHanded then hand = -hand end
 
-	local bowHand = useAction == "BOW" and hand or false ---@type Hand
-	local spyglassHand = useAction == "SPYGLASS" and hand or false ---@type Hand
+	local bowHand = (useAction == "BOW" and crouching) and hand or false ---@type Hand
+	local spyglassHand = (useAction == "SPYGLASS") and hand or false ---@type Hand
 
-	if crouching then
-		crossbowCharged = util.crossbowCharged(player:getHeldItem(leftHanded))
-			or util.crossbowCharged(player:getHeldItem(not leftHanded))
-	end
+	local crossbowCharged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
 	
-	if isAfk or spyglassHand then goto continue end
-	
-    ::continue::
-	if player:getActiveItemTime() == 50 then
+	if useTime == 50 then
 		if util.checkUseAction("BOW", "SPEAR") then
 			animations.model.aiming:play()
 		end
-	elseif player:getActiveItemTime() <= 50 then
+	elseif useTime < 50 then
 		animations.model.aiming:stop()
 	end
-	if crouching then
-		onAimingBowWhileCrouching(bowHand)
-	else
-		onAimingBowWhileCrouching(false)
-	end
+
+	onAimingBowWhileCrouching(bowHand)
 	onSpyglass(spyglassHand)
 	onCrossbowChargedWhileCrouching(crossbowCharged and crouching)
-	onSleep(player:getPose() == "SLEEPING")
-	onVehicleChange(player:getVehicle())
+	onSleep(sleeping)
+	onVehicleChange(vehicle)
 end
 
 function events.RENDER(delta)
