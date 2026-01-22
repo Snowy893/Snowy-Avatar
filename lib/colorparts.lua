@@ -1,4 +1,3 @@
-local util = require "lib.util"
 ---@class ColorParts
 local colorParts = {}
 
@@ -6,7 +5,7 @@ local hasDepthEffect = require("lib.thirdparty.depth_effect") ~= nil
 
 ---@param parts ModelPart[]
 ---@return ColorParts.obj
-function colorParts:new(parts)
+function colorParts.new(parts)
     ---@class ColorParts.obj
     local module = {}
 
@@ -20,6 +19,55 @@ function colorParts:new(parts)
             layer = v["layer" .. tostring(index)]
         end
     end
+
+    local switch = {}
+        if not hasDepthEffect then
+            switch.default = function(tbl)
+                for _, part in pairs(parts) do
+                    part:color()
+                    part:color(tbl.color)
+                end
+            end
+
+            switch.all = switch.default -- Alias
+        else
+            switch.depthLayer = function(tbl)
+                local layer = tbl.depthLayer or tbl.layer
+                for _, part in pairs(parts) do
+                    if part[layer] then
+                        part[layer]:color(tbl.color)
+                    end
+                end
+            end
+            switch.layer = switch.depthLayer -- Alias
+
+            switch.depthLayers = function(tbl)
+                for _, part in pairs(layers) do
+                    part:color()
+                    part:color(tbl.color)
+                end
+            end
+            switch.layers = switch.depthLayers -- Alias
+
+            switch.depthBackground = function(tbl)
+                for _, part in pairs(parts) do
+                    local background = part.bg or part.background
+                    background:color()
+                    background:color(tbl.color)
+                end
+            end
+            switch.background = switch.depthBackground -- Alias
+
+            switch.default = function(tbl)
+                for _, v in pairs(parts) do
+                    v:color()
+                    v:color(tbl.color)
+                end
+                module:color({ color = tbl.color, type = "depthLayers" })
+                module:color({ color = tbl.color, type = "depthBackground" })
+            end
+            switch.all = switch.default -- Alias
+        end
 
     ---@alias ColorParts.type
     ---| "all"
@@ -37,62 +85,11 @@ function colorParts:new(parts)
     ---     layer: string?, -- Alias of depthLayer
     ---}
     function module:color(tbl)
-        local cases = {}
-
-        if not hasDepthEffect then
-            cases.default = function()
-                for _, part in pairs(parts) do
-                    part:color()
-                    part:color(tbl.color)
-                end
-            end
-
-            cases.all = cases.default -- Alias
-        else
-            cases.depthLayer = function()
-                local layer = tbl.depthLayer or tbl.layer
-                for _, part in pairs(parts) do
-                    if part[layer] then
-                        part[layer]:color(tbl.color)
-                    end
-                end
-            end
-            cases.layer = cases.depthLayer -- Alias
-
-            cases.depthLayers = function()
-                for _, part in pairs(layers) do
-                    part:color()
-                    part:color(tbl.color)
-                end
-            end
-            cases.layers = cases.depthLayers -- Alias
-
-            cases.depthBackground = function()
-                for _, part in pairs(parts) do
-                    local background = part.bg or part.background
-                    background:color()
-                    background:color(tbl.color)
-                end
-            end
-            cases.background = cases.depthBackground -- Alias
-
-            cases.default = function()
-                for _, v in pairs(parts) do
-                    v:color()
-                    v:color(tbl.color)
-                end
-                module:color({ color = tbl.color, type = "depthLayers" })
-                module:color({ color = tbl.color, type = "depthBackground" })
-            end
-            cases.all = cases.default -- Alias
-        end
-
-        util.switch(tbl.type, cases)
+        if switch[tbl.type] then switch[tbl.type](tbl)
+        else switch.default(tbl) end
     end
 
     return module
 end
-
-
 
 return colorParts

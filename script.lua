@@ -145,24 +145,30 @@ end)({ eyes.righteye, eyes.lefteye })
 local initalDepthIncrement = 16
 
 for _, obj in pairs(layerObjects) do
-    local depthIncrement = initalDepthIncrement
+	local depthIncrement = initalDepthIncrement
 
-    for i, layer in ipairs(obj) do
-        if obj[i + 1] == nil then
-            depthIncrement = -initalDepthIncrement
-        end
+	for i, layer in ipairs(obj) do
+		if obj[i + 1] == nil then
+			depthIncrement = -initalDepthIncrement
+		end
 
-        table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
+		table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
 
-        depthIncrement = depthIncrement * 2
-    end
+		depthIncrement = depthIncrement * 2
+	end
 end
+
+local eyeColorParts = colorParts.new({
+	eyes.righteye,
+	eyes.lefteye,
+	skullEyes.righteye2,
+	skullEyes.lefteye2,
+})
 
 ------------------------------------------------------------------
 
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
-local eyeColorParts = colorParts:new({ eyes.righteye, eyes.lefteye, skullEyes.righteye2, skullEyes.lefteye2 })
 
 animatedText.new("afk", body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
 	"BILLBOARD", "")
@@ -210,24 +216,39 @@ function events.TICK()
 	local crouching = player:isCrouching()
 	local sleeping = player:getPose() == "SLEEPING"
 	local vehicle = player:getVehicle()
+
 	local activeItem = player:getActiveItem()
 	local useAction = activeItem:getUseAction()
 	local useTime = player:getActiveItemTime()
+
 	local leftHanded = player:isLeftHanded()
-	local rightItem = player:getHeldItem(leftHanded)
-	local leftItem = player:getHeldItem(not leftHanded)
-	local hand = (player:getActiveHand() == "MAIN_HAND") and 1 or -1 ---@type Hand
-	if leftHanded then hand = -hand end
+	local lastHand = (player:getActiveHand() == "MAIN_HAND") and 1 or -1 ---@type Hand
+	if leftHanded then lastHand = -lastHand end
 
-	local bowCrouchHand = (useAction == "BOW" and crouching) and hand or false ---@type Hand
-	local spyglassHand = (useAction == "SPYGLASS") and hand or false ---@type Hand
-	local hornCrouchHand = (useAction == "TOOT_HORN" and crouching) and hand or false ---@type Hand
-	local tridentCrouchHand = (useAction == "SPEAR" and crouching) and hand or false ---@type Hand
+	local spyglassHand = false ---@type Hand
+	local bowCrouchHand = false ---@type Hand
+	local hornCrouchHand = false ---@type Hand
+	local tridentCrouchHand = false ---@type Hand
+	local crossbowCrouchHand = false ---@type Hand
 
-	local crossbowCharged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
-	--Use Actions should take priority over charged crossbow offset rot
-	local crossbowCrouchHand = (crouching and crossbowCharged and activeItem:getCount() == 0)
-		and 2 or false ---@type Hand
+	if activeItem:getCount() ~= 0 then
+		if useAction == "SPYGLASS" then
+			spyglassHand = lastHand
+		elseif crouching then
+			if useAction == "BOW" then bowCrouchHand = lastHand
+			elseif useAction == "TOOT_HORN" then hornCrouchHand = lastHand
+			elseif useAction == "SPEAR" then tridentCrouchHand = lastHand
+			end
+		end
+	else
+		local rightItem = player:getHeldItem(leftHanded)
+		local leftItem = player:getHeldItem(not leftHanded)
+		local crossbowCharged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
+		--Use Actions should take priority over charged crossbow offset rot
+		if crouching and crossbowCharged then
+			crossbowCrouchHand = 2
+		end
+	end
 	
 	if useTime == 80 then
 		if util.checkUseAction("BOW", "SPEAR") then
@@ -304,8 +325,8 @@ afk.new(210)
 enviLib.register("DIMENSION", function(id)
 	local endIndex = select(2, id:find(":"))
 	local dimension = id:sub(endIndex + 1)
-	
-	util.switch(dimension, {
+
+	local switch = {
 		the_end = function()
 			for _, part in pairs(creeperEyeParts) do
 				part:color()
@@ -333,7 +354,7 @@ enviLib.register("DIMENSION", function(id)
 				type = "depthBackground",
 			})
 		end,
-		default = function()
+		overworld = function()
 			for _, part in pairs(creeperEyeParts) do
 				part:color()
 				part:color(vec(0.85, 0.66, 1))
@@ -343,8 +364,11 @@ enviLib.register("DIMENSION", function(id)
 				color = vec(0.75, 0.52, 0.9),
 				type = "depthBackground",
 			})
-		end
-	})
+		end,
+	}
+
+	if switch[dimension] then switch[dimension]()
+	else switch.overworld() end
 end)
 
 ---@param headPos Vector3
