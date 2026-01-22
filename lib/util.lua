@@ -1,17 +1,6 @@
 ---@class Util
 local util = {}
 
----Thank you `u/Serious-Accident8443`!
----@param value any
----@param cases {
----     default: function?,
----}
----@return any
-function util.switch(value, cases)
-    local match = cases[value] or cases.default or function() end
-    return match()
-end
-
 ---Returns an explicit boolean value out of a value that is truthy or falsy (and values I'd like to treat as falsy)
 ---@param value any
 ---@return boolean
@@ -114,15 +103,18 @@ end
 ---@param ... ItemStack.useAction
 ---@return boolean
 function util.checkUseAction(...)
-    if player:isUsingItem() then
-        local useAction = player:getActiveItem():getUseAction()
-        if select("#", ...) == 1 then
-            return useAction == ...
-        end
-        for _, action in pairs(table.pack(...)) do
-            if useAction == action then return true end
-        end
+    if not player:isUsingItem() then return false end
+    local activeItem = player:getActiveItem()
+    if activeItem:getCount() == 0 then return false end
+    
+    local useAction = activeItem:getUseAction()
+    if select("#", ...) == 1 then
+        return useAction == ...
     end
+    for _, action in pairs(table.pack(...)) do
+        if useAction == action then return true end
+    end
+
     return false
 end
 
