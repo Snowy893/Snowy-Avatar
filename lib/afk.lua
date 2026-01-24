@@ -5,7 +5,7 @@ local Afk = {}
 Afk.ALL = {}
 
 local onSneakChange = util.onChange(function()
-    for _, afk in pairs(Afk.ALL) do
+    for _, afk in ipairs(Afk.ALL) do
         afk.didSneakChange = true
     end
 end)

@@ -21,6 +21,7 @@ function Periodical:new(func, eventType)
         module.tickCounter = ticks
     end
 
+    ---@return Periodical.Obj
     function module:resetTickCounter()
         if module.maxTicks == nil or module.minTicks == module.maxTicks then
             module.tickCounter = module.minTicks
@@ -30,7 +31,7 @@ function Periodical:new(func, eventType)
         return module
     end
 
-    ---@overload fun(ticks: integer)
+    ---@overload fun(ticks: integer): Periodical.Obj
     ---@param minTicks integer
     ---@param maxTicks integer
     ---@return Periodical.Obj
@@ -41,7 +42,7 @@ function Periodical:new(func, eventType)
         return module
     end
 
-    ---@overload fun(ticks: integer)
+    ---@overload fun(ticks: integer): Periodical.Obj
     ---@param minTicks integer
     ---@param maxTicks integer
     ---@return Periodical.Obj
@@ -66,7 +67,7 @@ function Periodical:new(func, eventType)
         if Periodical.registeredEvents[module.type] == nil then
             Periodical.objs[module.type] = {}
             Periodical.registeredEvents[module.type] = events[module.type]:register(function()
-                for _, obj in pairs(Periodical.objs[module.type]) do
+                for _, obj in ipairs(Periodical.objs[module.type]) do
                     if obj.conditionFunc() then
                         obj.tickCounter = obj.tickCounter - 1
                         if obj.tickCounter == 0 then
@@ -84,7 +85,7 @@ function Periodical:new(func, eventType)
         
         ---@return Periodical.Obj
         function registeredModule:unRegister()
-            table.remove(Periodical.objs, module.index)
+            table.remove(Periodical.objs[module.type], module.index)
             return module
         end
 

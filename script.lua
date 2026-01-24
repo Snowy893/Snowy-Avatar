@@ -31,7 +31,7 @@ local onSleep = util.onChange(function (toggle)
 	animations.model.afkLoop:setPlaying(toggle)
 	if toggle then
 		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
-		for _, v in pairs(animatedText.getTask("sleeping").textTasks) do
+		for _, v in ipairs(animatedText.getTask("sleeping").textTasks) do
 			v.task:outline(true)
 		end
 	else
@@ -125,7 +125,7 @@ local depthObjects = {}
 ---@return ModelPart[][]
 local layerObjects = (function(parts)
 	local tbl = {}
-	for _, part in pairs(parts) do
+	for _, part in ipairs(parts) do
 		local name = part:getName()
 		
 		tbl[name] = {}
@@ -304,7 +304,7 @@ afk.new(210)
 	:register("ON_CHANGE", function(toggle)
     	if toggle then
 			animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
-			for _, v in pairs(animatedText.getTask("afk").textTasks) do
+			for _, v in ipairs(animatedText.getTask("afk").textTasks) do
 				v.task:outline(true)
 			end
 		else
@@ -328,7 +328,7 @@ enviLib.register("DIMENSION", function(id)
 
 	local switch = {
 		the_end = function()
-			for _, part in pairs(creeperEyeParts) do
+			for _, part in ipairs(creeperEyeParts) do
 				part:color()
 				part:color(0.81, 0.96, 0.99)
 			end
@@ -344,7 +344,7 @@ enviLib.register("DIMENSION", function(id)
 			})
 		end,
 		the_nether = function()
-			for _, part in pairs(creeperEyeParts) do
+			for _, part in ipairs(creeperEyeParts) do
 				part:color()
 				part:color(vec(0.82, 0.2, 0.75))
 			end
@@ -355,7 +355,7 @@ enviLib.register("DIMENSION", function(id)
 			})
 		end,
 		overworld = function()
-			for _, part in pairs(creeperEyeParts) do
+			for _, part in ipairs(creeperEyeParts) do
 				part:color()
 				part:color(vec(0.85, 0.66, 1))
 			end

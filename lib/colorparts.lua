@@ -10,7 +10,7 @@ function colorParts.new(parts)
     local module = {}
 
     local layers = {}
-    for _, v in pairs(parts) do
+    for _, v in ipairs(parts) do
         local index = 1
         local layer = v["layer" .. tostring(index)]
         while layer do
@@ -21,53 +21,54 @@ function colorParts.new(parts)
     end
 
     local switch = {}
-        if not hasDepthEffect then
-            switch.default = function(tbl)
-                for _, part in pairs(parts) do
-                    part:color()
-                    part:color(tbl.color)
-                end
-            end
 
-            switch.all = switch.default -- Alias
-        else
-            switch.depthLayer = function(tbl)
-                local layer = tbl.depthLayer or tbl.layer
-                for _, part in pairs(parts) do
-                    if part[layer] then
-                        part[layer]:color(tbl.color)
-                    end
-                end
+    if not hasDepthEffect then
+        switch.default = function(tbl)
+            for _, part in ipairs(parts) do
+                part:color()
+                part:color(tbl.color)
             end
-            switch.layer = switch.depthLayer -- Alias
-
-            switch.depthLayers = function(tbl)
-                for _, part in pairs(layers) do
-                    part:color()
-                    part:color(tbl.color)
-                end
-            end
-            switch.layers = switch.depthLayers -- Alias
-
-            switch.depthBackground = function(tbl)
-                for _, part in pairs(parts) do
-                    local background = part.bg or part.background
-                    background:color()
-                    background:color(tbl.color)
-                end
-            end
-            switch.background = switch.depthBackground -- Alias
-
-            switch.default = function(tbl)
-                for _, v in pairs(parts) do
-                    v:color()
-                    v:color(tbl.color)
-                end
-                module:color({ color = tbl.color, type = "depthLayers" })
-                module:color({ color = tbl.color, type = "depthBackground" })
-            end
-            switch.all = switch.default -- Alias
         end
+
+        switch.all = switch.default -- Alias
+    else
+        switch.depthLayer = function(tbl)
+            local layer = tbl.depthLayer or tbl.layer
+            for _, part in ipairs(parts) do
+                if part[layer] then
+                    part[layer]:color(tbl.color)
+                end
+            end
+        end
+        switch.layer = switch.depthLayer -- Alias
+
+        switch.depthLayers = function(tbl)
+            for _, part in ipairs(layers) do
+                part:color()
+                part:color(tbl.color)
+            end
+        end
+        switch.layers = switch.depthLayers -- Alias
+
+        switch.depthBackground = function(tbl)
+            for _, part in ipairs(parts) do
+                local background = part.bg or part.background
+                background:color()
+                background:color(tbl.color)
+            end
+        end
+        switch.background = switch.depthBackground -- Alias
+
+        switch.default = function(tbl)
+            for _, v in ipairs(parts) do
+                v:color()
+                v:color(tbl.color)
+            end
+            module:color({ color = tbl.color, type = "depthLayers" })
+            module:color({ color = tbl.color, type = "depthBackground" })
+        end
+        switch.all = switch.default -- Alias
+    end
 
     ---@alias ColorParts.type
     ---| "all"
