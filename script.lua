@@ -54,25 +54,24 @@ local onVehicleChange = util.onChange(function(vehicle)
 end)
 
 ---@alias Hand
----| -1 -- LEFT
----| false -- NONE
----| 1 -- RIGHT
----| 2 -- BOTH
+---| {RIGHT: boolean, LEFT: boolean}
 
----@param state Hand
-local onAimingBowWhileCrouching = util.onChange(function(state)
+---@param hand Hand
+local onAimingBowWhileCrouching = util.onChange(function(hand)
 	local rot = vec(30, 50, 30)
 	local pos = vec(-2.5, 0, -0.5)
-	if state == 1 then
-		rightItemPivot:setRot(rot)
-		rightItemPivot:setPos(pos)
-		leftItemPivot:setRot()
-		leftItemPivot:setPos()
-	elseif state == -1 then
-		leftItemPivot:setRot(vec(rot.x, -rot.y, -rot.z))
-		leftItemPivot:setPos(vec(-pos.x, pos.y, pos.z))
-		rightItemPivot:setRot()
-		rightItemPivot:setPos()
+	if hand then
+		if hand.RIGHT then
+			rightItemPivot:setRot(rot)
+			rightItemPivot:setPos(pos)
+			leftItemPivot:setRot()
+			leftItemPivot:setPos()
+		elseif hand.LEFT then
+			leftItemPivot:setRot(vec(rot.x, -rot.y, -rot.z))
+			leftItemPivot:setPos(vec(-pos.x, pos.y, pos.z))
+			rightItemPivot:setRot()
+			rightItemPivot:setPos()
+		end
 	else
 		rightItemPivot:setRot()
 		rightItemPivot:setPos()
@@ -81,24 +80,26 @@ local onAimingBowWhileCrouching = util.onChange(function(state)
 	end
 end)
 
----@param state Hand
-local onSpyglass = util.onChange(function(state)
+---@param hand Hand
+local onSpyglass = util.onChange(function(hand)
 	local pos = vec(0, 0, -11.2)
 	local scale = vec(1.95, 0.95, 1)
-	if state == 1 then
-		eyes.righteye:setPos(pos)
-		eyes.righteye:setScale(scale)
-		eyes.lefteye:setPos()
-		eyes.lefteye:setScale()
-		animations.model.squintleft:play()
-		animations.model.squintright:stop()
-	elseif state == -1 then
-		eyes.lefteye:setPos(pos)
-		eyes.lefteye:setScale(scale)
-		eyes.righteye:setPos()
-        eyes.righteye:setScale()
-		animations.model.squintright:play()
-		animations.model.squintleft:stop()
+	if hand then
+		if hand.RIGHT then
+			eyes.righteye:setPos(pos)
+			eyes.righteye:setScale(scale)
+			eyes.lefteye:setPos()
+			eyes.lefteye:setScale()
+			animations.model.squintleft:play()
+			animations.model.squintright:stop()
+		elseif hand.LEFT then
+			eyes.lefteye:setPos(pos)
+			eyes.lefteye:setScale(scale)
+			eyes.righteye:setPos()
+			eyes.righteye:setScale()
+			animations.model.squintright:play()
+			animations.model.squintleft:stop()
+		end
 	else
 		eyes.righteye:setPos()
 		eyes.righteye:setScale()
@@ -109,10 +110,10 @@ local onSpyglass = util.onChange(function(state)
 	end
 end)
 
----@param state Hand
-local onCrouchArmOffsetRot = util.onChange(function (state)
-	local rightRot = (state == 2 or state == 1) and 20 or nil
-	local leftRot = (state == 2 or state == -1) and 20 or nil
+---@param hand Hand
+local onCrouchArmOffsetRot = util.onChange(function (hand)
+	local rightRot = (hand and hand.RIGHT) and 20 or nil
+	local leftRot = (hand and hand.LEFT) and 20 or nil
 	vanilla_model.RIGHT_ARM:setOffsetRot(rightRot)
 	vanilla_model.LEFT_ARM:setOffsetRot(leftRot)
 end)
@@ -222,16 +223,18 @@ function events.TICK()
 	local useTime = player:getActiveItemTime()
 
 	local leftHanded = player:isLeftHanded()
-	local lastHand = (player:getActiveHand() == "MAIN_HAND") and 1 or -1 ---@type Hand
-	if leftHanded then lastHand = -lastHand end
 
-	local spyglassHand = false ---@type Hand
-	local bowCrouchHand = false ---@type Hand
-	local hornCrouchHand = false ---@type Hand
-	local tridentCrouchHand = false ---@type Hand
-	local crossbowCrouchHand = false ---@type Hand
+	local spyglassHand ---@type Hand
+	local bowCrouchHand ---@type Hand
+	local hornCrouchHand ---@type Hand
+	local tridentCrouchHand ---@type Hand
+	local crossbowCrouchHand ---@type Hand
 
+	--Use Actions should take priority over charged crossbow offset rot
 	if activeItem:getCount() ~= 0 then
+		---@type Hand
+		local lastHand = ((player:getActiveHand() == "MAIN_HAND") == (not leftHanded))
+			and { RIGHT = true } or { LEFT = true }
 		if useAction == "SPYGLASS" then
 			spyglassHand = lastHand
 		elseif crouching then
@@ -244,9 +247,8 @@ function events.TICK()
 		local rightItem = player:getHeldItem(leftHanded)
 		local leftItem = player:getHeldItem(not leftHanded)
 		local crossbowCharged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
-		--Use Actions should take priority over charged crossbow offset rot
 		if crouching and crossbowCharged then
-			crossbowCrouchHand = 2
+			crossbowCrouchHand = {RIGHT = true, LEFT = true}
 		end
 	end
 	
