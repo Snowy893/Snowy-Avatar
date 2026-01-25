@@ -54,24 +54,22 @@ local onVehicleChange = util.onChange(function(vehicle)
 end)
 
 ---@alias Hand
----| {RIGHT: boolean, LEFT: boolean}
+---| { RIGHT: boolean, LEFT: boolean }
 
 ---@param hand Hand
 local onAimingBowWhileCrouching = util.onChange(function(hand)
 	local rot = vec(30, 50, 30)
 	local pos = vec(-2.5, 0, -0.5)
-	if hand then
-		if hand.RIGHT then
-			rightItemPivot:setRot(rot)
-			rightItemPivot:setPos(pos)
-			leftItemPivot:setRot()
-			leftItemPivot:setPos()
-		elseif hand.LEFT then
-			leftItemPivot:setRot(vec(rot.x, -rot.y, -rot.z))
-			leftItemPivot:setPos(vec(-pos.x, pos.y, pos.z))
-			rightItemPivot:setRot()
-			rightItemPivot:setPos()
-		end
+	if hand.RIGHT then
+		rightItemPivot:setRot(rot)
+		rightItemPivot:setPos(pos)
+		leftItemPivot:setRot()
+		leftItemPivot:setPos()
+	elseif hand.LEFT then
+		leftItemPivot:setRot(vec(rot.x, -rot.y, -rot.z))
+		leftItemPivot:setPos(vec(-pos.x, pos.y, pos.z))
+		rightItemPivot:setRot()
+		rightItemPivot:setPos()
 	else
 		rightItemPivot:setRot()
 		rightItemPivot:setPos()
@@ -84,22 +82,20 @@ end)
 local onSpyglass = util.onChange(function(hand)
 	local pos = vec(0, 0, -11.2)
 	local scale = vec(1.95, 0.95, 1)
-	if hand then
-		if hand.RIGHT then
-			eyes.righteye:setPos(pos)
-			eyes.righteye:setScale(scale)
-			eyes.lefteye:setPos()
-			eyes.lefteye:setScale()
-			animations.model.squintleft:play()
-			animations.model.squintright:stop()
-		elseif hand.LEFT then
-			eyes.lefteye:setPos(pos)
-			eyes.lefteye:setScale(scale)
-			eyes.righteye:setPos()
-			eyes.righteye:setScale()
-			animations.model.squintright:play()
-			animations.model.squintleft:stop()
-		end
+	if hand and hand.RIGHT then
+		eyes.righteye:setPos(pos)
+		eyes.righteye:setScale(scale)
+		eyes.lefteye:setPos()
+		eyes.lefteye:setScale()
+		animations.model.squintleft:play()
+		animations.model.squintright:stop()
+	elseif hand and hand.LEFT then
+		eyes.lefteye:setPos(pos)
+		eyes.lefteye:setScale(scale)
+		eyes.righteye:setPos()
+		eyes.righteye:setScale()
+		animations.model.squintright:play()
+		animations.model.squintleft:stop()
 	else
 		eyes.righteye:setPos()
 		eyes.righteye:setScale()
@@ -170,7 +166,6 @@ local eyeColorParts = colorParts.new({
 
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
-
 animatedText.new("afk", body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
 	"BILLBOARD", "")
 animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
@@ -183,12 +178,16 @@ skullCreeperEyes:setVisible(false)
 
 ------------------------------------------------------------------
 
-periodical:new(function() animations.model.blink:play() end, "WORLD_TICK")
+periodical.new(function() animations.model.blink:play() end, "WORLD_TICK")
 	:condition(function()
 		return (not player:isLoaded()) or (not isAfk and player:getPose() ~= "SLEEPING")
 	end)
 	:timing(100, 300)
 	:register()
+
+periodical.new(function ()
+	log("hi")
+end, "WORLD_TICK"):register()
 
 ------------------------------------------------------------------
 
@@ -232,9 +231,9 @@ function events.TICK()
 
 	--Use Actions should take priority over charged crossbow offset rot
 	if activeItem:getCount() ~= 0 then
+		local mainHandActive = player:getActiveHand() == "MAIN_HAND"
 		---@type Hand
-		local lastHand = ((player:getActiveHand() == "MAIN_HAND") == (not leftHanded))
-			and { RIGHT = true } or { LEFT = true }
+		local lastHand = (mainHandActive == not leftHanded) and { RIGHT = true } or { LEFT = true }
 		if useAction == "SPYGLASS" then
 			spyglassHand = lastHand
 		elseif crouching then

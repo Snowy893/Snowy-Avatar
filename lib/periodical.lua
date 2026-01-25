@@ -91,7 +91,7 @@ function Periodical.new(func, eventType)
         obj.index = #Periodical.objs[obj.type] + 1
 
         table.insert(Periodical.objs[obj.type], obj.index, obj)
-        
+
         ---@return Periodical.Obj
         function registeredObj:unRegister()
             table.remove(Periodical.objs[obj.type], obj.index)
