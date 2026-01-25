@@ -74,7 +74,7 @@ function Periodical.new(func, eventType)
 
         if Periodical.registeredEvents[obj.type] == nil then
             Periodical.objs[obj.type] = {}
-            Periodical.registeredEvents[obj.type] = events[obj.type]:register(function()
+            events[obj.type]:register(function()
                 ---@param o Periodical.Obj
                 for _, o in ipairs(Periodical.objs[obj.type]) do
                     if o.conditionFunc() then
@@ -85,7 +85,7 @@ function Periodical.new(func, eventType)
                         end
                     end
                 end
-            end)
+            end, "periodical.."..tostring(obj.type))
         end
 
         obj.index = #Periodical.objs[obj.type] + 1
@@ -95,7 +95,7 @@ function Periodical.new(func, eventType)
         ---@return Periodical.Obj
         function registeredObj:unRegister()
             table.remove(Periodical.objs[obj.type], obj.index)
-            if #Periodical.objs[obj.type] == 0 then Periodical.registeredEvents[obj.type]:remove() end
+            if #Periodical.objs[obj.type] == 0 then events["periodical"..obj.type]:remove() end
             return obj
         end
 
