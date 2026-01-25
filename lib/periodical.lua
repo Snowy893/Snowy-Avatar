@@ -95,6 +95,7 @@ function Periodical.new(func, eventType)
         ---@return Periodical.Obj
         function registeredObj:unRegister()
             table.remove(Periodical.objs[obj.type], obj.index)
+            if #Periodical.objs[obj.type] == 0 then Periodical.registeredEvents[obj.type]:remove() end
             return obj
         end
 
