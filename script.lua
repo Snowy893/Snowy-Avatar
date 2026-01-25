@@ -185,10 +185,6 @@ periodical.new(function() animations.model.blink:play() end, "WORLD_TICK")
 	:timing(100, 300)
 	:register()
 
-periodical.new(function ()
-	log("hi")
-end, "WORLD_TICK"):register()
-
 ------------------------------------------------------------------
 
 ---This is global because it runs in `animations.model.creeper`'s instruction keyframe
