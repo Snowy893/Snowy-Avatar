@@ -60,12 +60,12 @@ end)
 local onAimingBowWhileCrouching = util.onChange(function(hand)
 	local rot = vec(30, 50, 30)
 	local pos = vec(-2.5, 0, -0.5)
-	if hand.RIGHT then
+	if hand and hand.RIGHT then
 		rightItemPivot:setRot(rot)
 		rightItemPivot:setPos(pos)
 		leftItemPivot:setRot()
 		leftItemPivot:setPos()
-	elseif hand.LEFT then
+	elseif hand and hand.LEFT then
 		leftItemPivot:setRot(vec(rot.x, -rot.y, -rot.z))
 		leftItemPivot:setPos(vec(-pos.x, pos.y, pos.z))
 		rightItemPivot:setRot()
