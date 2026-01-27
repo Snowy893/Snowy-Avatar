@@ -108,9 +108,11 @@ function util.checkUseAction(...)
     if activeItem:getCount() == 0 then return false end
     
     local useAction = activeItem:getUseAction()
-    if select("#", ...) == 1 then
+
+    if select("#", ...) then
         return useAction == ...
     end
+    
     for _, action in pairs(table.pack(...)) do
         if useAction == action then return true end
     end
