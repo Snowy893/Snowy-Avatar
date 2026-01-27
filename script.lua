@@ -213,8 +213,7 @@ function events.TICK()
 	local sleeping = player:getPose() == "SLEEPING"
 	local vehicle = player:getVehicle()
 
-	local activeItem = player:getActiveItem()
-	local useAction = activeItem:getUseAction()
+	local useAction = player:getActiveItem():getUseAction()
 	local useTime = player:getActiveItemTime()
 
 	local leftHanded = player:isLeftHanded()
@@ -225,11 +224,11 @@ function events.TICK()
 	local tridentCrouchHand ---@type Hand
 	local crossbowCrouchHand ---@type Hand
 
-	--Use Actions should take priority over charged crossbow offset rot
-	if activeItem:getCount() ~= 0 then
+    --Use Actions should take priority over charged crossbow offset rot
+	if player:isUsingItem() then
 		local mainHandActive = player:getActiveHand() == "MAIN_HAND"
 		---@type Hand
-		local lastHand = (mainHandActive == not leftHanded) and { RIGHT = true } or { LEFT = true }
+		local lastHand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true }
 		if useAction == "SPYGLASS" then
 			spyglassHand = lastHand
 		elseif crouching then
@@ -243,7 +242,7 @@ function events.TICK()
 		local leftItem = player:getHeldItem(not leftHanded)
 		local crossbowCharged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
 		if crouching and crossbowCharged then
-			crossbowCrouchHand = {RIGHT = true, LEFT = true}
+			crossbowCrouchHand = { RIGHT = true, LEFT = true }
 		end
 	end
 	
