@@ -247,7 +247,7 @@ function events.TICK()
 	end
 	
 	if useTime == 80 then
-		if util.checkUseAction("BOW", "SPEAR") then
+		if useAction == "BOW" or useAction == "SPEAR" then
 			animations.model.aiming:play()
 		end
 	elseif useTime < 80 then
