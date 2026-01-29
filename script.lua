@@ -22,6 +22,8 @@ local leftArm = root.torso.waist.LeftArm
 local rightItemPivot = rightArm.RightItemPivot
 local leftItemPivot = leftArm.LeftItemPivot
 
+local eyeHeight = vec(0, 1.62, 0)
+
 local isAfk = false
 
 ------------------------------------------------------------------
@@ -156,10 +158,23 @@ local eyeColorParts = colorParts.new({
 
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
-animatedText.new("afk", body, vec(-7, 5.5, -6), vec(0.35, 0.35, 0.35),
-	"BILLBOARD", "")
-animatedText.new("sleeping", body, vec(0, 5, -6), vec(0.35, 0.35, 0.35),
-    "BILLBOARD", "")
+animatedText.new(
+	"afk",
+	body,
+	vec(-7, 5.5, -6),
+	vec(0.35, 0.35, 0.35),
+	"BILLBOARD",
+	""
+)
+
+animatedText.new(
+	"sleeping",
+	body,
+	vec(0, 5, -6),
+	vec(0.35, 0.35, 0.35),
+	"BILLBOARD",
+	""
+)
 
 vanilla_model.PLAYER:setVisible(false)
 root.sadchair:setVisible(false)
@@ -218,20 +233,20 @@ function events.TICK()
 	if player:isUsingItem() then
 		local mainHandActive = player:getActiveHand() == "MAIN_HAND"
 		---@type Hand
-		local lastHand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true }
+		local hand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true }
 		if useAction == "SPYGLASS" then
-			spyglassHand = lastHand
+			spyglassHand = hand
 		elseif crouching then
-			if useAction == "BOW" then bowCrouchHand = lastHand
-			elseif useAction == "TOOT_HORN" then hornCrouchHand = lastHand
-			elseif useAction == "SPEAR" then tridentCrouchHand = lastHand
+			if useAction == "BOW" then bowCrouchHand = hand
+			elseif useAction == "TOOT_HORN" then hornCrouchHand = hand
+			elseif useAction == "SPEAR" then tridentCrouchHand = hand
 			end
 		end
-	else
+	elseif crouching then
 		local rightItem = player:getHeldItem(leftHanded)
 		local leftItem = player:getHeldItem(not leftHanded)
 		local crossbowCharged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
-		if crouching and crossbowCharged then
+		if crossbowCharged then
 			crossbowCrouchHand = { RIGHT = true, LEFT = true }
 		end
 	end
@@ -258,7 +273,9 @@ function events.RENDER(delta, context)
 		for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
 			animatedText.transform(
 				"sleeping",
-				vec(-i * 1.1, (math.sin(time / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
+				vec(-i * 1.1, (math.sin(time / 8 + i) * .5) + (i * 1.3), 0),
+				nil,
+				nil,
 				v
 			)
 		end
@@ -267,7 +284,7 @@ function events.RENDER(delta, context)
     if context == "FIRST_PERSON" then return end
 	
     local cameraPos = client.getCameraPos()
-    local eyePos = player:getPos(delta):add(0, 1.62, 0)
+    local eyePos = player:getPos(delta):add(eyeHeight)
 	local distance = math.abs((cameraPos - eyePos):length())
 
 	for i, depthObject in ipairs(depthObjects) do
@@ -305,11 +322,13 @@ afk.new(210)
 			animatedText.setText("afk", "")
 		end
     end)
-    :register("ON_RENDER_LOOP", function(delta, context)
+    :register("ON_RENDER_LOOP", function(delta)
 		for i, v in ipairs(animatedText.getTask("afk").textTasks) do
 			animatedText.transform(
 				"afk",
-				vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
+				vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0),
+				nil,
+				nil,
 				v
 			)
 		end
@@ -376,5 +395,5 @@ table.insert(patpat.head.oncePat, function(_, headPos)
 end)
 
 table.insert(patpat.player.oncePat, function()
-	sounds:playSound("minecraft:entity.cat.purr", player:getPos(), 0.15)
+	sounds:playSound("minecraft:entity.cat.purr", player:getPos():add(eyeHeight), 0.15)
 end)
