@@ -139,19 +139,9 @@ local layerObjects = (function(parts)
 	return tbl
 end)({ eyes.righteye, eyes.lefteye })
 
-local initalDepthIncrement = 16
-
 for _, obj in pairs(layerObjects) do
-	local depthIncrement = initalDepthIncrement
-
-	for i, layer in ipairs(obj) do
-		if obj[i + 1] == nil then
-			depthIncrement = -initalDepthIncrement
-		end
-
-		table.insert(depthObjects, depthEffect.apply(layer, depthIncrement))
-
-		depthIncrement = depthIncrement * 2
+	for _, layer in ipairs(obj) do
+		table.insert(depthObjects, depthEffect.apply(layer, 1))
 	end
 end
 
@@ -261,7 +251,7 @@ function events.TICK()
 	onVehicleChange(vehicle)
 end
 
-function events.RENDER(delta)
+function events.RENDER(delta, context)
 	if player:getPose() == "SLEEPING" then
 		for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
 			animatedText.transform(
@@ -271,7 +261,9 @@ function events.RENDER(delta)
 			)
 		end
 	end
-	
+
+	if context == "FIRST_PERSON" then return end
+
 	for i, depthObject in ipairs(depthObjects) do
 		local depth = math.cos(world.getTime(delta) * 0.1 + i) * 4
 		depthObject:setDepth(depth)
