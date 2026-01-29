@@ -264,10 +264,11 @@ function events.RENDER(delta, context)
 
     if context == "FIRST_PERSON" then return end
 	
-	local distance = client.getCameraPos() - player:getPos(delta)
+	local distanceFromHead = client.getCameraPos() - player:getPos(delta):add(0, 2, 0)
+	local absoluteLength = math.abs(distanceFromHead:length())
 
 	for i, depthObject in ipairs(depthObjects) do
-		local depth = math.cos(world.getTime(delta) * 0.1 + i) * distance:length()
+		local depth = math.cos(world.getTime(delta) * 0.1 + i) * absoluteLength
 		depthObject:setDepth(depth)
 	end
 end
