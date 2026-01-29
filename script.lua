@@ -252,11 +252,13 @@ function events.TICK()
 end
 
 function events.RENDER(delta, context)
+	local time = world.getTime(delta)
+
 	if player:getPose() == "SLEEPING" then
 		for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
 			animatedText.transform(
 				"sleeping",
-				vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
+				vec(-i * 1.1, (math.sin(time / 8 + i) * .5) + (i * 1.3), 0), nil, nil,
 				v
 			)
 		end
@@ -264,11 +266,12 @@ function events.RENDER(delta, context)
 
     if context == "FIRST_PERSON" then return end
 	
-	local distanceFromHead = client.getCameraPos() - player:getPos(delta):add(0, 2, 0)
-	local absoluteLength = math.abs(distanceFromHead:length())
+    local cameraPos = client.getCameraPos()
+    local eyePos = player:getPos(delta):add(0, 1.62, 0)
+	local distance = math.abs((cameraPos - eyePos):length())
 
 	for i, depthObject in ipairs(depthObjects) do
-		local depth = math.cos(world.getTime(delta) * 0.1 + i) * absoluteLength
+		local depth = math.cos(time * 0.1 + i) * distance
 		depthObject:setDepth(depth)
 	end
 end
