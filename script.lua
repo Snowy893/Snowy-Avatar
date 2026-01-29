@@ -394,6 +394,8 @@ table.insert(patpat.head.oncePat, function(_, headPos)
 	sounds:playSound("minecraft:entity.bat.hurt", headPos, 0.15)
 end)
 
-table.insert(patpat.player.oncePat, function()
-	sounds:playSound("minecraft:entity.cat.purr", player:getPos():add(eyeHeight), 0.15)
+table.insert(patpat.player.onPat, function()
+	---@type Minecraft.soundID
+	local sound = math.random(1,10) == 10 and "minecraft:entity.bat.hurt" or "minecraft:entity.cat.purr"
+	sounds:playSound(sound, player:getPos():add(eyeHeight), 0.15)
 end)
