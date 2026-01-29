@@ -1,4 +1,5 @@
 if not host:isHost() then return end
+
 local syncedPings = require "lib.syncedpings"
 
 local unlockCursorKey = "key.mouse.5" ---@type Minecraft.keyCode
