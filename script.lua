@@ -244,9 +244,10 @@ function events.TICK()
 		end
 	elseif crouching then
 		local rightItem = player:getHeldItem(leftHanded)
-		local leftItem = player:getHeldItem(not leftHanded)
-		local crossbowCharged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
-		if crossbowCharged then
+        local leftItem = player:getHeldItem(not leftHanded)
+		if util.crossbowCharged(rightItem) then
+			crossbowCrouchHand = { RIGHT = true, LEFT = true }
+		elseif util.crossbowCharged(leftItem) then
 			crossbowCrouchHand = { RIGHT = true, LEFT = true }
 		end
 	end
