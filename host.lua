@@ -2,7 +2,7 @@ if not host:isHost() then return end
 
 local syncedPings = require "lib.syncedpings"
 
-local unlockCursorKey = "key.mouse.5" ---@type Minecraft.keyCode
+local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 local page = action_wheel:newPage()
 local sadChair = models.model.root.sadchair
 local hasSuperSecretShaders = client.compareVersions(client.getVersion(), "1.20.5") ~= 1

@@ -142,10 +142,12 @@ local layerObjects = (function(parts)
 end)({ eyes.righteye, eyes.lefteye })
 
 for _, obj in pairs(layerObjects) do
-	for _, layer in ipairs(obj) do
-		table.insert(depthObjects, depthEffect.apply(layer, 1))
-	end
+    for _, layer in ipairs(obj) do
+        table.insert(depthObjects, depthEffect.apply(layer, 1))
+    end
 end
+
+------------------------------------------------------------------
 
 local eyeColorParts = colorParts.new({
 	eyes.righteye,
@@ -153,8 +155,6 @@ local eyeColorParts = colorParts.new({
 	skullEyes.righteye2,
 	skullEyes.lefteye2,
 })
-
-------------------------------------------------------------------
 
 local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
