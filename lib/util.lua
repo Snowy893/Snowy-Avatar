@@ -8,15 +8,38 @@ function util.toboolean(value)
     if value then return true else return false end
 end
 
+---@param ... table
+---@return boolean
+function util.compareTables(...)
+    local tbls = { ... }
+    if #tbls == 1 then return true end
+    local tbl1 = tbls[1]
+    for k, v in pairs(tbls[2]) do
+        if type(tbl1[k]) == "table" and type(v) == "table" then
+            if not util.compareTables(tbl1[k], v) then
+                return false
+            end
+        elseif tbl1[k] ~= v then
+            return false
+        end
+    end
+    return util.compareTables(table.unpack(table.remove(tbls, 1)))
+end
+
 ---@param func fun(value, oldValue, ...)
 ---@param initialValue? any
 ---@return fun(value, ...)
 function util.onchange(func, initialValue)
     local oldValue = initialValue
     return function(value, ...)
-        if oldValue ~= value then
+        if type(value) == "table" and type(oldValue) == "table" then
+            if util.compareTables(value, oldValue) then
+                func(value, oldValue, ...)
+            end
+        elseif oldValue ~= value then
             func(value, oldValue, ...)
         end
+
         oldValue = value
     end
 end
@@ -49,13 +72,13 @@ function util.splitstring(inputStr, seperator)
     return table.unpack(t)
 end
 
----Thanks `manuel_2867` on the Figura Discord!
+---Thanks `toomanylimits` on the Figura Discord!
 ---@param tbl table
----@param keys table
-function util.indexable(tbl, keys)
-    if tbl == nil then return nil end
-    if #keys == 1 then return tbl[keys[1]] end
-    return util.indexable(tbl[table.remove(keys, 1)], keys)
+---@param key any
+---@param ... any
+function util.chainIndex(tbl, key, ...)
+    if key == nil or tbl == nil then return tbl end
+    return util.chainIndex(tbl[key], ...)
 end
 
 ---@param fromPage Page
