@@ -29,7 +29,7 @@ local isAfk = false
 ------------------------------------------------------------------
 
 ---@param toggle boolean
-local onSleep = util.onChange(function (toggle)
+local onSleep = util.onchange(function (toggle)
 	animations.model.afkLoop:setPlaying(toggle)
 	if toggle then
 		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
@@ -42,7 +42,7 @@ local onSleep = util.onChange(function (toggle)
 end)
 
 ---@param vehicle Entity?
-local onVehicleChange = util.onChange(function(vehicle)
+local onVehicleChange = util.onchange(function(vehicle)
 	-- local isBoat = vehicle and vehicle:getType():find("boat")
 	-- -- local isDriving = vehicle and vehicle:getControllingPassenger() == player
 	
@@ -59,7 +59,7 @@ end)
 ---| { RIGHT: boolean, LEFT: boolean }
 
 ---@param hand Hand
-local onAimingBowWhileCrouching = util.onChange(function(hand)
+local onAimingBowWhileCrouching = util.onchange(function(hand)
 	local rot = vec(30, 50, 30)
 	local pos = vec(-2.5, 0, -0.5)
 	if hand and hand.RIGHT then
@@ -81,7 +81,7 @@ local onAimingBowWhileCrouching = util.onChange(function(hand)
 end)
 
 ---@param hand Hand
-local onSpyglass = util.onChange(function(hand)
+local onSpyglass = util.onchange(function(hand)
 	local pos = vec(0, 0, -11.2)
 	local scale = vec(1.95, 0.95, 1)
 	if hand and hand.RIGHT then
@@ -109,7 +109,7 @@ local onSpyglass = util.onChange(function(hand)
 end)
 
 ---@param hand Hand
-local onCrouchArmOffsetRot = util.onChange(function (hand)
+local onCrouchArmOffsetRot = util.onchange(function (hand)
 	local rightRot = (hand and hand.RIGHT) and 20 or nil
 	local leftRot = (hand and hand.LEFT) and 20 or nil
 	vanilla_model.RIGHT_ARM:setOffsetRot(rightRot)

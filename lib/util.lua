@@ -8,13 +8,11 @@ function util.toboolean(value)
     if value then return true else return false end
 end
 
----@generic T
----@param func fun(value: T, oldValue: T, ...)
+---@param func fun(value, oldValue, ...)
 ---@param initialValue? any
----@return fun(value: T, ...)
-function util.onChange(func, initialValue)
-    local oldValue = initialValue or nil
-
+---@return fun(value, ...)
+function util.onchange(func, initialValue)
+    local oldValue = initialValue
     return function(value, ...)
         if oldValue ~= value then
             func(value, oldValue, ...)
@@ -24,23 +22,23 @@ function util.onChange(func, initialValue)
 end
 
 ---@param tbl? function[]
----@param metaTable? table
----@return FunctionTable
-function util.functionTable(tbl, metaTable)
+---@param mtbl? table
+---@return functiontable
+function util.functiontable(tbl, mtbl)
     local t = tbl or {}
-    local mtbl = metaTable or {}
-    mtbl.__call = function(tble, ...)
-        for _, func in pairs(tble) do func(...) end
+    local mt = mtbl or {}
+    mt.__call = function(self, ...)
+        for _, func in pairs(self) do func(...) end
     end
-    ---@class FunctionTable
-    return setmetatable(t, mtbl)
+    ---@class functiontable
+    return setmetatable(t, mt)
 end
 
 ---Thanks `user973713` on stackoverflow!
 ---@param inputStr string
 ---@param seperator string
 ---@return ...
-function util.splitString(inputStr, seperator)
+function util.splitstring(inputStr, seperator)
     if seperator == nil then
         seperator = "%s"
     end
@@ -49,6 +47,15 @@ function util.splitString(inputStr, seperator)
         table.insert(t, str)
     end
     return table.unpack(t)
+end
+
+---Thanks `manuel_2867` on the Figura Discord!
+---@param tbl table
+---@param keys table
+function util.indexable(tbl, keys)
+    if tbl == nil then return nil end
+    if #keys == 1 then return tbl[keys[1]] end
+    return util.indexable(tbl[table.remove(keys, 1)], keys)
 end
 
 ---@param fromPage Page
@@ -72,7 +79,7 @@ local permissionLevels = {
 }
 
 ---Returns true if the current permission level is greater than or equal to the input permission level
----@overload fun(targetLevel: AvatarAPI.permissionLevel)
+---@overload fun(targetLevel: AvatarAPI.permissionLevel): boolean
 ---@param targetLevel AvatarAPI.permissionLevel
 ---@param currentLevel AvatarAPI.permissionLevel
 ---@return boolean 
@@ -109,11 +116,11 @@ function util.checkUseAction(...)
     
     local useAction = activeItem:getUseAction()
 
-    if select("#", ...) then
+    if select("#", ...) == 1 then
         return useAction == ...
     end
     
-    for _, action in pairs(table.pack(...)) do
+    for _, action in ipairs({...}) do
         if useAction == action then return true end
     end
 

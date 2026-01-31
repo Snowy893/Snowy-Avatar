@@ -4,7 +4,7 @@ local Afk = {}
 ---@type Afk[]
 Afk.ALL = {}
 
-local onSneakChange = util.onChange(function()
+local onSneakChange = util.onchange(function()
     for _, afk in ipairs(Afk.ALL) do
         afk.didSneakChange = true
     end
@@ -31,12 +31,12 @@ function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     module.didSneakChange = false
 
     module.events = {
-        ON_CHANGE = util.functionTable(),
-        ON_RENDER_LOOP = util.functionTable(),
-        ON_TICK_NOT_AFK = util.functionTable(),
+        ON_CHANGE = util.functiontable(),
+        ON_RENDER_LOOP = util.functiontable(),
+        ON_TICK_NOT_AFK = util.functiontable(),
     }
 
-    module.onAfkChange = util.onChange(module.events.ON_CHANGE --[[@as fun(toggle: boolean)]])
+    module.onAfkChange = util.onchange(module.events.ON_CHANGE --[[@as fun(toggle: boolean)]])
 
     ---@class Afk.Obj
     local obj = {}

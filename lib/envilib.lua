@@ -4,11 +4,11 @@ local enviLib = {}
 
 local enviLibEvents = {
     DIMENSION = {
-        ON_CHANGE = util.functionTable(),
+        ON_CHANGE = util.functiontable(),
         REGISTERED = {}
     },
     BIOME = {
-        ON_CHANGE = util.functionTable(),
+        ON_CHANGE = util.functiontable(),
         REGISTERED = {}
     },
 }
@@ -27,7 +27,7 @@ function enviLib.register(type, func, id)
     else
         if not enviLibEvents[type][id] then
             table.insert(enviLibEvents[type].REGISTERED, id)
-            enviLibEvents[type][id] = util.functionTable()
+            enviLibEvents[type][id] = util.functiontable()
         end
         table.insert(enviLibEvents[type][id], func)
     end
@@ -49,13 +49,13 @@ end
 
 ---@param dim Minecraft.dimensionID
 ---@param oldDim Minecraft.dimensionID
-local onDimensionChange = util.onChange(function(dim, oldDim)
+local onDimensionChange = util.onchange(function(dim, oldDim)
     enviChange("DIMENSION", dim, oldDim)
 end)
 
 ---@param oldBiomeID Minecraft.biomeID
 ---@param biome Biome
-local onBiomeChange = util.onChange(function(_, oldBiomeID, biome)
+local onBiomeChange = util.onchange(function(_, oldBiomeID, biome)
     enviChange("BIOME", biome, oldBiomeID)
 end)
 
