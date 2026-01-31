@@ -8,22 +8,28 @@ function util.toboolean(value)
     if value then return true else return false end
 end
 
----@param ... table
+---@param val1 any
+---@param val2 any
+---@return type | nil
+function util.comparetype(val1, val2)
+    local t = type(val1)
+    if t == type(val2) then return t else return nil end
+end
+
+---@param tbl1 table
+---@param tbl2 table
 ---@return boolean
-function util.compareTables(...)
-    local tbls = { ... }
-    if #tbls == 1 then return true end
-    local tbl1 = tbls[1]
-    for k, v in pairs(tbls[2]) do
-        if type(tbl1[k]) == "table" and type(v) == "table" then
-            if not util.compareTables(tbl1[k], v) then
+function util.comparetables(tbl1, tbl2)
+    for k, v in pairs(tbl1) do
+        if util.comparetype(tbl2[k], v) == "table" then
+            if not util.comparetables(tbl2[k], v) then
                 return false
             end
-        elseif tbl1[k] ~= v then
+        elseif tbl2[k] ~= v then
             return false
         end
     end
-    return util.compareTables(table.unpack(table.remove(tbls, 1)))
+    return true
 end
 
 ---@param func fun(value, oldValue, ...)
@@ -32,14 +38,9 @@ end
 function util.onchange(func, initialValue)
     local oldValue = initialValue
     return function(value, ...)
-        if type(value) == "table" and type(oldValue) == "table" then
-            if util.compareTables(value, oldValue) then
-                func(value, oldValue, ...)
-            end
-        elseif oldValue ~= value then
+        if oldValue ~= value then
             func(value, oldValue, ...)
         end
-
         oldValue = value
     end
 end
