@@ -185,7 +185,7 @@ end
 ---@param a number
 ---@param amt number
 ---@return Vector4
-function colorlib.lighten(color, r, g, b, a, amt)
+function colorlib.lighten(r, g, b, a, amt)
     local overload = type(r)
     if overload == "Vector4" then
         amt = g
