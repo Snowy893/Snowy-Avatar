@@ -26,12 +26,11 @@ local leftItemPivot = leftArm.LeftItemPivot
 
 local name = "Snowy :blahaj:"
 local nameColor = "#6600cc"
+local nameColorRGB = colorlib.hextorgb(nameColor)
 
 nameplate.ENTITY:setOutline(true)
 
 local onTeamChange = util.onchange(function(teamColor)
-	local rgb
-
 	local plate = {
 		text = name,
 		hoverEvent = {
@@ -40,18 +39,18 @@ local onTeamChange = util.onchange(function(teamColor)
 		},
 	}
 
+	local rgb
+
 	if teamColor then
-		rgb = colorlib.vanillaColors[teamColor]
 		plate.color = teamColor
+		rgb = colorlib.vanillaColors[teamColor]
 	else
-		rgb = colorlib.hextorgb(nameColor)
 		plate.color = nameColor
+		rgb = nameColorRGB
 	end
 
-	local r, g, b = rgb:unpack()
-
 	nameplate.ALL:setText(toJson(plate))
-	nameplate.ENTITY:setOutlineColor(colorlib.lighten(r, g, b, -25) / 255)
+	nameplate.ENTITY:setOutlineColor(colorlib.lighten(rgb, -25) / 255)
 end, true)
 
 ------------------------------------------------------------------

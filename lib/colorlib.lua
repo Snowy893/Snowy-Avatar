@@ -120,8 +120,10 @@ end
 ------------------------------------------------------------------
 
 ---Thanks `fabtjar` on Github!
+---@overload fun(hex: string): Vector3
 ---@param hex string
----@param alpha number?
+---@param alpha number
+---@return Vector4
 function colorlib.hextorgb(hex, alpha)
     local redColor, greenColor, blueColor = hex:match("#?(..)(..)(..)")
     ---@diagnostic disable-next-line: param-type-mismatch
@@ -174,6 +176,8 @@ end
 -- amt (0-100) can be negative to darken or positive to lighten
 -- The amt specified is added to the color's existing Lightness
 -- e.g., (#000000, 25) L = 25 but (#404040, 25) L = 50
+---@overload fun(color: Vector4, amt: number): Vector4
+---@overload fun(color: Vector3, amt: number): Vector3
 ---@overload fun(r: number, g: number, b: number, amt: number): Vector3
 ---@param r number
 ---@param g number
@@ -181,11 +185,19 @@ end
 ---@param a number
 ---@param amt number
 ---@return Vector4
-function colorlib.lighten(r, g, b, a, amt)
-    if amt == nil then
+function colorlib.lighten(color, r, g, b, a, amt)
+    local overload = type(r)
+    if overload == "Vector4" then
+        amt = g
+        r, g, b, a = r:unpack()
+    elseif overload == "Vector3" then
+        amt = g
+        r, g, b = r:unpack()
+    elseif amt == nil then
         amt = a
         a = nil
     end
+    
     r = r / 255
     g = g / 255
     b = b / 255
