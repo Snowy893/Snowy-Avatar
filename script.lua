@@ -22,14 +22,30 @@ local leftArm = root.torso.waist.LeftArm
 local rightItemPivot = rightArm.RightItemPivot
 local leftItemPivot = leftArm.LeftItemPivot
 
+------------------------------------------------------------------
+
+local name = "Snowy:blahaj:"
+local nameColor = "#6600cc"
+
+local onTeamChange = util.onchange(function(teamColor)
+	nameplate.ALL:setText(toJson {
+		text = name,
+		color = teamColor or nameColor,
+		hoverEvent = {
+			action = "show_text",
+			contents = player:getName(),
+		},
+	})
+end, true)
+
+------------------------------------------------------------------
+
 local eyeHeight = vec(0, 1.62, 0)
 
 local isAfk = false
 
-------------------------------------------------------------------
-
 ---@param toggle boolean
-local onSleep = util.onchange(function (toggle)
+local onSleep = util.onchange(function(toggle)
 	animations.model.afkLoop:setPlaying(toggle)
 	if toggle then
 		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
@@ -125,15 +141,15 @@ local depthObjects = {}
 local layerObjects = (function(parts)
 	local tbl = {}
 	for _, part in ipairs(parts) do
-		local name = part:getName()
+		local partName = part:getName()
 		
-		tbl[name] = {}
+		tbl[partName] = {}
 
 		local index = 1
 		local layer = part["layer" .. index] or part["depthLayer" .. index]
 
 		while layer do
-			table.insert(tbl[name], layer)
+			table.insert(tbl[partName], layer)
 			index = index + 1
 			layer = part["layer" .. index] or part["depthLayer" .. index]
 		end
@@ -203,25 +219,13 @@ end
 
 ------------------------------------------------------------------
 
-function events.ENTITY_INIT()
-	nameplate.ALL:setText(toJson {
-		text = "Snowy:blahaj:",
-		hoverEvent = {
-			action = "show_text",
-			contents = player:getName(),
-		},
-	})
-end
-
-function events.TICK()
+local function itemChecks()
 	local crouching = player:isCrouching()
-	local sleeping = player:getPose() == "SLEEPING"
-	local vehicle = player:getVehicle()
+
+	local leftHanded = player:isLeftHanded()
 
 	local useAction = player:getActiveItem():getUseAction()
 	local useTime = player:getActiveItemTime()
-
-	local leftHanded = player:isLeftHanded()
 
 	local spyglassHand ---@type Hand
 	local bowCrouchHand ---@type Hand
@@ -229,7 +233,7 @@ function events.TICK()
 	local tridentCrouchHand ---@type Hand
 	local crossbowCrouchHand ---@type Hand
 
-    --Use Actions should take priority over charged crossbow offset rot
+	--Use Actions should take priority over charged crossbow offset rot
 	if player:isUsingItem() then
 		local mainHandActive = player:getActiveHand() == "MAIN_HAND"
 		---@type Hand
@@ -237,21 +241,24 @@ function events.TICK()
 		if useAction == "SPYGLASS" then
 			spyglassHand = hand
 		elseif crouching then
-			if useAction == "BOW" then bowCrouchHand = hand
-			elseif useAction == "TOOT_HORN" then hornCrouchHand = hand
-			elseif useAction == "SPEAR" then tridentCrouchHand = hand
+			if useAction == "BOW" then
+				bowCrouchHand = hand
+			elseif useAction == "TOOT_HORN" then
+				hornCrouchHand = hand
+			elseif useAction == "SPEAR" then
+				tridentCrouchHand = hand
 			end
 		end
 	elseif crouching then
 		local rightItem = player:getHeldItem(leftHanded)
-        local leftItem = player:getHeldItem(not leftHanded)
+		local leftItem = player:getHeldItem(not leftHanded)
 		if util.crossbowCharged(rightItem) then
 			crossbowCrouchHand = { RIGHT = true, LEFT = true }
 		elseif util.crossbowCharged(leftItem) then
 			crossbowCrouchHand = { RIGHT = true, LEFT = true }
 		end
 	end
-	
+
 	if useTime == 80 then
 		if useAction == "BOW" or useAction == "SPEAR" then
 			animations.model.aiming:play()
@@ -263,6 +270,17 @@ function events.TICK()
 	onAimingBowWhileCrouching(bowCrouchHand)
 	onSpyglass(spyglassHand)
 	onCrouchArmOffsetRot(crossbowCrouchHand or hornCrouchHand or tridentCrouchHand)
+end
+
+function events.TICK()
+	local sleeping = player:getPose() == "SLEEPING"
+	local vehicle = player:getVehicle()
+	local team = player:getTeamInfo()
+	local color = team and team.color
+	
+	itemChecks()
+
+	onTeamChange(color)
 	onSleep(sleeping)
 	onVehicleChange(vehicle)
 end
