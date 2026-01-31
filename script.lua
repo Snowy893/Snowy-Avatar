@@ -6,7 +6,7 @@ local util = require "lib.util"
 local afk = require "lib.afk"
 local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
-local colorParts = require "lib.colorparts"
+local colorlib = require "lib.colorlib"
 --#endregion
 local model = models.model
 local root = model.root
@@ -24,18 +24,34 @@ local leftItemPivot = leftArm.LeftItemPivot
 
 ------------------------------------------------------------------
 
-local name = "Snowy:blahaj:"
+local name = "Snowy :blahaj:"
 local nameColor = "#6600cc"
 
+nameplate.ENTITY:setOutline(true)
+
 local onTeamChange = util.onchange(function(teamColor)
-	nameplate.ALL:setText(toJson {
+	local rgb
+
+	local plate = {
 		text = name,
-		color = teamColor or nameColor,
 		hoverEvent = {
 			action = "show_text",
 			contents = player:getName(),
 		},
-	})
+	}
+
+	if teamColor then
+		rgb = colorlib.vanillaColors[teamColor]
+		plate.color = teamColor
+	else
+		rgb = colorlib.hextorgb(nameColor)
+		plate.color = nameColor
+	end
+
+	local r, g, b = rgb:unpack()
+
+	nameplate.ALL:setText(toJson(plate))
+	nameplate.ENTITY:setOutlineColor(colorlib.lighten(r, g, b, -25) / 255)
 end, true)
 
 ------------------------------------------------------------------
@@ -165,7 +181,7 @@ end
 
 ------------------------------------------------------------------
 
-local eyeColorParts = colorParts.new({
+local eyeColorParts = colorlib.newColorMulti({
 	eyes.righteye,
 	eyes.lefteye,
 	skullEyes.righteye2,
