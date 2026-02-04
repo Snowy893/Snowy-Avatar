@@ -26,7 +26,7 @@ local leftItemPivot = leftArm.LeftItemPivot
 
 local name = "Snowy :blahaj:"
 local nameColor = "#6600cc"
-local nameColorRGB = colorlib.hextorgb(nameColor)
+local nameOutlineColor = colorlib.lighten(colorlib.hextorgb(nameColor), -25)
 
 nameplate.ENTITY:setOutline(true)
 
@@ -39,18 +39,21 @@ local onTeamChange = util.onchange(function(teamColor)
 		},
 	}
 
-	local rgb
+	local outline
 
 	if teamColor then
-		plate.color = teamColor
-		rgb = colorlib.vanillaColors[teamColor]
+		local rgb = colorlib.vanillaColors[teamColor]
+		local lighten = teamColor == "black" and 25 or -25
+
+        plate.color = teamColor
+		outline = colorlib.lighten(rgb, lighten)
 	else
 		plate.color = nameColor
-		rgb = nameColorRGB
+		outline = nameOutlineColor
 	end
 
 	nameplate.ALL:setText(toJson(plate))
-	nameplate.ENTITY:setOutlineColor(colorlib.lighten(rgb, -25) / 255)
+	nameplate.ENTITY:setOutlineColor(outline / 255)
 end, true)
 
 ------------------------------------------------------------------

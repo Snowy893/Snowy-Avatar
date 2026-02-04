@@ -60,26 +60,26 @@ end
 
 ---Thanks `user973713` on stackoverflow!
 ---@param inputStr string
----@param seperator string
+---@param separator string
 ---@return ...
-function util.splitstring(inputStr, seperator)
-    if seperator == nil then
-        seperator = "%s"
+function util.splitstring(inputStr, separator)
+    if separator == nil then
+        separator = "%s"
     end
     local t = {}
-    for str in string.gmatch(inputStr, "([^" .. seperator .. "]+)") do
+    for str in string.gmatch(inputStr, "([^" .. separator .. "]+)") do
         table.insert(t, str)
     end
     return table.unpack(t)
 end
 
----Thanks `toomanylimits` on the Figura Discord!
+---Thanks `manuel_2867` on the Figura Discord!
 ---@param tbl table
----@param key any
----@param ... any
-function util.chainIndex(tbl, key, ...)
-    if key == nil or tbl == nil then return tbl end
-    return util.chainIndex(tbl[key], ...)
+---@param keys table
+function util.indexable(tbl, keys)
+    if tbl == nil then return nil end
+    if #keys == 1 then return tbl[keys[1]] end
+    return util.indexable(tbl[table.remove(keys, 1)], keys)
 end
 
 ---@param fromPage Page

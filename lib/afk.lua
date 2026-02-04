@@ -1,7 +1,7 @@
 local util = require "lib.util"
 ---@class Afk
 local Afk = {}
----@type Afk[]
+---@type Afk.interface[]
 Afk.ALL = {}
 
 local onSneakChange = util.onchange(function()
@@ -18,42 +18,43 @@ end)
 ---@param secondsUntilAfk integer
 ---@param includeRotation? boolean
 ---@param afkCheckTickRate? integer
----@return Afk.Obj
+---@return Afk.obj
 function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
-    ---@class Afk
-    local module = {}
+    ---@class Afk.interface
+    local interface = {}
 
-    module.isAfk = false
-    module.afkTime = 0
-    module.afkCheckTickRate = afkCheckTickRate or 5
-    module.delay = secondsUntilAfk * module.afkCheckTickRate
-    module.includeRotation = includeRotation or true
-    module.didSneakChange = false
+    interface.isAfk = false
+    interface.afkTime = 0
+    interface.afkCheckTickRate = afkCheckTickRate or 5
+    interface.delay = secondsUntilAfk * interface.afkCheckTickRate
+    interface.includeRotation = includeRotation or true
+    interface.didSneakChange = false
 
-    module.events = {
+    interface.events = {
         ON_CHANGE = util.functiontable(),
         ON_RENDER_LOOP = util.functiontable(),
         ON_TICK_NOT_AFK = util.functiontable(),
     }
 
-    module.onAfkChange = util.onchange(module.events.ON_CHANGE --[[@as fun(toggle: boolean)]])
+    interface.onAfkChange = util.onchange(interface.events.ON_CHANGE --[[@as fun(toggle: boolean)]])
 
-    ---@class Afk.Obj
+    ---@class Afk.obj
     local obj = {}
 
+    ---@generic self
     ---@param event Afk.Event
     ---@param func function
-    ---@return Afk.Obj
+    ---@return self
     function obj:register(event, func)
-        table.insert(module.events[event], func)
+        table.insert(interface.events[event], func)
         return obj
     end
 
-    table.insert(Afk.ALL, module)
+    table.insert(Afk.ALL, interface)
     return obj
 end
 
----@param afk Afk
+---@param afk Afk.interface
 ---@return boolean
 local function afkEval(afk)
     local posUnchanged = afk.position == afk.oldPosition

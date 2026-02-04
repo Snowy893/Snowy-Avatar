@@ -1,34 +1,35 @@
 ---@class Periodical
 local Periodical = {}
 Periodical.registeredEvents = {}
----@type Periodical.Obj[]
+---@type Periodical.obj[]
 Periodical.objs = {}
 local count = 0
 
 ---@overload fun(func: function)
 ---@param func function
 ---@param eventType "TICK"|"WORLD_TICK"
----@return Periodical.Obj
+---@return Periodical.obj
 function Periodical.new(func, eventType)
-    ---@class Periodical.Obj
-    local module = {}
+    ---@class Periodical.obj
+    local interface = {}
 
-    module.func = func
-    module.type = eventType or "TICK"
+    interface.func = func
+    interface.type = eventType or "TICK"
 
-    if events[module.type] == nil then error("Event \"" .. module.type .. "\" does not exist!") end
+    if events[interface.type] == nil then error("Event \"" .. interface.type .. "\" does not exist!") end
 
     count = count + 1
 
     ---@param ticks number
     pings["periodical" .. tostring(count)] = function(ticks)
-        module.tickCounter = ticks
+        interface.tickCounter = ticks
     end
 
-    module.ping = pings["periodical" .. tostring(count)]
+    interface.ping = pings["periodical" .. tostring(count)]
 
-    ---@return Periodical.Obj
-    function module:resetTickCounter()
+    ---@generic self
+    ---@return self
+    function interface:resetTickCounter()
         if self.maxTicks == nil or self.minTicks == self.maxTicks then
             self.tickCounter = self.minTicks
         else
@@ -37,37 +38,41 @@ function Periodical.new(func, eventType)
         return self
     end
 
-    ---@overload fun(ticks: integer): Periodical.Obj
+    ---@generic self
+    ---@overload fun(ticks: integer): Periodical.obj
     ---@param minTicks integer
     ---@param maxTicks integer
-    ---@return Periodical.Obj
-    function module:setTiming(minTicks, maxTicks)
+    ---@return self
+    function interface:setTiming(minTicks, maxTicks)
         self.minTicks = minTicks
         self.maxTicks = maxTicks
         self:resetTickCounter()
         return self
     end
 
-    ---@overload fun(ticks: integer): Periodical.Obj
+    ---@generic self
+    ---@overload fun(ticks: integer): Periodical.obj
     ---@param minTicks integer
     ---@param maxTicks integer
-    ---@return Periodical.Obj
-    function module:timing(minTicks, maxTicks) return self:setTiming(minTicks, maxTicks) end --- Alias
+    ---@return self
+    function interface:timing(minTicks, maxTicks) return self:setTiming(minTicks, maxTicks) end --- Alias
 
+    ---@generic self
     ---@param cond fun(): boolean
-    ---@return Periodical.Obj
-    function module:setCondition(cond)
+    ---@return self
+    function interface:setCondition(cond)
         self.conditionFunc = cond
         return self
     end
 
+    ---@generic self
     ---@param cond fun(): boolean
-    ---@return Periodical.Obj
-    function module:condition(cond) return self:setCondition(cond) end --- Alias
+    ---@return self
+    function interface:condition(cond) return self:setCondition(cond) end --- Alias
 
     ---@return Periodical.RegisteredObj
-    function module:register()
-        ---@class Periodical.Obj
+    function interface:register()
+        ---@class Periodical.obj
         local obj = self
         ---@class Periodical.RegisteredObj
         local registeredObj = {}
@@ -75,7 +80,7 @@ function Periodical.new(func, eventType)
         if Periodical.registeredEvents[obj.type] == nil then
             Periodical.objs[obj.type] = {}
             events[obj.type]:register(function()
-                ---@param o Periodical.Obj
+                ---@param o Periodical.obj
                 for _, o in ipairs(Periodical.objs[obj.type]) do
                     if o.conditionFunc() then
                         o.tickCounter = o.tickCounter - 1
@@ -92,7 +97,7 @@ function Periodical.new(func, eventType)
 
         table.insert(Periodical.objs[obj.type], obj.index, obj)
 
-        ---@return Periodical.Obj
+        ---@return Periodical.obj
         function registeredObj:unRegister()
             table.remove(Periodical.objs[obj.type], obj.index)
             if #Periodical.objs[obj.type] == 0 then events["periodical"..obj.type]:remove() end
@@ -102,7 +107,7 @@ function Periodical.new(func, eventType)
         return registeredObj
     end
 
-    return module:setCondition(world.exists):setTiming(100)
+    return interface:setCondition(world.exists):setTiming(100)
 end
 
 return Periodical
