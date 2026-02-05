@@ -1,11 +1,11 @@
 ---@class Util
 local util = {}
 
----Returns an explicit boolean value out of a value that is truthy or falsy (and values I'd like to treat as falsy)
+---Returns an explicit boolean value out of a value that is truthy or falsy
 ---@param value any
 ---@return boolean
 function util.toboolean(value)
-    if value then return true else return false end
+    return value and true or false
 end
 
 ---@param val1 any

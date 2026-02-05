@@ -143,7 +143,7 @@ local onSpyglass = util.onchange(function(hand)
 end)
 
 ---@param hand Hand
-local onCrouchArmOffsetRot = util.onchange(function (hand)
+local onCrouchArmOffsetRot = util.onchange(function(hand)
 	local rightRot = (hand and hand.RIGHT) and 20 or nil
 	local leftRot = (hand and hand.LEFT) and 20 or nil
 	vanilla_model.RIGHT_ARM:setOffsetRot(rightRot)
