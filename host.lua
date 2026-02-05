@@ -6,8 +6,8 @@ local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 local page = action_wheel:newPage()
 local sadChair = models.model.root.sadchair
 local hasSuperSecretShaders = client.compareVersions(client.getVersion(), "1.20.5") ~= 1
-local rightItemPart = models.model.root.ItemRight
-local leftItemPart = models.model.root.ItemLeft
+local rightItemPart = models.model.ItemRight
+local leftItemPart = models.model.ItemLeft
 local rightItem = rightItemPart:newItem("rightItem")
 local leftItem = leftItemPart:newItem("leftItem")
 
