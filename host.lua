@@ -1,6 +1,6 @@
 if not host:isHost() then return end
 
-local syncedPings = require "lib.syncedpings"
+local syncedPings = require "lib.syncedping"
 
 local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 local page = action_wheel:newPage()
@@ -46,7 +46,7 @@ page:newAction()
     :title("Sad Chair")
     :item("minecraft:smooth_quartz_stairs")
     :hoverColor(1, 0, 1)
-    :onToggle(syncedPings:new(pings.sadChair, false))
+    :onToggle(syncedPings:new(pings.sadChair, "TICK", false))
 
 page:newAction()
     :title("Creeper")
