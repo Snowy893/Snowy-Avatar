@@ -1,6 +1,6 @@
 if not host:isHost() then return end
 
-local syncedPings = require "lib.syncedping"
+local syncedPings = require "lib.syncedpings"
 
 local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 local page = action_wheel:newPage()
