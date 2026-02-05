@@ -6,10 +6,6 @@ local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 local page = action_wheel:newPage()
 local sadChair = models.model.root.sadchair
 local hasSuperSecretShaders = client.compareVersions(client.getVersion(), "1.20.5") ~= 1
-local rightItemPart = models.model.ItemRight
-local leftItemPart = models.model.ItemLeft
-local rightItem = rightItemPart:newItem("rightItem")
-local leftItem = leftItemPart:newItem("leftItem")
 
 syncedPings.ticks = 4 * 20
 
@@ -65,26 +61,3 @@ keybinds:newKeybind("unlockCursor", unlockCursorKey)
         isCursorUnlocked = not isCursorUnlocked
         host.unlockCursor = isCursorUnlocked
     end)
-
--- -- rightItemPart:setRot(-70, 30, -12)
--- -- rightItemPart:setPos(-1.5, -5, 0)
-
--- events.ENTITY_INIT:register(function()
---     events.ITEM_RENDER:register(function(item, mode, pos, rot, scale, lefthanded)
---         local firstPerson = mode:find("FIRST_PERSON")
---         local usingBow = item:getUseAction() == "BOW"
---         if not (firstPerson and usingBow and player:getActiveItemTime() > 0 and player:isCrouching()) then return end
-        
---         local bow
-
---         if lefthanded then
---             leftItem:setItem(item)
---             bow = leftItemPart
---         else
---             rightItem:setItem(item)
---             bow = rightItemPart
---         end
-
---         return bow
---     end)
--- end)
