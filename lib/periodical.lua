@@ -4,6 +4,7 @@ Periodical.registeredEvents = {}
 ---@type Periodical.obj[]
 Periodical.objs = {}
 local count = 0
+local isSingleplayer = client.getServerBrand() == "Integrated"
 
 ---@overload fun(func: function)
 ---@param func function
@@ -80,6 +81,7 @@ function Periodical.new(func, eventType)
         if Periodical.registeredEvents[obj.type] == nil then
             Periodical.objs[obj.type] = {}
             events[obj.type]:register(function()
+                if isSingleplayer and client.isPaused() then return end
                 ---@param o Periodical.obj
                 for _, o in ipairs(Periodical.objs[obj.type]) do
                     if o.conditionFunc() then
