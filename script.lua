@@ -228,7 +228,7 @@ periodical.new(function() animations.model.blink:play() end, "WORLD_TICK")
 
 ---This is global because it runs in `animations.model.creeper`'s instruction keyframe
 ---@param toggle boolean
-function CreeperEyesVisible(toggle)
+function SnowyCreeperEyesVisible(toggle)
 	eyes:setVisible(not toggle)
 	creeperEyes:setVisible(toggle)
 	skullEyes:setVisible(not toggle)

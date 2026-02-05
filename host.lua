@@ -22,7 +22,7 @@ function pings.sadChair(toggle)
 end
 
 function pings.creeper()
-    CreeperEyesVisible(true)
+    SnowyCreeperEyesVisible(true)
     if player:isLoaded() then
         sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
     end
