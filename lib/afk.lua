@@ -4,6 +4,8 @@ local Afk = {}
 ---@type Afk.interface[]
 Afk.ALL = {}
 
+local isSingleplayer = client.getServerBrand() == "Integrated"
+
 local onSneakChange = util.onchange(function()
     for _, afk in ipairs(Afk.ALL) do
         afk.didSneakChange = true
@@ -76,6 +78,7 @@ end
 
 events.TICK:register(function()
     if not next(Afk.ALL) then return end
+    if isSingleplayer and client.isPaused() then return end
 
     local time = world.getTime()
     onSneakChange(player:isSneaking())
