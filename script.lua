@@ -43,7 +43,7 @@ local onTeamChange = util.onchange(function(teamColor)
 
 	if teamColor then
 		local rgb = colorlib.vanillaColors[teamColor]
-		local lighten = teamColor == "black" and 25 or -25
+		local lighten = teamColor == "black" and 30 or -35
 
         plate.color = teamColor
 		outline = colorlib.lighten(rgb, lighten)
