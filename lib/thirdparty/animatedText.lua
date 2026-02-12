@@ -1,8 +1,9 @@
----@diagnostic disable: lowercase-global
 --Animated Text API v0.0.1
-local api, tasks = {}, {}
+local api = {}
+---@type AnimatedTextTask[]
+local tasks = {}
 
-function trueLength(tbl)
+local function trueLength(tbl)
 	local length = 0
 	for _, v in pairs(tbl) do
 		for i = 1, #v.chars do
@@ -12,11 +13,11 @@ function trueLength(tbl)
 	return length
 end
 
-function trueCharWidth(char)
+local function trueCharWidth(char)
 	if #char <= 1 then return client.getTextWidth(char) else return 8 end
 end
 
-function deconstructString(string, tbl) --if tbl argument is provided, all characters will be appended to it, otherwise append to a separate table
+local function deconstructString(string, tbl) --if tbl argument is provided, all characters will be appended to it, otherwise append to a separate table
 	if not tbl then _tbl = {} else _tbl = tbl end
 	local escape, str, charsLeft, charIndex = false, '', 0, 0
 	for char in string:gmatch('[\x00-\x7F\xC2-\xF4][\x80-\xBF]*') do
@@ -33,7 +34,7 @@ function deconstructString(string, tbl) --if tbl argument is provided, all chara
 	return {{raw = string, chars = _tbl}}
 end
 
-function deconstructJson(json, r) --deconstruct json into separate characters with the appropriate components
+local function deconstructJson(json, r) --deconstruct json into separate characters with the appropriate components
 	if type(json) == "string" and not r then _json = parseJson(json) else _json = json end
 	if not r then tbl = {} end
 	local charTbl = {chars = {}}
@@ -54,33 +55,52 @@ function deconstructJson(json, r) --deconstruct json into separate characters wi
 	return tbl
 end
 
-function createTasks(task, text)
+---@param task AnimatedTextTask
+---@param text table|string
+local function createTasks(task, text)
 	if type(text) == "table" then _text = deconstructJson(text) elseif type(text) == "string" then _text = deconstructString(text) end
 	local span, length = 0, trueLength(_text)
 	for _, v in ipairs(_text) do
 		for _, char in pairs(v.chars) do
 			table.insert(task.textTasks, {
 				anchor = vec((span - length / 2) * -task.scale.x, 0, 0) + task.offset,
-				task = task.root:newText(#task.textTasks)
+				task = task.root:newText(#task.textTasks), ---@diagnostic disable-line: param-type-mismatch
 			})
 			local textTask = task.textTasks[#task.textTasks]
 			textTask.task:pos(textTask.anchor)
-			:scale(task.scale)
-			:setAlignment('LEFT')
-			:text(v.properties and "{'text': '" .. char .. "', " .. toJson(v.properties):sub(2, -2) .. "}" or char)
+				:scale(task.scale)
+				:setAlignment('LEFT')
+				:text(v.properties and "{'text': '" .. char .. "', " .. toJson(v.properties):sub(2, -2) .. "}" or char)
 			span = span + trueCharWidth(char)
 		end
 	end
 end
 
+---@param name string
 function api.remove(name)
 	for _, v in pairs(tasks[name].root:getTask()) do v:remove() end
 	tasks[name].textTasks = {}
 end
 
+---@param name string
+---@param parent ModelPart
+---@param offset Vector3
+---@param scale Vector3
+---@param parentType ModelPart.parentType
+---@param json table|string
 function api.new(name, parent, offset, scale, parentType, json)
-	if tasks[name] then api.remove(name) end
-	tasks[name] = {offset = offset, scale = scale, root = parent:newPart(name):setParentType(parentType), textTasks = {}}
+    if tasks[name] then api.remove(name) end
+	---@class AnimatedTextTask
+	---@field offset Vector3
+	---@field scale Vector3
+	---@field root ModelPart
+	---@field textTasks { anchor: Vector3, task: TextTask }
+    tasks[name] = {
+        offset = offset,
+        scale = scale,
+        root = parent:newPart(name):setParentType(parentType),
+        textTasks = {},
+	}
 	if json then createTasks(tasks[name], json) end
 end
 
