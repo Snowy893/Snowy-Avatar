@@ -318,7 +318,7 @@
       "end_of_line": "lf",
       "function_name_define_style": "camel_case",
       "function_param_name_style": "snake_case",
-      "global_variable_name_define_style": "upper_case",
+      "global_variable_name_define_style": "lower_case",
       "if_branch_comments_after_block_no_indent": "false",
       "if_condition_no_continuation_indent": "false",
       "indent_size": "4",
