@@ -1,8 +1,9 @@
---Animated Text API v0.0.1
+--Animated Text API v0.0.1 (Snowy edited version)
 local api = {}
 ---@type AnimatedTextTask[]
 local tasks = {}
 
+---@param tbl table
 local function trueLength(tbl)
 	local length = 0
 	for _, v in pairs(tbl) do
@@ -13,12 +14,16 @@ local function trueLength(tbl)
 	return length
 end
 
+---@param char string
 local function trueCharWidth(char)
 	if #char <= 1 then return client.getTextWidth(char) else return 8 end
 end
 
+---@param string string
+---@param tbl table?
+---@return AnimatedTextCharacters[]
 local function deconstructString(string, tbl) --if tbl argument is provided, all characters will be appended to it, otherwise append to a separate table
-	if not tbl then _tbl = {} else _tbl = tbl end
+	local _tbl = tbl or {}
 	local escape, str, charsLeft, charIndex = false, '', 0, 0
 	for char in string:gmatch('[\x00-\x7F\xC2-\xF4][\x80-\xBF]*') do
 		if escape then str = str .. char else str = char end --look for emojis, if str is complete, add as char
@@ -34,10 +39,17 @@ local function deconstructString(string, tbl) --if tbl argument is provided, all
 	return {{raw = string, chars = _tbl}}
 end
 
+---@param json any
+---@param r boolean?
 local function deconstructJson(json, r) --deconstruct json into separate characters with the appropriate components
+	local _json
 	if type(json) == "string" and not r then _json = parseJson(json) else _json = json end
-	if not r then tbl = {} end
-	local charTbl = {chars = {}}
+	local tbl =  not r and {} or nil
+	---@class AnimatedTextCharacters
+	---@field raw string
+	---@field chars table
+	---@field properties table
+	local charTbl = { chars = {} }
 	for k, v in pairs(_json) do
 		if type(v) ~= "table" then
 			if k == "text" then
@@ -70,7 +82,8 @@ local function createTasks(task, text)
 			textTask.task:pos(textTask.anchor)
 				:scale(task.scale)
 				:setAlignment('LEFT')
-				:text(v.properties and "{'text': '" .. char .. "', " .. toJson(v.properties):sub(2, -2) .. "}" or char)
+                :text(v.properties and "{'text': '" .. char .. "', " .. toJson(v.properties):sub(2, -2) .. "}"
+					or char)
 			span = span + trueCharWidth(char)
 		end
 	end
@@ -104,17 +117,26 @@ function api.new(name, parent, offset, scale, parentType, json)
 	if json then createTasks(tasks[name], json) end
 end
 
+---@param name string
+---@param json table|string
 function api.setText(name, json)
 	if tasks[name].textTasks then api.remove(name) end
 	createTasks(tasks[name], json)
 end
 
+---@param name string
+---@return AnimatedTextTask
 function api.getTask(name) return tasks[name] end
 
+---@param name string
+---@param pos Vector3?
+---@param rot Vector3?
+---@param scale Vector3?
+---@param char table
 function api.transform(name, pos, rot, scale, char)
 	char.task:pos(char.anchor + (pos or vec(0, 0, 0)))
-	:rot(rot or vec(0, 0, 0))
-	:scale(tasks[name].scale + (scale or vec(0, 0, 0)))
+		:rot(rot or vec(0, 0, 0))
+		:scale(tasks[name].scale + (scale or vec(0, 0, 0)))
 end
 
 return api
