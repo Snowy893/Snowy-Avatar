@@ -46,6 +46,8 @@
 ---| "JraficalUserInterface"  # Alias for `"Hud"`.
 ---| "Camera"                 # Face the viewing client's camera.
 ---| "CAMERA"                 # Alias for `"Camera"`
+---| "Billboard"              # Alias for `"Camera"`
+---| "BILLBOARD"              # Alias for `"Camera"`
 ---
 ---| "Skull"                  # Replaces the player's skull block.
 ---| "SKULL"                  # Alias for `"Skull"`.
