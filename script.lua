@@ -423,9 +423,7 @@ end)
 
 ---@param headPos Vector3
 table.insert(patpat.head.oncePat, function(_, headPos)
-	if animations.model.skullPat:isPlaying() then
-		animations.model.skullPat:stop()
-	end
+	animations.model.skullPat:stop()
 	animations.model.skullPat:play()
 	headPos.x_z = headPos.x_z + 0.5
 	sounds:playSound("minecraft:entity.bat.hurt", headPos, 0.15)
@@ -433,6 +431,6 @@ end)
 
 table.insert(patpat.player.onPat, function()
 	---@type Minecraft.soundID
-	local sound = math.random(1,10) == 10 and "minecraft:entity.bat.hurt" or "minecraft:entity.cat.purr"
+	local sound = math.random(10) == 10 and "minecraft:entity.bat.hurt" or "minecraft:entity.cat.purr"
 	sounds:playSound(sound, player:getPos():add(eyeHeight), 0.15)
 end)
