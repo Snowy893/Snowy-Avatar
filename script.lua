@@ -58,8 +58,6 @@ end, true)
 
 ------------------------------------------------------------------
 
-local eyeHeight = vec(0, 1.62, 0)
-
 local isAfk = false
 
 ---@param toggle boolean
@@ -318,10 +316,10 @@ function events.RENDER(delta, context)
 		end
 	end
 
-    if context == "FIRST_PERSON" then return end
-	
+	if context == "FIRST_PERSON" then return end
+
     local cameraPos = client.getCameraPos()
-    local eyePos = player:getPos(delta):add(eyeHeight)
+    local eyePos = player:getPos(delta):add(vec(0, player:getEyeHeight(), 0))
 	local distance = math.abs((cameraPos - eyePos):length())
 
 	for i, depthObject in ipairs(depthObjects) do
@@ -432,5 +430,5 @@ end)
 table.insert(patpat.player.onPat, function()
 	---@type Minecraft.soundID
 	local sound = math.random(10) == 10 and "minecraft:entity.bat.hurt" or "minecraft:entity.cat.purr"
-	sounds:playSound(sound, player:getPos():add(eyeHeight), 0.15)
+	sounds:playSound(sound, player:getPos():add(vec(0, player:getEyeHeight(), 0)), 0.15)
 end)
