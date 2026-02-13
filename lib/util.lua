@@ -10,10 +10,10 @@ end
 
 ---@param val1 any
 ---@param val2 any
----@return type | nil
+---@return type|nil
 function util.comparetype(val1, val2)
     local t = type(val1)
-    if t == type(val2) then return t else return nil end
+    return t == type(val2) and t or nil
 end
 
 ---@param tbl1 table
@@ -47,27 +47,26 @@ end
 
 ---@param tbl? function[]
 ---@param mtbl? table
----@return functiontable
+---@return table
 function util.functiontable(tbl, mtbl)
     local t = tbl or {}
     local mt = mtbl or {}
     mt.__call = function(self, ...)
         for _, func in pairs(self) do func(...) end
     end
-    ---@class functiontable
     return setmetatable(t, mt)
 end
 
 ---Thanks `user973713` on stackoverflow!
----@param inputStr string
+---@param input string
 ---@param separator string
 ---@return ...
-function util.splitstring(inputStr, separator)
+function util.splitstring(input, separator)
     if separator == nil then
         separator = "%s"
     end
     local t = {}
-    for str in string.gmatch(inputStr, "([^" .. separator .. "]+)") do
+    for str in string.gmatch(input, "([^" .. separator .. "]+)") do
         table.insert(t, str)
     end
     return table.unpack(t)
@@ -76,6 +75,7 @@ end
 ---Thanks `manuel_2867` on the Figura Discord!
 ---@param tbl table
 ---@param keys table
+---@return any
 function util.indexable(tbl, keys)
     if tbl == nil then return nil end
     if #keys == 1 then return tbl[keys[1]] end
@@ -106,21 +106,17 @@ local permissionLevels = {
 ---@overload fun(targetLevel: AvatarAPI.permissionLevel): boolean
 ---@param targetLevel AvatarAPI.permissionLevel
 ---@param currentLevel AvatarAPI.permissionLevel
----@return boolean 
+---@return boolean
 function util.comparePermissionLevel(targetLevel, currentLevel)
     local level = currentLevel or avatar:getPermissionLevel()
     return permissionLevels[level] >= permissionLevels[targetLevel]
 end
 
----@param itemStack ItemStack
-function util.itemEmpty(itemStack)
-    return itemStack:getCount() == 0
-end
-
----@param playr? Player
+---@param playr Player?
+---@return boolean
 function util.handsEmpty(playr)
     local p = playr or player
-    return util.itemEmpty(p:getHeldItem()) and util.itemEmpty(p:getHeldItem(true))
+    return p:getHeldItem():getCount() == 0 and p:getHeldItem(true):getCount() == 0
 end
 
 ---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
@@ -131,20 +127,26 @@ function util.crossbowCharged(itemStack)
     return projectiles ~= nil and next(projectiles) ~= nil
 end
 
+---@overload fun(...: ItemStack.useAction): boolean
+---@param playr Player
 ---@param ... ItemStack.useAction
 ---@return boolean
-function util.checkUseAction(...)
-    if not player:isUsingItem() then return false end
-    local activeItem = player:getActiveItem()
+function util.checkUseAction(playr, ...)
+    local actions = {...}
+    local p
+    if type(playr) == "PlayerAPI" then
+        p = playr
+    else
+        table.insert(actions, playr)
+        p = player
+    end
+    if not p:isUsingItem() then return false end
+    local activeItem = p:getActiveItem()
     if activeItem:getCount() == 0 then return false end
     
     local useAction = activeItem:getUseAction()
-
-    if select("#", ...) == 1 then
-        return useAction == ...
-    end
     
-    for _, action in ipairs({...}) do
+    for _, action in ipairs(actions) do
         if useAction == action then return true end
     end
 
