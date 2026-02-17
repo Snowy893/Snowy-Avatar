@@ -1,0 +1,20 @@
+---@meta
+---@diagnostic disable: duplicate-set-field
+
+---@alias SillyAPI.GuiElement string
+---| "HOTBAR"               # Hotbar
+---| "EXPERIENCE_BAR"       # Experience bar (not including the number)
+---| "JUMP_METER"           # Horse jump meter
+---| "SELECTED_ITEM_NAME"   # Selected item name
+---| "PLAYER_HEALTH"        # Health bar
+---| "PLAYER_HUNGER"        # Hunger bar
+---| "VEHICLE_HEALTH"       # Vehicle health bar
+---| "VIGNETTE"             # Vignette effect
+---| "SPYGLASS_OVERLAY"     # Spyglass overlay
+---| "TEXTURE_OVERLAY"      # Snow overlay(?)
+---| "PORTAL_OVERLAY"       # Portal overlay
+---| "EFFECTS"              # Status effects
+---| "CHAT"                 # Chat window
+---| "BOSS_HEALTH_OVERLAY"  # Boss bar
+---| "PLAYER_TAB_OVERLAY"   # Tab list
+---| "SUBTITLE_OVERLAY"     # Sound subtitles

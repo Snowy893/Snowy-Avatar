@@ -9,5 +9,6 @@
   "[lua]": {
     "editor.suggest.showDeprecated": false
   },
-  "Lua.language.fixIndent": false
+  "Lua.language.fixIndent": false,
+  "editor.fontFamily": "Consolas, 'Courier New', monospace"
 }

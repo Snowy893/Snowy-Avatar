@@ -3,7 +3,7 @@
   "description": "Snowy's Avatar",
   "author": "Snowy893",
   "color": "#27aae0",
-  "autoScripts": ["script", "host"],
+  "autoScripts": ["script", "host", "silly"],
   "customizations": {
     "model.root.torso.Head.eyes": {
       "primaryRenderType": "CUTOUT_EMISSIVE_SOLID"
