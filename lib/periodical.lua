@@ -1,23 +1,32 @@
 ---@class Periodical
 local Periodical = {}
-Periodical.registeredEvents = {}
 ---@type Periodical.obj[]
 Periodical.objs = {}
 local count = 0
 local isSingleplayer = client.getServerBrand() == "Integrated"
 
+local function tick()
+    if isSingleplayer and client.isPaused() then return end
+    ---@param obj Periodical.obj
+    for _, obj in ipairs(Periodical.objs) do
+        if obj.conditionFunc() then
+            obj.tickCounter = obj.tickCounter - 1
+            if obj.tickCounter == 0 then
+                obj.func()
+                obj:resetTickCounter()
+            end
+        end
+    end
+end
+
 ---@overload fun(func: function)
 ---@param func function
----@param eventType "TICK"|"WORLD_TICK"
 ---@return Periodical.obj
-function Periodical.new(func, eventType)
+function Periodical.new(func)
     ---@class Periodical.obj
     local interface = {}
 
     interface.func = func
-    interface.type = eventType or "TICK"
-
-    if events[interface.type] == nil then error("Event \"" .. interface.type .. "\" does not exist!") end
 
     count = count + 1
 
@@ -78,31 +87,18 @@ function Periodical.new(func, eventType)
         ---@class Periodical.RegisteredObj
         local registeredObj = {}
 
-        if Periodical.registeredEvents[obj.type] == nil then
-            Periodical.objs[obj.type] = {}
-            events[obj.type]:register(function()
-                if isSingleplayer and client.isPaused() then return end
-                ---@param o Periodical.obj
-                for _, o in ipairs(Periodical.objs[obj.type]) do
-                    if o.conditionFunc() then
-                        o.tickCounter = o.tickCounter - 1
-                        if o.tickCounter == 0 then
-                            o.func()
-                            o:resetTickCounter()
-                        end
-                    end
-                end
-            end, "periodical.."..tostring(obj.type))
+        obj.index = #Periodical.objs + 1
+
+        if obj.index == 1 then
+            events.TICK:register(tick, "Periodical")
         end
 
-        obj.index = #Periodical.objs[obj.type] + 1
-
-        table.insert(Periodical.objs[obj.type], obj.index, obj)
+        table.insert(Periodical.objs, obj.index, obj)
 
         ---@return Periodical.obj
         function registeredObj:unRegister()
-            table.remove(Periodical.objs[obj.type], obj.index)
-            if #Periodical.objs[obj.type] == 0 then events["periodical"..obj.type]:remove() end
+            table.remove(Periodical.objs, obj.index)
+            if #Periodical.objs == 0 then events.TICK:remove("Periodical") end
             return obj
         end
 

@@ -215,10 +215,8 @@ skullCreeperEyes:setVisible(false)
 
 ------------------------------------------------------------------
 
-periodical.new(function() animations.model.blink:play() end, "WORLD_TICK")
-	:condition(function()
-		return (not player:isLoaded()) or (not isAfk and player:getPose() ~= "SLEEPING")
-	end)
+periodical.new(function() animations.model.blink:play() end)
+	:condition(function() return not isAfk and player:getPose() ~= "SLEEPING" end)
 	:timing(100, 300)
 	:register()
 

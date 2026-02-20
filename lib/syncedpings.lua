@@ -2,33 +2,30 @@
 local SyncedPings = {}
 SyncedPings.ticks = 200
 
+local objs = {}
+
 ---@generic T
 ---@param pingFunc fun(...: T?)
----@param eventType "TICK"|"WORLD_TICK"
 ---@param ... T?
 ---@return fun(...: T?)
-function SyncedPings:new(pingFunc, eventType, ...)
+function SyncedPings:new(pingFunc, ...)
     if not host:isHost() then return function() end end
-    if eventType ~= "TICK" and eventType ~= "WORLD_TICK" then
-        error("Unexpected event type: \""..tostring(eventType).."\" (Should be either \"TICK\" or \"WORLD_TICK\"!)")
-    end
     self.pingFunc = pingFunc
     self.args = ...
-    if not SyncedPings[eventType] then
-        SyncedPings[eventType] = {}
-        events[eventType]:register(function()
-            for i, sPing in ipairs(SyncedPings[eventType]) do
-                if world.getTime() % (SyncedPings.ticks + (i - 1)) == 0 then
-                    sPing.pingFunc(sPing.args)
-                end
-            end
-        end, "SyncedPings." .. eventType)
-    end
-    table.insert(SyncedPings[eventType], self)
+    table.insert(objs, self)
     return function(...)
         self.args = ...
         self.pingFunc(...)
     end
 end
+
+events.TICK:register(function()
+    local time = world.getTime()
+    for i, sPing in ipairs(objs) do
+        if time % (SyncedPings.ticks + (i - 1)) == 0 then
+            sPing.pingFunc(sPing.args)
+        end
+    end
+end, "SyncedPings")
 
 return SyncedPings
