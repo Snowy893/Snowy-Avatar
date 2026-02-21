@@ -4,6 +4,7 @@ local util = {}
 ---Returns an explicit boolean value out of a value that is truthy or falsy
 ---@param value any
 ---@return boolean
+---@nodiscard
 function util.toboolean(value)
     return value and true or false
 end
@@ -11,6 +12,7 @@ end
 ---@param val1 any
 ---@param val2 any
 ---@return type|nil
+---@nodiscard
 function util.comparetype(val1, val2)
     local t = type(val1)
     return t == type(val2) and t or nil
@@ -19,6 +21,7 @@ end
 ---@param tbl1 table
 ---@param tbl2 table
 ---@return boolean
+---@nodiscard
 function util.comparetables(tbl1, tbl2)
     for k, v in pairs(tbl1) do
         if util.comparetype(tbl2[k], v) == "table" then
@@ -35,6 +38,7 @@ end
 ---@param func fun(value, oldValue, ...)
 ---@param initialValue? any
 ---@return fun(value, ...)
+---@nodiscard
 function util.onchange(func, initialValue)
     local oldValue = initialValue
     return function(value, ...)
@@ -48,6 +52,7 @@ end
 ---@param tbl? function[]
 ---@param mtbl? table
 ---@return table
+---@nodiscard
 function util.functiontable(tbl, mtbl)
     local t = tbl or {}
     local mt = mtbl or {}
@@ -61,6 +66,7 @@ end
 ---@param input string
 ---@param separator string
 ---@return ...
+---@nodiscard
 function util.splitstring(input, separator)
     if separator == nil then
         separator = "%s"
@@ -72,14 +78,15 @@ function util.splitstring(input, separator)
     return table.unpack(t)
 end
 
----Thanks `manuel_2867` on the Figura Discord!
+---Thanks `toomanylimits` on the Figura Discord!
 ---@param tbl table
----@param keys table
+---@param key any
+---@param ... any
 ---@return any
-function util.indexable(tbl, keys)
-    if tbl == nil then return nil end
-    if #keys == 1 then return tbl[keys[1]] end
-    return util.indexable(tbl[table.remove(keys, 1)], keys)
+---@nodiscard
+function util.chainIndex(tbl, key, ...)
+    if key == nil or tbl == nil then return tbl end
+    return util.chainIndex(tbl[key], ...)
 end
 
 ---@param fromPage Page
@@ -107,6 +114,7 @@ local permissionLevels = {
 ---@param targetLevel AvatarAPI.permissionLevel
 ---@param currentLevel AvatarAPI.permissionLevel
 ---@return boolean
+---@nodiscard
 function util.comparePermissionLevel(targetLevel, currentLevel)
     local level = currentLevel or avatar:getPermissionLevel()
     return permissionLevels[level] >= permissionLevels[targetLevel]
@@ -114,6 +122,7 @@ end
 
 ---@param playr Player?
 ---@return boolean
+---@nodiscard
 function util.handsEmpty(playr)
     local p = playr or player
     return p:getHeldItem():getCount() == 0 and p:getHeldItem(true):getCount() == 0
@@ -122,6 +131,7 @@ end
 ---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
 ---@param itemStack ItemStack
 ---@return boolean
+---@nodiscard
 function util.crossbowCharged(itemStack)
     local projectiles = itemStack:getTag().ChargedProjectiles
     return projectiles ~= nil and next(projectiles) ~= nil
@@ -131,8 +141,9 @@ end
 ---@param playr Player
 ---@param ... ItemStack.useAction
 ---@return boolean
+---@nodiscard
 function util.checkUseAction(playr, ...)
-    local actions = {...}
+    local actions = { ... }
     local p
     if type(playr) == "PlayerAPI" then
         p = playr
@@ -143,14 +154,21 @@ function util.checkUseAction(playr, ...)
     if not p:isUsingItem() then return false end
     local activeItem = p:getActiveItem()
     if activeItem:getCount() == 0 then return false end
-    
+
     local useAction = activeItem:getUseAction()
-    
+
     for _, action in ipairs(actions) do
         if useAction == action then return true end
     end
 
     return false
+end
+
+---@param entity Entity
+---@param delta number?
+---@nodiscard
+function util.eyePos(entity, delta)
+    return entity:getPos(delta):add(0, entity:getEyeHeight(), 0)
 end
 
 return util

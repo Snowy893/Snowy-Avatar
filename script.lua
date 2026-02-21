@@ -58,8 +58,6 @@ end, true)
 
 ------------------------------------------------------------------
 
-local isAfk = false
-
 ---@param toggle boolean
 local onSleep = util.onchange(function(toggle)
 	animations.model.afkLoop:setPlaying(toggle)
@@ -74,12 +72,12 @@ local onSleep = util.onchange(function(toggle)
 end)
 
 ---@param vehicle Entity?
-local onVehicleChange = util.onchange(function(vehicle)
+local onVehicle = util.onchange(function(vehicle)
 	-- local isBoat = vehicle and vehicle:getType():find("boat")
 	-- -- local isDriving = vehicle and vehicle:getControllingPassenger() == player
 	
 	-- if host:isHost() then
-	-- 	avatar:store("isInBoat", util.toboolean(isBoat))
+	-- 	   avatar:store("isInBoat", util.toboolean(isBoat))
 	-- end
 
 	-- renderer:setRenderVehicle(not isBoat)
@@ -215,6 +213,8 @@ skullCreeperEyes:setVisible(false)
 
 ------------------------------------------------------------------
 
+local isAfk = false
+
 periodical.new(function() animations.model.blink:play() end)
 	:condition(function() return not isAfk and player:getPose() ~= "SLEEPING" end)
 	:timing(100, 300)
@@ -233,7 +233,11 @@ end
 
 ------------------------------------------------------------------
 
-local function itemChecks()
+function events.TICK()
+	local sleeping = player:getPose() == "SLEEPING"
+	local vehicle = player:getVehicle()
+	local color = util.chainIndex(player:getTeamInfo(), "color")
+	
 	local crouching = player:isCrouching()
 
 	local leftHanded = player:isLeftHanded()
@@ -284,19 +288,10 @@ local function itemChecks()
 	onAimingBowWhileCrouching(bowCrouchHand)
 	onSpyglass(spyglassHand)
 	onCrouchArmOffsetRot(crossbowCrouchHand or hornCrouchHand or tridentCrouchHand)
-end
-
-function events.TICK()
-	local sleeping = player:getPose() == "SLEEPING"
-	local vehicle = player:getVehicle()
-	local team = player:getTeamInfo()
-	local color = team and team.color
-	
-	itemChecks()
 
 	onTeamChange(color)
 	onSleep(sleeping)
-	onVehicleChange(vehicle)
+	onVehicle(vehicle)
 end
 
 function events.RENDER(delta, context)
@@ -317,7 +312,7 @@ function events.RENDER(delta, context)
 	if context == "FIRST_PERSON" then return end
 
     local cameraPos = client.getCameraPos()
-    local eyePos = player:getPos(delta):add(vec(0, player:getEyeHeight(), 0))
+    local eyePos = util.eyePos(player, delta)
 	local distance = math.abs((cameraPos - eyePos):length())
 
 	for i, depthObject in ipairs(depthObjects) do
@@ -428,5 +423,5 @@ end)
 table.insert(patpat.player.onPat, function()
 	---@type Minecraft.soundID
 	local sound = math.random(10) == 10 and "minecraft:entity.bat.hurt" or "minecraft:entity.cat.purr"
-	sounds:playSound(sound, player:getPos():add(vec(0, player:getEyeHeight(), 0)), 0.15)
+	sounds:playSound(sound, util.eyePos(player), 0.15)
 end)

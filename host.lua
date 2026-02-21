@@ -1,11 +1,12 @@
 if not host:isHost() then return end
 
+local util = require "lib.util"
 local syncedPings = require "lib.syncedpings"
 
-local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 local page = action_wheel:newPage()
 local sadChair = models.model.root.sadchair
 local hasSuperSecretShaders = client.compareVersions(client.getVersion(), "1.20.5") ~= 1
+local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 
 syncedPings.ticks = 4 * 20
 
@@ -20,33 +21,26 @@ end
 function pings.creeper()
     SnowyCreeperEyesVisible(true)
     if player:isLoaded() then
-        sounds:playSound("minecraft:entity.creeper.primed", player:getPos():add(vec(0, 1, 0)))
+        sounds:playSound("minecraft:entity.creeper.primed", util.eyePos(player))
     end
     animations.model.creeper:play()
 end
 
 if hasSuperSecretShaders then
-    ---@param toggle boolean
-    local function notchShader(toggle)
-        if toggle then
-            renderer:setPostEffect("notch")
-        else
-            renderer:setPostEffect()
-        end
-    end
-
     page:newAction()
         :title("Dithering")
         :item("minecraft:apple")
         :hoverColor(1, 0, 1)
-        :onToggle(notchShader)
+        :onToggle(function(toggle)
+            renderer:setPostEffect(toggle and "notch" or nil)
+        end)
 end
 
 page:newAction()
     :title("Sad Chair")
     :item("minecraft:smooth_quartz_stairs")
     :hoverColor(1, 0, 1)
-    :onToggle(syncedPings:new(pings.sadChair, "TICK", false))
+    :onToggle(syncedPings:new(pings.sadChair, false))
 
 page:newAction()
     :title("Creeper")
@@ -54,10 +48,7 @@ page:newAction()
     :hoverColor(1, 0, 1)
     :onLeftClick(pings.creeper)
 
-local isCursorUnlocked = false
-
 keybinds:newKeybind("unlockCursor", unlockCursorKey)
     :onPress(function()
-        isCursorUnlocked = not isCursorUnlocked
-        host.unlockCursor = isCursorUnlocked
+        host.unlockCursor = not host.unlockCursor
     end)
