@@ -35,6 +35,17 @@ function util.comparetables(tbl1, tbl2)
     return true
 end
 
+---@param tbl table
+---@param value any
+table.find = table.find or function(tbl, value)
+    if type(value) == "string" then
+        return toJson(tbl):find(tostring(value)) ~= nil
+    end
+    for _, v in pairs(tbl) do
+        if value == v then return true end
+    end
+end
+
 ---@param func fun(value, oldValue, ...)
 ---@param initialValue? any
 ---@return fun(value, ...)
