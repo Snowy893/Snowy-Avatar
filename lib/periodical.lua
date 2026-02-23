@@ -9,13 +9,16 @@ local function tick()
     if isSingleplayer and client.isPaused() then return end
     ---@param obj Periodical.obj
     for _, obj in ipairs(Periodical.objs) do
-        if obj.conditionFunc() then
-            obj.tickCounter = obj.tickCounter - 1
-            if obj.tickCounter == 0 then
-                obj.func()
-                obj:resetTickCounter()
-            end
+        if not obj.conditionFunc() then goto continue end
+
+        obj.tickCounter = obj.tickCounter - 1
+
+        if obj.tickCounter == 0 then
+            obj.func()
+            obj:resetTickCounter()
         end
+
+        ::continue::
     end
 end
 
@@ -23,19 +26,19 @@ end
 ---@param func function
 ---@return Periodical.obj
 function Periodical.new(func)
+    count = count + 1
     ---@class Periodical.obj
     local interface = {}
 
+    interface.id = "Periodical" .. tostring(count)
     interface.func = func
 
-    count = count + 1
-
     ---@param ticks number
-    pings["periodical" .. tostring(count)] = function(ticks)
+    pings[interface.id] = function(ticks)
         interface.tickCounter = ticks
     end
 
-    interface.ping = pings["periodical" .. tostring(count)]
+    interface.ping = pings[interface.id]
 
     ---@generic self
     ---@return self
@@ -80,26 +83,24 @@ function Periodical.new(func)
     ---@return self
     function interface:condition(cond) return self:setCondition(cond) end --- Alias
 
-    ---@return Periodical.RegisteredObj
+    ---@return Periodical.registeredObj
     function interface:register()
         ---@class Periodical.obj
         local obj = self
-        ---@class Periodical.RegisteredObj
+        ---@class Periodical.registeredObj
         local registeredObj = {}
-
-        obj.index = #Periodical.objs + 1
-
-        if obj.index == 1 then
-            events.TICK:register(tick, "Periodical")
-        end
-
-        table.insert(Periodical.objs, obj.index, obj)
 
         ---@return Periodical.obj
         function registeredObj:unRegister()
-            table.remove(Periodical.objs, obj.index)
+            Periodical.objs[obj.id] = nil
             if #Periodical.objs == 0 then events.TICK:remove("Periodical") end
             return obj
+        end
+
+        Periodical.objs[obj.id] = obj
+
+        if #Periodical.objs == 1 then
+            events.TICK:register(tick, "Periodical")
         end
 
         return registeredObj

@@ -17,26 +17,27 @@ end)
 ---| "ON_RENDER_LOOP"
 ---| "ON_TICK_NOT_AFK"
 
+---@overload fun(secondsUntilAfk: integer): Afk.obj
 ---@param secondsUntilAfk integer
 ---@param includeRotation? boolean
 ---@param afkCheckTickRate? integer
 ---@return Afk.obj
 function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     ---@class Afk.interface
-    local interface = {}
+    local interface = {
+        isAfk = false,
+        afkTIme = 0,
+        includeRotation = includeRotation or true,
+        didSneakChange = false,
+        events = {
+            ON_CHANGE = util.functiontable(),
+            ON_RENDER_LOOP = util.functiontable(),
+            ON_TICK_NOT_AFK = util.functiontable(),
+        },
+    }
 
-    interface.isAfk = false
-    interface.afkTime = 0
     interface.afkCheckTickRate = afkCheckTickRate or 5
     interface.delay = secondsUntilAfk * interface.afkCheckTickRate
-    interface.includeRotation = includeRotation or true
-    interface.didSneakChange = false
-
-    interface.events = {
-        ON_CHANGE = util.functiontable(),
-        ON_RENDER_LOOP = util.functiontable(),
-        ON_TICK_NOT_AFK = util.functiontable(),
-    }
 
     interface.onAfkChange = util.onchange(interface.events.ON_CHANGE --[[@as fun(toggle: boolean)]])
 
