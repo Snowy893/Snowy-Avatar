@@ -1,6 +1,20 @@
 ---@class Util
 local util = {}
 
+---@param func fun(value, oldValue, ...)
+---@param initialValue? any
+---@return fun(value, ...)
+---@nodiscard
+function util.onchange(func, initialValue)
+    local oldValue = initialValue
+    return function(value, ...)
+        if oldValue ~= value then
+            func(value, oldValue, ...)
+        end
+        oldValue = value
+    end
+end
+
 ---Returns an explicit boolean value out of a value that is truthy or falsy
 ---@param value any
 ---@return boolean
@@ -46,20 +60,6 @@ table.find = table.find or function(tbl, value)
     end
 end
 
----@param func fun(value, oldValue, ...)
----@param initialValue? any
----@return fun(value, ...)
----@nodiscard
-function util.onchange(func, initialValue)
-    local oldValue = initialValue
-    return function(value, ...)
-        if oldValue ~= value then
-            func(value, oldValue, ...)
-        end
-        oldValue = value
-    end
-end
-
 ---@param tbl? function[]
 ---@param mtbl? table
 ---@return table
@@ -100,16 +100,19 @@ function util.chainIndex(tbl, key, ...)
     return util.chainIndex(tbl[key], ...)
 end
 
----@param fromPage Page
----@param toPage Page
----@param title string
----@param item? Minecraft.itemID
----@return Action
-function util.switchPageAction(fromPage, toPage, title, item)
-    return fromPage:newAction()
-        :title(title)
-        :item(item)
-        :setOnLeftClick(function() action_wheel:setPage(toPage) end)
+local tickObjs = {}
+
+---@param ticks integer
+---@param func function
+function util.tick(ticks, func)
+    if next(tickObjs) == nil then
+        events.tick = function()
+            for _, obj in ipairs(tickObjs) do
+                if world.getTime() % obj.ticks == 0 then obj.func() end
+            end
+        end
+    end
+    table.insert(tickObjs, { ticks = ticks, func = func })
 end
 
 local permissionLevels = {
@@ -129,6 +132,18 @@ local permissionLevels = {
 function util.comparePermissionLevel(targetLevel, currentLevel)
     local level = currentLevel or avatar:getPermissionLevel()
     return permissionLevels[level] >= permissionLevels[targetLevel]
+end
+
+---@param fromPage Page
+---@param toPage Page
+---@param title string
+---@param item? Minecraft.itemID
+---@return Action
+function util.switchPageAction(fromPage, toPage, title, item)
+    return fromPage:newAction()
+        :title(title)
+        :item(item)
+        :setOnLeftClick(function() action_wheel:setPage(toPage) end)
 end
 
 ---@param playr Player?
@@ -180,6 +195,16 @@ end
 ---@nodiscard
 function util.eyePos(entity, delta)
     return entity:getPos(delta):add(0, entity:getEyeHeight(), 0)
+end
+
+---Thanks `manuel_2867` on the Figura Discord!
+---@overload fun(rotation: Vector3)
+---@param x any
+---@param y any
+---@param z any
+function util.realRotToModelRot(x, y, z)
+    local rot = type(x) == "Vector3" and x or vec(x, y, z)
+    return vec(0, 180, 0) - rot
 end
 
 return util
