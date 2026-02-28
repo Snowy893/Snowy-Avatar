@@ -2,6 +2,7 @@ if not host:isHost() then return end
 --#region imports
 local util = require "lib.util"
 local syncedPings = require "lib.syncedpings"
+local skullPositions = require "lib.skulls"
 --#endregion
 local sadChair = models.model.root.sadchair
 local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
@@ -37,17 +38,21 @@ function pings.creeper()
     if player:isLoaded() then
         sounds:playSound("minecraft:entity.creeper.primed", util.eyePos(player))
     end
+    for _, pos in pairs(skullPositions) do
+        local centered = pos:add(0.5, 0, 0.5)
+        sounds:playSound("minecraft:entity.creeper.primed", centered)
+    end
     animations.model.creeper:play()
 end
 
-util.switchPageAction(
+util.switchPageActions(
     page,
     shieldPage,
     "Shield",
     "minecraft:shield"
 )
 
-util.switchPageAction(
+util.switchPageActions(
     page,
     emotePage,
     "Emotes",
@@ -68,7 +73,7 @@ emotePage:newAction()
 
 shieldPage:newAction()
     :title("Adjust Shield")
-    :item("minecraft:shield")
+    :item("minecraft:anvil")
     :hoverColor(1, 0, 1)
     :toggled(true)
     :onToggle(function(toggle)
@@ -100,25 +105,22 @@ local taskLeft = itemLeftPart:newItem("left")
     :setDisplayMode("FIRST_PERSON_LEFT_HAND")
     :setRot(0, 180, 0)
 
-function events.entity_init()
-    function events.item_render(item, mode, pos, rot, scale, lefthanded)
-        if not fixShield and not lowShield then return end
-        if not mode:find("FIRST_PERSON") then return end
-        if item:getUseAction() ~= "BLOCK" then return end
-
-        local part = lefthanded and itemLeftPart or itemRightPart
-        local task = lefthanded and taskLeft or taskRight
-
-        local blocking = player:isUsingItem()
-        
-        local fixOffset = blocking and -1.74 or -0.2
-        local lowOffset = blocking and -4.5 or -3.5
-
-        local offset = ((fixShield and not lefthanded) and fixOffset or 0) + (lowShield and lowOffset or 0)
-
-        task:setPos(0, offset, 0)
-        task:setItem(item)
-
-        return part
+function events.item_render(item, mode, _, _, _, lefthanded)
+    if not fixShield and not lowShield or not mode:find("FIRST_PERSON") or item:getUseAction() ~= "BLOCK" then
+        return
     end
+
+    local part = lefthanded and itemLeftPart or itemRightPart
+    local task = lefthanded and taskLeft or taskRight
+
+    local blocking = player:isLoaded() and player:isUsingItem()
+    local fixOffset = blocking and -1.742 or -0.257
+    local lowOffset = blocking and -4.5 or -3.5
+
+    local offset = ((fixShield and not lefthanded) and fixOffset or 0) + (lowShield and lowOffset or 0)
+
+    task:setPos(0, offset, 0)
+    task:setItem(item)
+
+    return part
 end
