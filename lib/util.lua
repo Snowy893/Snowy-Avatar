@@ -1,6 +1,31 @@
 ---@class Util
 local util = {}
 
+local tickProxy = {}
+local tickObjs = {}
+
+local utilmt = {
+    __index = tickProxy,
+    __newindex = function(self, key, value)
+        if key == "tick" then
+            util.registerTick(value)
+        end
+        rawset(self, key, value)
+    end,
+}
+
+---@param func function
+---@param ticks integer?
+function util.registerTick(func, ticks)
+    table.insert(tickObjs, { ticks = ticks, func = func })
+end
+
+function events.tick()
+    for _, obj in ipairs(tickObjs) do
+        if (not obj.ticks or world.getTime() % obj.ticks == 0) then obj.func() end
+    end
+end
+
 ---@param func fun(value, oldValue, ...)
 ---@param initialValue? any
 ---@return fun(value, ...)
@@ -95,24 +120,9 @@ end
 ---@param ... any
 ---@return any
 ---@nodiscard
-function util.chainIndex(tbl, key, ...)
+function util.chainindex(tbl, key, ...)
     if key == nil or tbl == nil then return tbl end
-    return util.chainIndex(tbl[key], ...)
-end
-
-local tickObjs = {}
-
----@param ticks integer
----@param func function
-function util.tick(ticks, func)
-    if next(tickObjs) == nil then
-        events.tick = function()
-            for _, obj in ipairs(tickObjs) do
-                if world.getTime() % obj.ticks == 0 then obj.func() end
-            end
-        end
-    end
-    table.insert(tickObjs, { ticks = ticks, func = func })
+    return util.chainindex(tbl[key], ...)
 end
 
 local permissionLevels = {
@@ -137,13 +147,18 @@ end
 ---@param fromPage Page
 ---@param toPage Page
 ---@param title string
----@param item? Minecraft.itemID
----@return Action
-function util.switchPageAction(fromPage, toPage, title, item)
-    return fromPage:newAction()
-        :title(title)
-        :item(item)
-        :setOnLeftClick(function() action_wheel:setPage(toPage) end)
+---@param item? ItemStack|Minecraft.itemID
+---@return Action, Action
+function util.switchPageActions(fromPage, toPage, title, item)
+    return
+        fromPage:newAction()
+            :title(title)
+            :item(item)
+            :setOnLeftClick(function() action_wheel:setPage(toPage) end),
+        toPage:newAction()
+            :title("Back")
+            :item("minecraft:barrier")
+            :setOnLeftClick(function() action_wheel:setPage(fromPage) end)
 end
 
 ---@param playr Player?
@@ -154,12 +169,19 @@ function util.handsEmpty(playr)
     return p:getHeldItem():getCount() == 0 and p:getHeldItem(true):getCount() == 0
 end
 
+---@param itemStack ItemStack
+---@return table?
+function util.getProjectiles(itemStack)
+    local projectiles = itemStack:getTag().ChargedProjectiles
+    return projectiles
+end
+
 ---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
 ---@param itemStack ItemStack
 ---@return boolean
 ---@nodiscard
 function util.crossbowCharged(itemStack)
-    local projectiles = itemStack:getTag().ChargedProjectiles
+    local projectiles = util.getProjectiles(itemStack)
     return projectiles ~= nil and next(projectiles) ~= nil
 end
 
@@ -207,4 +229,4 @@ function util.realRotToModelRot(x, y, z)
     return vec(0, 180, 0) - rot
 end
 
-return util
+return setmetatable(util, utilmt)
