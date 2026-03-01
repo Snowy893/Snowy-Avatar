@@ -9,17 +9,17 @@
       "primaryRenderType": "CUTOUT_EMISSIVE_SOLID"
     },
     "model.root.torso.Head.creepereyes": {
-      "primaryRenderType": "EYES",
+      "primaryRenderType": "EMISSIVE",
       "visible": false
     },
     "model.Skull": {
       "visible": true
     },
     "model.Skull.eyes2": {
-      "primaryRenderType": "EMISSIVE"
+      "primaryRenderType": "CUTOUT_EMISSIVE_SOLID"
     },
     "model.Skull.creepereyes2": {
-      "primaryRenderType": "EMISSIVE",
+      "primaryRenderType": "TRANSLUCENT_CULL",
       "visible": false
     },
     "model.root.sadchair": {

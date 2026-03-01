@@ -13,14 +13,19 @@ local root = model.root
 local head = root.torso.Head
 local body = root.torso.waist.Body
 local eyes = head.eyes
-local creeperEyes = head.creepereyes
+local creeperEyes = head.creepereyes:scale(1.2, 1.2, 1.2)
 local skull = model.Skull
 local skullEyes = skull.eyes2
-local skullCreeperEyes = skull.creepereyes2
+local skullCreeperEyes = skull.creepereyes2:scale(1.2, 1.2, 1.2)
 local rightArm = root.torso.waist.RightArm
 local leftArm = root.torso.waist.LeftArm
 local rightItemPivot = rightArm.RightItemPivot
 local leftItemPivot = leftArm.LeftItemPivot
+
+eyes.righteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
+eyes.lefteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
+skullEyes.righteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
+skullEyes.lefteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
 
 ------------------------------------------------------------------
 
@@ -179,14 +184,14 @@ end
 
 ------------------------------------------------------------------
 
-local eyeColorParts = colorlib.newColorMulti({
+local eyeColor = colorlib.newColorMulti({
 	eyes.righteye,
 	eyes.lefteye,
 	skullEyes.righteye2,
 	skullEyes.lefteye2,
+	creeperEyes,
+	skullCreeperEyes
 })
-
-local creeperEyeParts = { creeperEyes, skull.CreeperEyes2 }
 
 animatedText.new(
 	"afk",
@@ -233,68 +238,57 @@ end
 
 ------------------------------------------------------------------
 
-function events.TICK()
+function events.tick()
 	local sleeping = player:getPose() == "SLEEPING"
 	local vehicle = player:getVehicle()
-	local color = util.chainIndex(player:getTeamInfo(), "color")
+	local color = util.chainindex(player:getTeamInfo(), "color")
 	
 	local crouching = player:isCrouching()
-
 	local leftHanded = player:isLeftHanded()
-
 	local useAction = player:getActiveItem():getUseAction()
 	local useTime = player:getActiveItemTime()
 
+	local mainHandActive = player:getActiveHand() == "MAIN_HAND"
+	local hand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true } ---@type Hand
+
+	local doubleCrouchHand ---@type Hand
+	local singleCrouchHand ---@type Hand
 	local spyglassHand ---@type Hand
 	local bowCrouchHand ---@type Hand
-	local hornCrouchHand ---@type Hand
-	local tridentCrouchHand ---@type Hand
-	local crossbowCrouchHand ---@type Hand
 
-	--Use Actions should take priority over charged crossbow offset rot
-	if player:isUsingItem() then
-		local mainHandActive = player:getActiveHand() == "MAIN_HAND"
-		---@type Hand
-		local hand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true }
-		if useAction == "SPYGLASS" then
-			spyglassHand = hand
-		elseif crouching then
-			if useAction == "BOW" then
-				bowCrouchHand = hand
-			elseif useAction == "TOOT_HORN" then
-				hornCrouchHand = hand
-			elseif useAction == "SPEAR" then
-				tridentCrouchHand = hand
-			end
-		end
+	if useAction == "SPYGLASS" then
+		spyglassHand = hand
 	elseif crouching then
-		local rightItem = player:getHeldItem(leftHanded)
-		local leftItem = player:getHeldItem(not leftHanded)
-		if util.crossbowCharged(rightItem) then
-			crossbowCrouchHand = { RIGHT = true, LEFT = true }
-		elseif util.crossbowCharged(leftItem) then
-			crossbowCrouchHand = { RIGHT = true, LEFT = true }
+		if useAction == "BOW" then
+			bowCrouchHand = hand
+		elseif util.checkUseAction("TOOT_HORN", "SPEAR", "BLOCK") then
+			singleCrouchHand = hand
+		else
+			local rightItem = player:getHeldItem(leftHanded)
+			local leftItem = player:getHeldItem(not leftHanded)
+			local charged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
+			if charged then
+				doubleCrouchHand = { RIGHT = true, LEFT = true }
+			end
 		end
 	end
 
-	if useTime == 80 then
-		if useAction == "BOW" or useAction == "SPEAR" then
-			animations.model.aiming:play()
-		end
+	if useTime == 80 and (useAction == "BOW" or useAction == "SPEAR") then
+		animations.model.aiming:play()
 	elseif useTime < 80 then
 		animations.model.aiming:stop()
 	end
 
 	onAimingBowWhileCrouching(bowCrouchHand)
 	onSpyglass(spyglassHand)
-	onCrouchArmOffsetRot(crossbowCrouchHand or hornCrouchHand or tridentCrouchHand)
+	onCrouchArmOffsetRot(doubleCrouchHand or singleCrouchHand)
 
 	onTeamChange(color)
 	onSleep(sleeping)
 	onVehicle(vehicle)
 end
 
-function events.RENDER(delta, context)
+function events.render(delta, context)
 	local time = world.getTime(delta)
 
 	if player:getPose() == "SLEEPING" then
@@ -369,45 +363,32 @@ enviLib.register("DIMENSION", function(id)
 
 	local switch = {
 		the_end = function()
-			for _, part in ipairs(creeperEyeParts) do
-				part:color()
-				part:color(0.81, 0.96, 0.99)
-			end
-			eyeColorParts:color({ color = vec(0.81, 0.96, 0.99) })
-			eyeColorParts:color({
+			eyeColor:color({ color = vec(0.81, 0.96, 0.99) })
+			eyeColor:color({
 				color = vec(0.35, 0.1, 0.35),
 				type = "depthBackground",
 			})
-			eyeColorParts:color({
+			eyeColor:color({
 				color = vec(1, 1, 1),
 				type = "layer",
 				layer = "layer1",
 			})
 		end,
 		the_nether = function()
-			for _, part in ipairs(creeperEyeParts) do
-				part:color()
-				part:color(vec(0.82, 0.2, 0.75))
-			end
-			eyeColorParts:color({ color = vec(0.91, 0.65, 0.88) })
-			eyeColorParts:color({
+			eyeColor:color({ color = vec(0.91, 0.65, 0.88) })
+			eyeColor:color({
 				color = vec(0.82, 0.2, 0.75),
 				type = "depthBackground",
 			})
 		end,
 		overworld = function()
-			for _, part in ipairs(creeperEyeParts) do
-				part:color()
-				part:color(vec(0.85, 0.66, 1))
-			end
-			eyeColorParts:color({ color = vec(0.85, 0.66, 1) })
-			eyeColorParts:color({
+			eyeColor:color({ color = vec(0.85, 0.66, 1) })
+			eyeColor:color({
 				color = vec(0.75, 0.52, 0.9),
 				type = "depthBackground",
 			})
 		end,
 	}
-
 	if switch[dimension] then switch[dimension]()
 	else switch.overworld() end
 end)

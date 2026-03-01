@@ -53,7 +53,7 @@ function colorlib.newColorMulti(parts)
 
         switch.all = switch.default -- Alias
     else
-        switch.depthLayer = function(tbl)
+        switch.depthlayer = function(tbl)
             local layer = tbl.depthLayer or tbl.layer
             for _, part in ipairs(parts) do
                 if part[layer] then
@@ -61,24 +61,26 @@ function colorlib.newColorMulti(parts)
                 end
             end
         end
-        switch.layer = switch.depthLayer -- Alias
+        switch.layer = switch.depthlayer -- Alias
 
-        switch.depthLayers = function(tbl)
+        switch.depthlayers = function(tbl)
             for _, part in ipairs(layers) do
                 part:color()
                 part:color(tbl.color)
             end
         end
-        switch.layers = switch.depthLayers -- Alias
+        switch.layers = switch.depthlayers -- Alias
 
-        switch.depthBackground = function(tbl)
+        switch.depthbackground = function(tbl)
             for _, part in ipairs(parts) do
                 local background = part.bg or part.background
-                background:color()
-                background:color(tbl.color)
+                if background then
+                    background:color()
+                    background:color(tbl.color)
+                end
             end
         end
-        switch.background = switch.depthBackground -- Alias
+        switch.background = switch.depthbackground -- Alias
 
         switch.default = function(tbl)
             for _, v in ipairs(parts) do
@@ -107,8 +109,9 @@ function colorlib.newColorMulti(parts)
     ---     layer: string?, -- Alias of depthLayer
     ---}
     function interface:color(tbl)
-        if switch[tbl.type] then
-            switch[tbl.type](tbl)
+        local t = tbl.type and tbl.type:lower()
+        if t and switch[t] then
+            switch[t](tbl)
         else
             switch.default(tbl)
         end
