@@ -4,14 +4,12 @@ local util = {}
 
 local tickObjs = {}
 
-local proxy = {
-    tick = {},
-}
+local proxy = { tick = {} }
 
 setmetatable(util, {
     __index = proxy,
     __newindex = function(self, key, value)
-        if key == "tick" and type(value) == "function" then
+        if type(key) == "string" and key:lower() == "tick" and type(value) == "function" then
             proxy.tick:register(value)
             return
         end
