@@ -31,7 +31,7 @@ skullEyes.lefteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
 
 local name = "Snowy :blahaj:"
 local nameColor = "#6600cc"
-local nameOutlineColor = colorlib.lighten(colorlib.hextorgb(nameColor), -25)
+local nameOutlineColor = colorlib.lighten(vectors.hexToRGB(nameColor), -25)
 
 nameplate.ENTITY:setOutline(true)
 
@@ -239,52 +239,53 @@ end
 ------------------------------------------------------------------
 
 function events.tick()
-	local sleeping = player:getPose() == "SLEEPING"
-	local vehicle = player:getVehicle()
-	local color = util.chainindex(player:getTeamInfo(), "color")
-	
-	local crouching = player:isCrouching()
-	local leftHanded = player:isLeftHanded()
-	local useAction = player:getActiveItem():getUseAction()
-	local useTime = player:getActiveItemTime()
+    local sleeping = player:getPose() == "SLEEPING"
+    local vehicle = player:getVehicle()
+	local team = player:getTeamInfo()
+    local color = team and team.color
 
-	local mainHandActive = player:getActiveHand() == "MAIN_HAND"
-	local hand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true } ---@type Hand
+    local crouching = player:isCrouching()
+    local leftHanded = player:isLeftHanded()
+    local useAction = player:getActiveItem():getUseAction()
+    local useTime = player:getActiveItemTime()
 
-	local doubleCrouchHand ---@type Hand
-	local singleCrouchHand ---@type Hand
-	local spyglassHand ---@type Hand
-	local bowCrouchHand ---@type Hand
+    local mainHandActive = player:getActiveHand() == "MAIN_HAND"
+    local hand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true } ---@type Hand
 
-	if useAction == "SPYGLASS" then
-		spyglassHand = hand
-	elseif crouching then
-		if useAction == "BOW" then
-			bowCrouchHand = hand
-		elseif util.checkUseAction("TOOT_HORN", "SPEAR", "BLOCK") then
-			singleCrouchHand = hand
-		else
-			local rightItem = player:getHeldItem(leftHanded)
-			local leftItem = player:getHeldItem(not leftHanded)
-			if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
-				doubleCrouchHand = { RIGHT = true, LEFT = true }
-			end
-		end
-	end
+    local doubleCrouchHand ---@type Hand
+    local singleCrouchHand ---@type Hand
+    local spyglassHand ---@type Hand
+    local bowCrouchHand ---@type Hand
 
-	if useTime == 80 and (useAction == "BOW" or useAction == "SPEAR") then
-		animations.model.aiming:play()
-	elseif useTime < 80 then
-		animations.model.aiming:stop()
-	end
+    if useAction == "SPYGLASS" then
+        spyglassHand = hand
+    elseif crouching then
+        if useAction == "BOW" then
+            bowCrouchHand = hand
+        elseif util.checkUseAction("TOOT_HORN", "SPEAR", "BLOCK") then
+            singleCrouchHand = hand
+        else
+            local rightItem = player:getHeldItem(leftHanded)
+            local leftItem = player:getHeldItem(not leftHanded)
+            if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
+                doubleCrouchHand = { RIGHT = true, LEFT = true }
+            end
+        end
+    end
 
-	onAimingBowWhileCrouching(bowCrouchHand)
-	onSpyglass(spyglassHand)
-	onCrouchArmOffsetRot(singleCrouchHand or (not bowCrouchHand and doubleCrouchHand))
+    if useTime == 80 and (useAction == "BOW" or useAction == "SPEAR") then
+        animations.model.aiming:play()
+    elseif useTime < 80 then
+        animations.model.aiming:stop()
+    end
 
-	onTeamChange(color)
-	onSleep(sleeping)
-	onVehicle(vehicle)
+    onAimingBowWhileCrouching(bowCrouchHand)
+    onSpyglass(spyglassHand)
+    onCrouchArmOffsetRot(singleCrouchHand or (not bowCrouchHand and doubleCrouchHand))
+
+    onTeamChange(color)
+    onSleep(sleeping)
+    onVehicle(vehicle)
 end
 
 function events.render(delta, context)
