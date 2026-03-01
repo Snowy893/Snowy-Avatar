@@ -16,7 +16,7 @@
       "visible": true
     },
     "model.Skull.eyes2": {
-      "primaryRenderType": "CUTOUT_EMISSIVE_SOLID"
+      "primaryRenderType": "EYES"
     },
     "model.Skull.creepereyes2": {
       "primaryRenderType": "TRANSLUCENT_CULL",
