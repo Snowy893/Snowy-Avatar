@@ -9,21 +9,27 @@ local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 
 for _, name in pairs(client.getActiveResourcePacks()) do
     local n = name:lower()
-    if n:find("low") and n:find("shield") then
-        config:save("shouldFixShield", false)
-        config:save("shouldLowerShield", false)
-        break
+    if n:find("low") then
+        if n:find("shield") then
+            config:save("shouldFixShield", false)
+            config:save("shouldLowerShield", false)
+            break
+        elseif n:find("fire") then
+            config:save("shouldLowerFire", false)
+            break
+        end
     end
 end
 
 local fixShield = config:load("shouldFixShield") or true
 local lowShield = config:load("shouldLowerShield") or true
+local lowFire = config:load("shouldLowerFire") or true
 
 syncedPings.ticks = 4 * 20
 
 local page = action_wheel:newPage()
 local emotePage = action_wheel:newPage()
-local shieldPage = action_wheel:newPage()
+local qolPage = action_wheel:newPage()
 
 action_wheel:setPage(page)
 
@@ -45,10 +51,17 @@ function pings.creeper()
     animations.model.creeper:play()
 end
 
+local function toggleLowFire(toggle)
+    local path = toggle and textures["replace.fire_0"] or nil
+    renderer:setSecondaryFireTexture(path)
+end
+
+toggleLowFire(lowFire)
+
 util.switchPageActions(
     page,
-    shieldPage,
-    "Shield",
+    qolPage,
+    "QOL",
     "minecraft:shield"
 )
 
@@ -71,25 +84,32 @@ emotePage:newAction()
     :hoverColor(1, 0, 1)
     :onLeftClick(pings.creeper)
 
-shieldPage:newAction()
+qolPage:newAction()
     :title("Adjust Shield")
     :item("minecraft:anvil")
     :hoverColor(1, 0, 1)
-    :toggled(true)
+    :toggled(fixShield)
     :onToggle(function(toggle)
         fixShield = toggle
         config:save("shouldFixShield", toggle)
     end)
 
-shieldPage:newAction()
+qolPage:newAction()
     :title("Low Shield")
     :item("minecraft:magenta_glazed_terracotta")
     :hoverColor(1, 0, 1)
-    :toggled(true)
+    :toggled(lowShield)
     :onToggle(function(toggle)
         lowShield = toggle
         config:save("shouldLowerShield", toggle)
     end)
+
+qolPage:newAction()
+    :title("Low Fire")
+    :item("minecraft:flint_and_steel")
+    :hoverColor(1, 0, 1)
+    :toggled(lowFire)
+    :onToggle(toggleLowFire)
 
 keybinds:newKeybind("unlockCursor", unlockCursorKey)
     :onPress(function()
