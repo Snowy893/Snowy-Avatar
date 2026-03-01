@@ -31,7 +31,7 @@ skullEyes.lefteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
 
 local name = "Snowy :blahaj:"
 local nameColor = "#6600cc"
-local nameOutlineColor = colorlib.lighten(vectors.hexToRGB(nameColor), -25)
+local nameOutlineColor = colorlib.lighten(vectors.hexToRGB(nameColor) * 255, -25)
 
 nameplate.ENTITY:setOutline(true)
 
