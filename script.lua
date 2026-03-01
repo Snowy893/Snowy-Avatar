@@ -65,7 +65,8 @@ local onTeamChange = util.onchange(function(teamColor)
 end, true)
 
 function events.entity_init()
-	plate.hoverEvent.contents = player:getName()
+    plate.hoverEvent.contents = player:getName()
+	nameplate.ALL:setText(toJson(plate))
 end
 
 ------------------------------------------------------------------
