@@ -266,8 +266,7 @@ function events.tick()
 		else
 			local rightItem = player:getHeldItem(leftHanded)
 			local leftItem = player:getHeldItem(not leftHanded)
-			local charged = util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem)
-			if charged then
+			if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
 				doubleCrouchHand = { RIGHT = true, LEFT = true }
 			end
 		end
@@ -281,7 +280,7 @@ function events.tick()
 
 	onAimingBowWhileCrouching(bowCrouchHand)
 	onSpyglass(spyglassHand)
-	onCrouchArmOffsetRot(doubleCrouchHand or singleCrouchHand)
+	onCrouchArmOffsetRot(singleCrouchHand or (not bowCrouchHand and doubleCrouchHand))
 
 	onTeamChange(color)
 	onSleep(sleeping)
