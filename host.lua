@@ -25,6 +25,8 @@ local fixShield = config:load("shouldFixShield") or true
 local lowShield = config:load("shouldLowerShield") or true
 local lowFire = config:load("shouldLowerFire") or true
 
+local fireTexture = "textures/block/fire_coral_fan"
+
 syncedPings.ticks = 4 * 20
 
 local page = action_wheel:newPage()
@@ -52,8 +54,8 @@ function pings.creeper()
 end
 
 local function toggleLowFire(toggle)
-    local path = toggle and textures["replace.fire_0"] or nil
-    renderer:setSecondaryFireTexture(path)
+    lowFire = toggle
+    renderer:setSecondaryFireTexture(toggle and fireTexture or nil)
 end
 
 toggleLowFire(lowFire)
@@ -115,6 +117,23 @@ keybinds:newKeybind("unlockCursor", unlockCursorKey)
     :onPress(function()
         host.unlockCursor = not host.unlockCursor
     end)
+
+
+-- thanks `manuel_2867`!
+local fireSources = {
+    ["minecraft:fire"] = "textures/block/fire_coral_fan",
+    ["minecraft:lava"] = "textures/block/fire_coral_fan",
+    ["minecraft:soul_fire"] = "textures/block/tube_coral_fan",
+}
+
+function events.render(delta)
+    if not lowFire then return end
+    local texture = fireSources[world.getBlockState(player:getPos(delta)).id]
+    if texture then
+        fireTexture = texture
+        renderer:setSecondaryFireTexture(texture)
+    end
+end
 
 local itemRightPart = models.model.ItemRight
 local itemLeftPart = models.model.ItemLeft
