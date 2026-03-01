@@ -32,18 +32,16 @@ skullEyes.lefteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
 local name = "Snowy :blahaj:"
 local nameColor = "#6600cc"
 local nameOutlineColor = colorlib.lighten(vectors.hexToRGB(nameColor) * 255, -25)
+local plate = {
+	text = name,
+	color = nameColor,
+}
 
 nameplate.ENTITY:setOutline(true)
+nameplate.ENTITY:setOutlineColor(nameOutlineColor / 255)
+nameplate.ALL:setText(toJson(plate))
 
 local onTeamChange = util.onchange(function(teamColor)
-	local plate = {
-		text = name,
-		hoverEvent = {
-			action = "show_text",
-			contents = player:getName(),
-		},
-	}
-
 	local outline
 
 	if teamColor then
@@ -60,6 +58,28 @@ local onTeamChange = util.onchange(function(teamColor)
 	nameplate.ALL:setText(toJson(plate))
 	nameplate.ENTITY:setOutlineColor(outline / 255)
 end, true)
+
+---@param str string
+function pings.syncUsername(str)
+	plate.hoverEvent = {
+		action = "show_text",
+		content = str,
+	}
+end
+
+function events.chat_send_message(msg)
+	if not player then
+		pings.syncUsername(player:getName())
+	else
+		plate.hoverEvent = {
+			action = "show_text",
+			content = player:getName(),
+		}
+	end
+	logTable(plate)
+	nameplate.ALL:setText(toJson(plate))
+	return msg
+end
 
 ------------------------------------------------------------------
 
@@ -281,7 +301,7 @@ function events.tick()
 
     onAimingBowWhileCrouching(bowCrouchHand)
     onSpyglass(spyglassHand)
-    onCrouchArmOffsetRot(singleCrouchHand or (not bowCrouchHand and doubleCrouchHand))
+    onCrouchArmOffsetRot(singleCrouchHand or not bowCrouchHand and doubleCrouchHand)
 
     onTeamChange(color)
     onSleep(sleeping)
