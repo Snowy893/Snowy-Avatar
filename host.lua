@@ -6,6 +6,7 @@ local skullPositions = require "lib.skulls"
 --#endregion
 local sadChair = models.model.root.sadchair
 local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
+local cursorUnlocked = false
 
 for _, name in pairs(client.getActiveResourcePacks()) do
     local n = name:lower()
@@ -21,9 +22,9 @@ for _, name in pairs(client.getActiveResourcePacks()) do
     end
 end
 
-local fixShield = config:load("shouldFixShield") or true
-local lowShield = config:load("shouldLowerShield") or true
-local lowFire = config:load("shouldLowerFire") or true
+local fixShield = util.getOrDefault("shouldFixShield", true)
+local lowShield = util.getOrDefault("shouldLowerShield", true)
+local lowFire = util.getOrDefault("shouldLowerFire", false)
 
 local fireTexture = "textures/block/fire_coral_fan"
 
@@ -53,9 +54,10 @@ function pings.creeper()
     animations.model.creeper:play()
 end
 
+---@param toggle boolean
 local function toggleLowFire(toggle)
-    lowFire = toggle
     renderer:setSecondaryFireTexture(toggle and fireTexture or nil)
+    config:save("shouldLowerFire", toggle)
 end
 
 toggleLowFire(lowFire)
@@ -107,7 +109,7 @@ qolPage:newAction()
     end)
 
 qolPage:newAction()
-    :title("Low Fire")
+    :title("Low Fire (Experimental)")
     :item("minecraft:flint_and_steel")
     :hoverColor(1, 0, 1)
     :toggled(lowFire)
@@ -115,25 +117,9 @@ qolPage:newAction()
 
 keybinds:newKeybind("unlockCursor", unlockCursorKey)
     :onPress(function()
-        host.unlockCursor = not host.unlockCursor
+        cursorUnlocked = not cursorUnlocked
+        host:setUnlockCursor(cursorUnlocked)
     end)
-
-
--- thanks `manuel_2867`!
-local fireSources = {
-    ["minecraft:fire"] = "textures/block/fire_coral_fan",
-    ["minecraft:lava"] = "textures/block/fire_coral_fan",
-    ["minecraft:soul_fire"] = "textures/block/tube_coral_fan",
-}
-
-function events.render(delta)
-    if not lowFire then return end
-    local texture = fireSources[world.getBlockState(player:getPos(delta)).id]
-    if texture then
-        fireTexture = texture
-        renderer:setSecondaryFireTexture(texture)
-    end
-end
 
 local itemRightPart = models.model.ItemRight
 local itemLeftPart = models.model.ItemLeft

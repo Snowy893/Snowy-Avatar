@@ -128,6 +128,16 @@ function util.chainindex(tbl, key, ...)
     return util.chainindex(tbl[key], ...)
 end
 
+---@param key any
+---@param default any
+---@return any
+---@nodiscard
+function util.getOrDefault(key, default)
+    local value = config:load(key)
+    if value ~= nil then return value
+    else return default end
+end
+
 local permissionLevels = {
     BLOCKED = 0,
     LOW = 1,
