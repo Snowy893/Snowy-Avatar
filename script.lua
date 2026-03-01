@@ -34,6 +34,9 @@ local nameColor = "#6600cc"
 local nameOutlineColor = colorlib.lighten(vectors.hexToRGB(nameColor) * 255, -25)
 local plate = {
 	text = name,
+	hoverEvent = {
+		action = "show_text",
+	},
 	color = nameColor,
 }
 
@@ -43,6 +46,8 @@ nameplate.ALL:setText(toJson(plate))
 
 local onTeamChange = util.onchange(function(teamColor)
 	local outline
+
+	plate.hoverEvent.contents = player:getName()
 
 	if teamColor then
 		local rgb = colorlib.vanillaColors[teamColor]
@@ -59,26 +64,8 @@ local onTeamChange = util.onchange(function(teamColor)
 	nameplate.ENTITY:setOutlineColor(outline / 255)
 end, true)
 
----@param str string
-function pings.syncUsername(str)
-	plate.hoverEvent = {
-		action = "show_text",
-		content = str,
-	}
-end
-
-function events.chat_send_message(msg)
-	if not player then
-		pings.syncUsername(player:getName())
-	else
-		plate.hoverEvent = {
-			action = "show_text",
-			content = player:getName(),
-		}
-	end
-	logTable(plate)
-	nameplate.ALL:setText(toJson(plate))
-	return msg
+function events.entity_init()
+	plate.hoverEvent.contents = player:getName()
 end
 
 ------------------------------------------------------------------
