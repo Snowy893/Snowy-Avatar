@@ -1,22 +1,27 @@
 ---@class Util
+---@field tick function|table
 local util = {}
 
-local tickProxy = {}
 local tickObjs = {}
 
-local utilmt = {
-    __index = tickProxy,
+local proxy = {
+    tick = {},
+}
+
+setmetatable(util, {
+    __index = proxy,
     __newindex = function(self, key, value)
-        if key == "tick" then
-            util.registerTick(value)
+        if key == "tick" and type(value) == "function" then
+            proxy.tick:register(value)
+            return
         end
         rawset(self, key, value)
     end,
-}
+})
 
 ---@param func function
 ---@param ticks integer?
-function util.registerTick(func, ticks)
+function util.tick:register(func, ticks)
     table.insert(tickObjs, { ticks = ticks, func = func })
 end
 
@@ -229,4 +234,4 @@ function util.realRotToModelRot(x, y, z)
     return vec(0, 180, 0) - rot
 end
 
-return setmetatable(util, utilmt)
+return util
