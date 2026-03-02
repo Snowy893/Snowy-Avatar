@@ -6,7 +6,7 @@
   "autoScripts": ["script", "host", "silly"],
   "customizations": {
     "model.root.torso.Head.eyes": {
-      "primaryRenderType": "CUTOUT_EMISSIVE_SOLID"
+      "primaryRenderType": "EYES"
     },
     "model.root.torso.Head.creepereyes": {
       "primaryRenderType": "EMISSIVE",
