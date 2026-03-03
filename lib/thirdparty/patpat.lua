@@ -8,7 +8,8 @@ local config = {
    holdFor = 10, -- amount of ticks before patting stops, if this value is smaller than patDelay it might cause issues
 
    patpatBlocks = { -- list of blocks that can be patted
-      "minecraft:player_head", "minecraft:player_wall_head"
+      "minecraft:player_head",
+      "minecraft:player_wall_head",
    },
    disabledEntities = { -- list of entites that will be ignored when trying to pat them
       "minecraft:boat",
