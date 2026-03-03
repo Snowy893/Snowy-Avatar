@@ -2,10 +2,10 @@
 local skullPositions = {}
 
 function events.tick()
-    for i, pos in ipairs(skullPositions) do
+    for _, pos in pairs(skullPositions) do
         local id = world.getBlockState(pos).id
         if id ~= "minecraft:player_head" or id ~= "minecraft:player_wall_head" then
-            table.remove(skullPositions, i)
+            skullPositions[tostring(pos)] = nil
         end
     end
 end
@@ -13,7 +13,10 @@ end
 function events.skull_render(_, block)
     if not block then return end
     local pos = block:getPos()
-    if not table.find(skullPositions, pos) then table.insert(skullPositions, pos) end
+    local index = tostring(pos)
+    if not skullPositions[index] then
+        skullPositions[index] = pos
+    end
 end
 
 return skullPositions

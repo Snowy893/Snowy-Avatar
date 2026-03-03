@@ -396,7 +396,8 @@ enviLib.register("DIMENSION", function(id)
 				type = "depthBackground",
 			})
 		end,
-	}
+    }
+	
 	if switch[dimension] then switch[dimension]()
 	else switch.overworld() end
 end)

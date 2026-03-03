@@ -24,9 +24,6 @@ end
 
 local fixShield = util.getOrDefault("shouldFixShield", true)
 local lowShield = util.getOrDefault("shouldLowerShield", true)
-local lowFire = util.getOrDefault("shouldLowerFire", false)
-
-local fireTexture = "textures/block/fire_coral_fan"
 
 syncedPings.ticks = 4 * 20
 
@@ -48,19 +45,11 @@ function pings.creeper()
         sounds:playSound("minecraft:entity.creeper.primed", util.eyePos(player))
     end
     for _, pos in pairs(skullPositions) do
-        local centered = pos:add(0.5, 0, 0.5)
-        sounds:playSound("minecraft:entity.creeper.primed", centered)
+        pos.x_z = pos.x_z + 0.5
+        sounds:playSound("minecraft:entity.creeper.primed", pos)
     end
     animations.model.creeper:play()
 end
-
----@param toggle boolean
-local function toggleLowFire(toggle)
-    renderer:setSecondaryFireTexture(toggle and fireTexture or nil)
-    config:save("shouldLowerFire", toggle)
-end
-
-toggleLowFire(lowFire)
 
 util.switchPageActions(
     page,
@@ -107,13 +96,6 @@ qolPage:newAction()
         lowShield = toggle
         config:save("shouldLowerShield", toggle)
     end)
-
-qolPage:newAction()
-    :title("Low Fire (Experimental)")
-    :item("minecraft:flint_and_steel")
-    :hoverColor(1, 0, 1)
-    :toggled(lowFire)
-    :onToggle(toggleLowFire)
 
 keybinds:newKeybind("unlockCursor", unlockCursorKey)
     :onPress(function()

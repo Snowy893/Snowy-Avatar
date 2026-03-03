@@ -107,25 +107,12 @@ end
 ---@return ...
 ---@nodiscard
 function util.splitstring(input, separator)
-    if separator == nil then
-        separator = "%s"
-    end
+    local sep = separator or "%s"
     local t = {}
-    for str in string.gmatch(input, "([^" .. separator .. "]+)") do
+    for str in string.gmatch(input, "([^"..sep.."]+)") do
         table.insert(t, str)
     end
     return table.unpack(t)
-end
-
----Thanks `toomanylimits` on the Figura Discord!
----@param tbl table
----@param key any
----@param ... any
----@return any
----@nodiscard
-function util.chainindex(tbl, key, ...)
-    if key == nil or tbl == nil then return tbl end
-    return util.chainindex(tbl[key], ...)
 end
 
 ---@param key any
