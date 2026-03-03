@@ -34,9 +34,6 @@ local nameColor = "#6600cc"
 local nameOutlineColor = colorlib.lighten(vectors.hexToRGB(nameColor) * 255, -25)
 local plate = {
 	text = name,
-	hoverEvent = {
-		action = "show_text",
-	},
 	color = nameColor,
 }
 
@@ -65,7 +62,10 @@ local onTeamChange = util.onchange(function(teamColor)
 end, true)
 
 function events.entity_init()
-    plate.hoverEvent.contents = player:getName()
+	plate.hoverEvent = {
+		action = "show_text",
+		contents = player:getName(),
+	}
 	nameplate.ALL:setText(toJson(plate))
 end
 
@@ -250,46 +250,47 @@ function events.tick()
     local sleeping = player:getPose() == "SLEEPING"
     local vehicle = player:getVehicle()
 	local team = player:getTeamInfo()
-    local color = team and team.color
+	local color = team and team.color
+	
+	local useAction = player:getActiveItem():getUseAction()
+	local useTime = player:getActiveItemTime()
 
-    local crouching = player:isCrouching()
-    local leftHanded = player:isLeftHanded()
-    local useAction = player:getActiveItem():getUseAction()
-    local useTime = player:getActiveItemTime()
+	if useTime == 80 and (useAction == "BOW" or useAction == "SPEAR") then
+		animations.model.aiming:play()
+	elseif useTime < 80 then
+		animations.model.aiming:stop()
+	end
 
-    local mainHandActive = player:getActiveHand() == "MAIN_HAND"
-    local hand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true } ---@type Hand
+	local crouching = player:isCrouching()
+	local leftHanded = player:isLeftHanded()
 
-    local doubleCrouchHand ---@type Hand
-    local singleCrouchHand ---@type Hand
-    local spyglassHand ---@type Hand
-    local bowCrouchHand ---@type Hand
+	local mainHandActive = player:getActiveHand() == "MAIN_HAND"
+	local hand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true } ---@type Hand
 
-    if useAction == "SPYGLASS" then
-        spyglassHand = hand
-    elseif crouching then
-        if useAction == "BOW" then
-            bowCrouchHand = hand
-        elseif util.checkUseAction("TOOT_HORN", "SPEAR", "BLOCK") then
-            singleCrouchHand = hand
-        else
-            local rightItem = player:getHeldItem(leftHanded)
-            local leftItem = player:getHeldItem(not leftHanded)
-            if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
-                doubleCrouchHand = { RIGHT = true, LEFT = true }
-            end
-        end
-    end
+	local doubleCrouchHand ---@type Hand
+	local singleCrouchHand ---@type Hand
+	local spyglassHand ---@type Hand
+	local bowCrouchHand ---@type Hand
 
-    if useTime == 80 and (useAction == "BOW" or useAction == "SPEAR") then
-        animations.model.aiming:play()
-    elseif useTime < 80 then
-        animations.model.aiming:stop()
-    end
+	if useAction == "SPYGLASS" then
+		spyglassHand = hand
+	elseif crouching then
+		if useAction == "BOW" then
+			bowCrouchHand = hand
+		elseif util.checkUseAction("TOOT_HORN", "SPEAR", "BLOCK") then
+			singleCrouchHand = hand
+		else
+			local rightItem = player:getHeldItem(leftHanded)
+			local leftItem = player:getHeldItem(not leftHanded)
+			if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
+				doubleCrouchHand = { RIGHT = true, LEFT = true }
+			end
+		end
+	end
 
-    onAimingBowWhileCrouching(bowCrouchHand)
-    onSpyglass(spyglassHand)
-    onCrouchArmOffsetRot(singleCrouchHand or not bowCrouchHand and doubleCrouchHand)
+	onAimingBowWhileCrouching(bowCrouchHand)
+	onSpyglass(spyglassHand)
+	onCrouchArmOffsetRot(singleCrouchHand or not bowCrouchHand and doubleCrouchHand)
 
     onTeamChange(color)
     onSleep(sleeping)
