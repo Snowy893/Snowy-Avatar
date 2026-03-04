@@ -164,7 +164,7 @@ end)
 ---@type auria.depth_effect.obj[]
 local depthObjects = {}
 ---@param parts ModelPart[]
----@return ModelPart[][]
+---@return {[string]: ModelPart[]}
 local layerObjects = (function(parts)
 	local tbl = {}
 	for _, part in ipairs(parts) do
@@ -248,9 +248,10 @@ end
 
 function events.tick()
     local sleeping = player:getPose() == "SLEEPING"
+	local crouching = player:isCrouching()
     local vehicle = player:getVehicle()
 	local team = player:getTeamInfo()
-	local color = team and team.color
+    local color = team and team.color
 	
 	local useAction = player:getActiveItem():getUseAction()
 	local useTime = player:getActiveItemTime()
@@ -260,10 +261,8 @@ function events.tick()
 	elseif useTime < 80 then
 		animations.model.aiming:stop()
 	end
-
-	local crouching = player:isCrouching()
+	
 	local leftHanded = player:isLeftHanded()
-
 	local mainHandActive = player:getActiveHand() == "MAIN_HAND"
 	local hand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true } ---@type Hand
 

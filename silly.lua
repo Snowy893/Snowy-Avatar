@@ -4,8 +4,7 @@ local lift = require("lib.thirdparty.Lift")
 
 lift.config.enabled = true
 
-local blacklist = {}
-local whitelistCache = {}
+local blacklist, whitelistCache = {}, {} ---@type {[string]: boolean}, {[string]: boolean}
 
 function events.tick()
     if world.getTime() % 60 ~= 0 then return end

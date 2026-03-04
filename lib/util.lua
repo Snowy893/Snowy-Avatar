@@ -95,7 +95,7 @@ end
 function util.functiontable(tbl, mtbl)
     local t = tbl or {}
     local mt = mtbl or {}
-    mt.__call = function(self, ...)
+    function mt:__call(...)
         for _, func in pairs(self) do func(...) end
     end
     return setmetatable(t, mt)
@@ -146,8 +146,8 @@ end
 
 ---@param fromPage Page
 ---@param toPage Page
----@param title string
----@param item? ItemStack|Minecraft.itemID
+---@param title string?
+---@param item (ItemStack|Minecraft.itemID)?
 ---@return Action, Action
 function util.switchPageActions(fromPage, toPage, title, item)
     return

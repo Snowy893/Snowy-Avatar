@@ -31,7 +31,7 @@ function colorlib.newColorMulti(parts)
     local interface = {}
 
     local layers = {}
-    for _, v in ipairs(parts) do
+    for _, v in pairs(parts) do
         local index = 1
         local layer = v["layer" .. tostring(index)]
         while layer do
@@ -45,7 +45,7 @@ function colorlib.newColorMulti(parts)
 
     if not hasDepthEffect then
         switch.default = function(tbl)
-            for _, part in ipairs(parts) do
+            for _, part in pairs(parts) do
                 part:color()
                 part:color(tbl.color)
             end
@@ -55,7 +55,7 @@ function colorlib.newColorMulti(parts)
     else
         switch.depthlayer = function(tbl)
             local layer = tbl.depthLayer or tbl.layer
-            for _, part in ipairs(parts) do
+            for _, part in pairs(parts) do
                 if part[layer] then
                     part[layer]:color(tbl.color)
                 end
@@ -64,7 +64,7 @@ function colorlib.newColorMulti(parts)
         switch.layer = switch.depthlayer -- Alias
 
         switch.depthlayers = function(tbl)
-            for _, part in ipairs(layers) do
+            for _, part in pairs(layers) do
                 part:color()
                 part:color(tbl.color)
             end
@@ -72,7 +72,7 @@ function colorlib.newColorMulti(parts)
         switch.layers = switch.depthlayers -- Alias
 
         switch.depthbackground = function(tbl)
-            for _, part in ipairs(parts) do
+            for _, part in pairs(parts) do
                 local background = part.bg or part.background
                 if background then
                     background:color()
@@ -83,7 +83,7 @@ function colorlib.newColorMulti(parts)
         switch.background = switch.depthbackground -- Alias
 
         switch.default = function(tbl)
-            for _, v in ipairs(parts) do
+            for _, v in pairs(parts) do
                 v:color()
                 v:color(tbl.color)
             end

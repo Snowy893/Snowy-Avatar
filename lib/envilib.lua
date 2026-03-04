@@ -17,9 +17,9 @@ local enviLibEvents = {
 ---| "DIMENSION"
 ---| "BIOME"
 
----@overload fun(type: EnviLib.Type, func: fun(environment: Minecraft.dimensionID | Biome))
+---@overload fun(type: EnviLib.Type, func: fun(environment: Minecraft.dimensionID|Biome))
 ---@param type EnviLib.Type
----@param func fun(environment: Minecraft.dimensionID | Biome, enteredOrExited: boolean)
+---@param func fun(environment: Minecraft.dimensionID|Biome, enteredOrExited: boolean)
 ---@param id? string
 function enviLib.register(type, func, id)
     if not id then
@@ -34,8 +34,8 @@ function enviLib.register(type, func, id)
 end
 
 ---@param type EnviLib.Type
----@param currentEnvi Minecraft.dimensionID | Biome
----@param oldID Minecraft.dimensionID | Minecraft.biomeID
+---@param currentEnvi Biome|Minecraft.dimensionID
+---@param oldID Minecraft.biomeID|Minecraft.dimensionID
 local function enviChange(type, currentEnvi, oldID)
     local id = currentEnvi
     if type == "BIOME" then id = currentEnvi.id end

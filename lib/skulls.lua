@@ -1,4 +1,4 @@
----@type Vector3[]
+---@type {[string]: Vector3}
 local skullPositions = {}
 
 function events.tick()

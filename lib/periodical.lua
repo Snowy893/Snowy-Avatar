@@ -1,6 +1,6 @@
 ---@class Periodical
 local Periodical = {}
----@type Periodical.obj[]
+---@type {[string]: Periodical.obj}
 Periodical.objs = {}
 local count = 0
 local isSingleplayer = client.getServerBrand() == "Integrated"
@@ -8,7 +8,7 @@ local isSingleplayer = client.getServerBrand() == "Integrated"
 local function tick()
     if isSingleplayer and client.isPaused() then return end
     ---@param obj Periodical.obj
-    for _, obj in ipairs(Periodical.objs) do
+    for _, obj in pairs(Periodical.objs) do
         if not obj.conditionFunc() then goto continue end
 
         obj.tickCounter = obj.tickCounter - 1
