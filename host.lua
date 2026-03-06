@@ -81,7 +81,7 @@ local lowShieldAction = qolPage:newAction()
         config:save("shouldLowerShield", toggle)
     end)
 
-local function autoDisableShieldFix()
+local function checkResources()
     if fixShield or lowShield then
         for _, name in ipairs(client.getActiveResourcePacks()) do
             local n = name:lower()
@@ -94,7 +94,7 @@ local function autoDisableShieldFix()
     end
 end
 
-autoDisableShieldFix()
+checkResources()
 
 qolPage:newAction()
     :title("Shield Fix Auto Disable")
@@ -103,7 +103,7 @@ qolPage:newAction()
     :toggled(true)
     :onToggle(function(state)
         local func = state and events.resource_reload.register or events.resource_reload.remove
-        func(events.resource_reload, autoDisableShieldFix)
+        func(events.resource_reload, checkResources)
     end)
 
 keybinds:newKeybind("unlockCursor", unlockCursorKey)
