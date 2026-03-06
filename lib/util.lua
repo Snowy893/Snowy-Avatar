@@ -104,7 +104,7 @@ end
 ---Thanks `user973713` on stackoverflow!
 ---@param input string
 ---@param separator string
----@return ...
+---@return string[]
 ---@nodiscard
 function util.splitstring(input, separator)
     local sep = separator or "%s"
@@ -112,7 +112,7 @@ function util.splitstring(input, separator)
     for str in string.gmatch(input, "([^"..sep.."]+)") do
         table.insert(t, str)
     end
-    return table.unpack(t)
+    return t
 end
 
 ---@param key any
@@ -234,6 +234,16 @@ end
 function util.toggle(action, bool)
     action:toggled(bool)
     action.toggle(bool)
+end
+
+---@param effect Minecraft.effectID
+function util.effect(effect)
+    local id
+    if effect:find("effect.") == 1 then
+        local s = util.splitstring(effect, ".")
+        id = s[2]..":"..s[3]
+    end
+    return id
 end
 
 return util

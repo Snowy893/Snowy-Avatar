@@ -434,6 +434,24 @@
 ---> ***
 ---> A callback that does nothing special, it just runs whenever the event it is attached to runs.
 ---@field world_tick Event.Generic | Event.Generic.func
+---This event runs whenever you use a Totem of Undying to cheat death.
+---> ```lua
+---> (callback) function()
+--->   -> hide: boolean?
+---> ```
+---> ***
+---> A callback that is given the current tick delta and the trident that is being rendered.
+--->
+---> Return `true` to hide the totem animation.
+---@field TOTEM Event.Generic | Event.Generic.func
+---This event runs whenever you use a Totem of Undying to cheat death.
+---> ```lua
+---> (callback) function()
+--->   -> hide: boolean?
+---> ```
+---> ***
+---> Return `true` to hide the totem animation.
+---@field totem Event.Generic | Event.Generic.func
 local EventsAPI
 
 
