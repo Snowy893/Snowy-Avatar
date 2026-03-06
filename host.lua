@@ -92,13 +92,11 @@ local function autoDisableShieldFix()
             end
         end
     end
-    util.toggle(fixShieldAction, fixShield)
-    util.toggle(lowShieldAction, lowShield)
 end
 
 autoDisableShieldFix()
 
-local autoDisableShieldFixAction = qolPage:newAction()
+qolPage:newAction()
     :title("Shield Fix Auto Disable")
     :item("minecraft:furnace")
     :hoverColor(1, 0, 1)
