@@ -229,4 +229,11 @@ function util.realRotToModelRot(x, y, z)
     return vec(0, 180, 0) - rot
 end
 
+---@param action Action
+---@param bool boolean?
+function util.toggle(action, bool)
+    action:toggled(bool)
+    action.toggle(bool)
+end
+
 return util

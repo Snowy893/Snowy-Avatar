@@ -8,20 +8,6 @@ local sadChair = models.model.root.sadchair
 local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 local cursorUnlocked = false
 
-for _, name in pairs(client.getActiveResourcePacks()) do
-    local n = name:lower()
-    if n:find("low") then
-        if n:find("shield") then
-            config:save("shouldFixShield", false)
-            config:save("shouldLowerShield", false)
-            break
-        elseif n:find("fire") then
-            config:save("shouldLowerFire", false)
-            break
-        end
-    end
-end
-
 local fixShield = util.getOrDefault("shouldFixShield", true)
 local lowShield = util.getOrDefault("shouldLowerShield", true)
 
@@ -77,24 +63,49 @@ emotePage:newAction()
     :hoverColor(1, 0, 1)
     :onLeftClick(pings.creeper)
 
-qolPage:newAction()
+local fixShieldAction = qolPage:newAction()
     :title("Adjust Shield")
     :item("minecraft:anvil")
     :hoverColor(1, 0, 1)
-    :toggled(fixShield)
     :onToggle(function(toggle)
         fixShield = toggle
         config:save("shouldFixShield", toggle)
     end)
 
-qolPage:newAction()
+local lowShieldAction = qolPage:newAction()
     :title("Low Shield")
     :item("minecraft:magenta_glazed_terracotta")
     :hoverColor(1, 0, 1)
-    :toggled(lowShield)
     :onToggle(function(toggle)
         lowShield = toggle
         config:save("shouldLowerShield", toggle)
+    end)
+
+local function autoDisableShieldFix()
+    if fixShield or lowShield then
+        for _, name in ipairs(client.getActiveResourcePacks()) do
+            local n = name:lower()
+            if n:find("low") and n:find("shield") then
+                util.toggle(fixShieldAction, false)
+                util.toggle(lowShieldAction, false)
+                return
+            end
+        end
+    end
+    util.toggle(fixShieldAction, fixShield)
+    util.toggle(lowShieldAction, lowShield)
+end
+
+autoDisableShieldFix()
+
+local autoDisableShieldFixAction = qolPage:newAction()
+    :title("Shield Fix Auto Disable")
+    :item("minecraft:furnace")
+    :hoverColor(1, 0, 1)
+    :toggled(true)
+    :onToggle(function(state)
+        local func = state and events.resource_reload.register or events.resource_reload.remove
+        func(events.resource_reload, autoDisableShieldFix)
     end)
 
 keybinds:newKeybind("unlockCursor", unlockCursorKey)
