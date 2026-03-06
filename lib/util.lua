@@ -236,12 +236,15 @@ function util.toggle(action, bool)
     action.toggle(bool)
 end
 
----@param effect Minecraft.effectID
-function util.effect(effect)
-    local id
-    if effect:find("effect.") == 1 then
-        local s = util.splitstring(effect, ".")
-        id = s[2]..":"..s[3]
+---Formats effect ids as `"effect.<namespace>.<name>` regardless of Minecraft version
+---(1.20.5 and above formats it as `"<namespace>:<name>"`)
+---@param effect string
+---@return Minecraft.effectID
+function util.getEffect(effect)
+    local id = effect
+    if effect:find(":") then
+        local namespace, name = string.match(effect, "(.*)%:(.*)")
+        id = "effect."..namespace.."."..name
     end
     return id
 end
