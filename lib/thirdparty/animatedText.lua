@@ -1,7 +1,7 @@
---Animated Text API v0.1.0 (docs added by Snowy)
+---Animated Text API v0.2.0 (Docs added by Snowy)
 ---@class AnimatedText
 local api = {}
----@type AnimatedTextTask[]
+---@type { [string]: AnimatedTextTask }
 local tasks = {}
 
 ---@param tbl AnimatedTextCharacters
@@ -77,8 +77,7 @@ end
 ---@param task AnimatedTextTask
 ---@param _text string|table
 local function createTasks(task, _text)
-	local text = type(_text) == "table" and deconstructJson(_text) or
-	deconstructString(_text) ---@diagnostic disable-line: param-type-mismatch
+	local text = type(_text) == "table" and deconstructJson(_text) or deconstructString(_text) ---@diagnostic disable-line: param-type-mismatch
 	local span, length, line = 0, trueLength(text), 1
 	for _, v in pairs(text) do
 		for _, char in pairs(v.chars) do
@@ -104,7 +103,10 @@ end
 
 ---@param name string
 function api.remove(name)
-	for _, v in pairs(tasks[name].root:getTask()) do v:remove() end
+	for i, v in pairs(tasks[name].root:getTask()) do
+		v:remove()
+		tasks[name].textTasks[i + 1] = nil
+	end
 end
 
 ---@param name string
@@ -119,9 +121,8 @@ function api.new(name, parent, offset, scale, parentType, json)
 	tasks[name] = {
 		offset = offset,
 		scale = scale,
-		root = parent:newPart(name):setParentType(
-			parentType),
-		textTasks = {}
+		root = parent:newPart(name):setParentType(parentType),
+		textTasks = {}, ---@type { [integer]: {task: TextTask, anchor: Vector3} }
 	}
 	if json then createTasks(tasks[name], json) end
 end
@@ -134,18 +135,14 @@ function api.setText(name, json)
 end
 
 ---@param name string
----@return AnimatedTextTask
-function api.getTask(name) return tasks[name] end
-
----@param name string
----@param pos Vector3?
----@param rot Vector3?
----@param scale Vector3?
----@param char table
-function api.transform(name, pos, rot, scale, char)
-	char.task:pos(char.anchor + (pos or vec(0, 0, 0)))
-		:rot(rot or vec(0, 0, 0))
-		:scale(tasks[name].scale + (scale or vec(0, 0, 0)))
+---@param func fun(task: TextTask, i: integer): (pos: Vector3?, rot: Vector3?, scale: Vector3?)
+function api.applyFunc(name, func)
+	for i, v in pairs(tasks[name].textTasks) do
+		local pos, rot, scale = func(v.task, i)
+		v.task:pos(v.anchor + (pos or vec(0, 0, 0)))
+			:rot(rot or vec(0, 0, 0))
+			:scale(tasks[name].scale + (scale or vec(0, 0, 0)))
+	end
 end
 
 return api

@@ -76,9 +76,9 @@ local onSleep = util.onchange(function(toggle)
 	animations.model.afkLoop:setPlaying(toggle)
 	if toggle then
 		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
-		for _, v in ipairs(animatedText.getTask("sleeping").textTasks) do
-			v.task:outline(true)
-		end
+		animatedText.applyFunc("sleeping", function(task)
+			task:outline(true)
+		end)
 	else
 		animatedText.setText("sleeping", "")
 	end
@@ -300,15 +300,9 @@ function events.render(delta, context)
 	local time = world.getTime(delta)
 
 	if player:getPose() == "SLEEPING" then
-		for i, v in ipairs(animatedText.getTask("sleeping").textTasks) do
-			animatedText.transform(
-				"sleeping",
-				vec(-i * 1.1, (math.sin(time / 8 + i) * .5) + (i * 1.3), 0),
-				nil,
-				nil,
-				v
-			)
-		end
+		animatedText.applyFunc("sleeping", function(_, i)
+			return vec(-i * 1.1, (math.sin(time / 8 + i) * .5) + (i * 1.3), 0)
+		end)
 	end
 
 	if context == "FIRST_PERSON" then return end
@@ -345,23 +339,17 @@ afk.new(210)
 	:register("ON_CHANGE", function(toggle)
     	if toggle then
 			animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
-			for _, v in ipairs(animatedText.getTask("afk").textTasks) do
-				v.task:outline(true)
-			end
+			animatedText.applyFunc("afk", function(task)
+				task:outline(true)
+			end)
 		else
 			animatedText.setText("afk", "")
 		end
     end)
-    :register("ON_RENDER_LOOP", function(delta)
-		for i, v in ipairs(animatedText.getTask("afk").textTasks) do
-			animatedText.transform(
-				"afk",
-				vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0),
-				nil,
-				nil,
-				v
-			)
-		end
+	:register("ON_RENDER_LOOP", function(delta)
+		animatedText.applyFunc("afk", function(_, i)
+			return vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0)
+		end)
 	end)
 
 ---@param id Minecraft.dimensionID
