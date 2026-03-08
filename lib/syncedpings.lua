@@ -3,6 +3,7 @@ local SyncedPings = {}
 SyncedPings.ticks = 200
 
 local objs = {}
+local timer = 0
 
 ---@generic T
 ---@param pingFunc fun(...: T?)
@@ -20,9 +21,9 @@ function SyncedPings:new(pingFunc, ...)
 end
 
 events.TICK:register(function()
-    local time = world.getTime()
+    timer = timer + 1
     for i, sPing in ipairs(objs) do
-        if time % (SyncedPings.ticks + (i - 1)) == 0 then
+        if timer % (SyncedPings.ticks + (i - 1)) == 0 then
             sPing.pingFunc(sPing.args)
         end
     end

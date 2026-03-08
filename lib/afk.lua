@@ -4,6 +4,8 @@ local Afk = {}
 ---@type Afk.interface[]
 Afk.ALL = {}
 
+local timer = 0
+
 local isSingleplayer = client.getServerBrand() == "Integrated"
 
 local onSneakChange = util.onchange(function()
@@ -78,15 +80,16 @@ local function afkEval(afk)
 end
 
 events.TICK:register(function()
+    timer = timer + 1
+    
     if not next(Afk.ALL) then return end
     if isSingleplayer and client.isPaused() then return end
 
-    local time = world.getTime()
     onSneakChange(player:isSneaking())
 
     for i = 1, #Afk.ALL do
         local afk = Afk.ALL[i]
-        if (time + i) % afk.afkCheckTickRate == 0 then
+        if (timer + i) % afk.afkCheckTickRate == 0 then
             if afkEval(afk) then
                 afk.afkTime = afk.afkTime + 1
             else

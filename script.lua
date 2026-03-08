@@ -246,7 +246,7 @@ end
 
 ------------------------------------------------------------------
 
-function events.tick()
+function util.tick()
     local sleeping = player:getPose() == "SLEEPING"
 	local crouching = player:isCrouching()
     local vehicle = player:getVehicle()
