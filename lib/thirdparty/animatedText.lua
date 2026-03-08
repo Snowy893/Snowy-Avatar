@@ -4,7 +4,7 @@ local api = {}
 ---@type { [string]: AnimatedTextTask }
 local tasks = {}
 
----@param tbl AnimatedTextCharacters
+---@param tbl AnimatedTextCharacters[]
 local function trueLength(tbl)
 	local length, _tbl = 0, {}
 	for k, v in pairs(tbl) do
