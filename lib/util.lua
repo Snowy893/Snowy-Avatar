@@ -7,8 +7,8 @@ local tickObjs = {}
 
 local proxy = setmetatable({ tick = {} },
     {
-        __index = function(self, index)
-            if type(index) == "string" and index:lower() == "tick" then
+        __index = function(self, key)
+            if type(key) == "string" and key:lower() == "tick" then
                 return self.tick
             end
         end
