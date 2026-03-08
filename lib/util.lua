@@ -1,30 +1,29 @@
 ---@class Util
----@field tick function|{ register: fun(self: table, func: function, ticks: integer?) }
----@field TICK function|{ register: fun(self: table, func: function, ticks: integer?) }
+---@field tick function | { register: fun(self: table, func: function, ticks: integer?) }
+---@field TICK function | { register: fun(self: table, func: function, ticks: integer?) }
 local util = {}
+local utilmt = {}
 
 local tickObjs = {}
+local timer = 0
 
-local proxy = setmetatable({ tick = {} },
-    {
-        __index = function(self, key)
-            if type(key) == "string" and key:lower() == "tick" then
-                return self.tick
-            end
-        end
-    }
-)
+setmetatable(util, utilmt)
 
-setmetatable(util, {
-    __index = proxy,
-    __newindex = function(self, key, value)
-        if type(key) == "string" and key:lower() == "tick" and type(value) == "function" then
-            proxy.tick:register(value)
-            return
+utilmt.__index = setmetatable({ tick = {} }, {
+    __index = function(self, key)
+        if type(key) == "string" and key:lower() == "tick" then
+            return self.tick
         end
-        rawset(self, key, value)
     end,
 })
+
+function utilmt:__newindex(key, value)
+    if type(key) == "string" and key:lower() == "tick" and type(value) == "function" then
+        self.tick:register(value)
+        return
+    end
+    rawset(self, key, value)
+end
 
 ---@param func function
 ---@param ticks integer?
@@ -33,8 +32,9 @@ function util.tick:register(func, ticks)
 end
 
 function events.tick()
+    timer = timer + 1
     for _, obj in ipairs(tickObjs) do
-        if (not obj.ticks or world.getTime() % obj.ticks == 0) then obj.func() end
+        if (not obj.ticks or timer % obj.ticks == 0) then obj.func() end
     end
 end
 
