@@ -1,10 +1,19 @@
 ---@class Util
----@field tick function|table
+---@field tick function|{ register: fun(self: table, func: function, ticks: integer?) }
+---@field TICK function|{ register: fun(self: table, func: function, ticks: integer?) }
 local util = {}
 
 local tickObjs = {}
 
-local proxy = { tick = {} }
+local proxy = setmetatable({ tick = {} },
+    {
+        __index = function(self, index)
+            if type(index) == "string" and index:lower() == "tick" then
+                return self.tick
+            end
+        end
+    }
+)
 
 setmetatable(util, {
     __index = proxy,

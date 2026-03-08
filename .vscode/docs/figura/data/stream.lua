@@ -46,9 +46,10 @@ function InputStream:read() end
 ---Asyncronously reads the given number of bytes from the stream.
 ---
 ---Attempting to read more than the available amount of bytes will read until no more bytes are available.
+---@param limit integer
 ---@return Future.String
 ---@nodiscard
-function InputStream:readAsync() end
+function InputStream:readAsync(limit) end
 
 ---Resets the position of this stream to the latest mark placed by `:mark()`.
 ---@*vmerror If marking is not supported.
