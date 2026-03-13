@@ -4,8 +4,6 @@ local Afk = {}
 ---@type Afk.interface[]
 Afk.ALL = {}
 
-local timer = 0
-
 local isSingleplayer = client.getServerBrand() == "Integrated"
 
 local onSneakChange = util.onchange(function()
@@ -29,6 +27,7 @@ function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     local interface = {
         isAfk = false,
         afkTIme = 0,
+        timer = #Afk.ALL,
         includeRotation = includeRotation or true,
         didSneakChange = false,
         events = {
@@ -42,6 +41,25 @@ function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     interface.delay = secondsUntilAfk * interface.afkCheckTickRate
 
     interface.onAfkChange = util.onchange(interface.events.ON_CHANGE --[[@as fun(toggle: boolean)]])
+
+    ---@return boolean
+    function interface:eval()
+        local posUnchanged = self.position == self.oldPosition
+        local isAfk = posUnchanged and (player:getPose() ~= "SLEEPING") and not self.didSneakChange
+        self.oldPosition = self.position
+        self.position = player:getPos()
+
+        if self.includeRotation then
+            local rotUnchanged = self.rotation == self.oldRotation
+
+            self.oldRotation = self.rotation
+            self.rotation = player:getRot()
+
+            return isAfk and rotUnchanged
+        end
+
+        return isAfk
+    end
 
     ---@class Afk.obj
     local obj = {}
@@ -59,38 +77,16 @@ function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     return obj
 end
 
----@param afk Afk.interface
----@return boolean
-local function afkEval(afk)
-    local posUnchanged = afk.position == afk.oldPosition
-    local isAfk = posUnchanged and (player:getPose() ~= "SLEEPING") and not afk.didSneakChange
-    afk.oldPosition = afk.position
-    afk.position = player:getPos()
-
-    if afk.includeRotation then
-        local rotUnchanged = afk.rotation == afk.oldRotation
-
-        afk.oldRotation = afk.rotation
-        afk.rotation = player:getRot()
-
-        return isAfk and rotUnchanged
-    end
-    
-    return isAfk
-end
-
 events.TICK:register(function()
-    timer = timer + 1
-    
     if not next(Afk.ALL) then return end
     if isSingleplayer and client.isPaused() then return end
 
     onSneakChange(player:isSneaking())
 
-    for i = 1, #Afk.ALL do
-        local afk = Afk.ALL[i]
-        if (timer + i) % afk.afkCheckTickRate == 0 then
-            if afkEval(afk) then
+    for _, afk in ipairs(Afk.ALL) do
+        afk.timer = afk.timer + 1
+        if afk.timer == afk.afkCheckTickRate then
+            if afk:eval() then
                 afk.afkTime = afk.afkTime + 1
             else
                 afk.didSneakChange = false
@@ -119,7 +115,7 @@ events.TICK:register(function()
 end, "Afk")
 
 events.RENDER:register(function(delta, context)
-    for _, afk in pairs(Afk.ALL) do
+    for _, afk in ipairs(Afk.ALL) do
         if not afk.isAfk then return end
         afk.events.ON_RENDER_LOOP(delta, context)
     end
