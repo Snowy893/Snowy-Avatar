@@ -12,7 +12,7 @@ function SyncedPings:new(pingFunc, ...)
     if not host:isHost() then return function() end end
     self.pingFunc = pingFunc
     self.args = ...
-    self.timer = 0
+    self.timer = #objs
     table.insert(objs, self)
     return function(...)
         self.args = ...
@@ -23,7 +23,7 @@ end
 events.TICK:register(function()
     for i, obj in ipairs(objs) do
         obj.timer = obj.timer + 1
-        if obj.timer == SyncedPings.ticks + (i - 1) == 0 then
+        if obj.timer == SyncedPings.ticks then
             obj.timer = 0
             obj.pingFunc(obj.args)
         end
