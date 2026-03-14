@@ -2,28 +2,26 @@
 ---@field tick function | { register: fun(self: table, func: function, ticks: integer?) }
 ---@field TICK function | { register: fun(self: table, func: function, ticks: integer?) }
 local util = {}
-local utilmt = {}
 
 local tickObjs = {}
 local timer = 0
 
-setmetatable(util, utilmt)
-
-utilmt.__index = setmetatable({ tick = {} }, {
-    __index = function(self, key)
+setmetatable(util, {
+    __index = setmetatable({ tick = {} }, {
+        __index = function(self, key)
+            if type(key) == "string" and key:lower() == "tick" then
+                return self.tick
+            end
+        end,
+    }),
+    __newindex = function(self, key, value)
         if type(key) == "string" and key:lower() == "tick" then
-            return self.tick
+            self.tick:register(value)
+            return
         end
-    end,
-})
-
-function utilmt:__newindex(key, value)
-    if type(key) == "string" and key:lower() == "tick" and type(value) == "function" then
-        self.tick:register(value)
-        return
+        rawset(self, key, value)
     end
-    rawset(self, key, value)
-end
+})
 
 ---@param func function
 ---@param ticks integer?
@@ -56,8 +54,19 @@ end
 ---@param value any
 ---@return boolean
 ---@nodiscard
-function util.toboolean(value)
+toboolean = toboolean or function(value)
     return value and true or false
+end
+
+---@param tbl table
+---@param value any
+table.find = table.find or function(tbl, value)
+    if type(value) == "string" then
+        return toJson(tbl):find(tostring(value)) ~= nil
+    end
+    for _, v in pairs(tbl) do
+        if value == v then return true end
+    end
 end
 
 ---@param val1 any
@@ -75,7 +84,7 @@ end
 ---@nodiscard
 function util.comparetables(tbl1, tbl2)
     for k, v in pairs(tbl1) do
-        if util.comparetype(tbl2[k], v) == "table" then
+        if util.comparetype(tbl2[k], v) then
             if not util.comparetables(tbl2[k], v) then
                 return false
             end
@@ -86,18 +95,7 @@ function util.comparetables(tbl1, tbl2)
     return true
 end
 
----@param tbl table
----@param value any
-table.find = table.find or function(tbl, value)
-    if type(value) == "string" then
-        return toJson(tbl):find(tostring(value)) ~= nil
-    end
-    for _, v in pairs(tbl) do
-        if value == v then return true end
-    end
-end
-
----@param tbl? function[]
+---@param tbl? { [any]: function }
 ---@param mtbl? table
 ---@return table
 ---@nodiscard
@@ -178,6 +176,7 @@ function util.handsEmpty(playr)
     return p:getHeldItem():getCount() == 0 and p:getHeldItem(true):getCount() == 0
 end
 
+---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
 ---@param itemStack ItemStack
 ---@return table?
 function util.getProjectiles(itemStack)
@@ -185,7 +184,6 @@ function util.getProjectiles(itemStack)
     return projectiles
 end
 
----`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
 ---@param itemStack ItemStack
 ---@return boolean
 ---@nodiscard
@@ -251,11 +249,22 @@ end
 ---@return Minecraft.effectID
 function util.getEffect(effect)
     local id = effect
-    if effect:find(":") then
-        local namespace, name = string.match(effect, "(.*)%:(.*)")
+    if effect:find(":", 2) then
+        local namespace, name = effect:match("(.*)%:(.*)")
         id = "effect."..namespace.."."..name
     end
     return id
+end
+
+---@param ticks integer
+---@return fun(time: integer): boolean
+function util.createTimer(ticks)
+    local lastTime = 0
+    return function(time)
+        local bool = time == lastTime or time % ticks == 0
+        lastTime = time
+        return bool
+    end
 end
 
 return util

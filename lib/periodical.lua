@@ -5,9 +5,8 @@ Periodical.objs = {}
 local count = 0
 local isSingleplayer = client.getServerBrand() == "Integrated"
 
-local function tick()
+function events.tick()
     if isSingleplayer and client.isPaused() then return end
-    ---@param obj Periodical.obj
     for _, obj in pairs(Periodical.objs) do
         if not obj.conditionFunc() then goto continue end
 
@@ -40,7 +39,6 @@ function Periodical.new(func)
 
     interface.ping = pings[interface.id]
 
-    ---@generic self
     ---@return self
     function interface:resetTickCounter()
         if self.maxTicks == nil or self.minTicks == self.maxTicks then
@@ -51,7 +49,6 @@ function Periodical.new(func)
         return self
     end
 
-    ---@generic self
     ---@overload fun(ticks: integer): Periodical.obj
     ---@param minTicks integer
     ---@param maxTicks integer
@@ -63,14 +60,12 @@ function Periodical.new(func)
         return self
     end
 
-    ---@generic self
     ---@overload fun(ticks: integer): Periodical.obj
     ---@param minTicks integer
     ---@param maxTicks integer
     ---@return self
     function interface:timing(minTicks, maxTicks) return self:setTiming(minTicks, maxTicks) end --- Alias
 
-    ---@generic self
     ---@param cond fun(): boolean
     ---@return self
     function interface:setCondition(cond)
@@ -78,32 +73,14 @@ function Periodical.new(func)
         return self
     end
 
-    ---@generic self
     ---@param cond fun(): boolean
     ---@return self
     function interface:condition(cond) return self:setCondition(cond) end --- Alias
 
-    ---@return Periodical.registeredObj
+    ---@return Periodical.obj
     function interface:register()
-        ---@class Periodical.obj
-        local obj = self
-        ---@class Periodical.registeredObj
-        local registeredObj = {}
-
-        ---@return Periodical.obj
-        function registeredObj:unRegister()
-            Periodical.objs[obj.id] = nil
-            if #Periodical.objs == 0 then events.TICK:remove("Periodical") end
-            return obj
-        end
-
-        Periodical.objs[obj.id] = obj
-
-        if #Periodical.objs == 1 then
-            events.TICK:register(tick, "Periodical")
-        end
-
-        return registeredObj
+        Periodical.objs[self.id] = self
+        return self
     end
 
     return interface:setCondition(world.exists):setTiming(100)

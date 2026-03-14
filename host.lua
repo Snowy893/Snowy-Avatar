@@ -31,8 +31,8 @@ function pings.creeper()
         sounds:playSound("minecraft:entity.creeper.primed", util.eyePos(player))
     end
     for _, pos in pairs(skullPositions) do
-        pos.x_z = pos.x_z + 0.5
-        sounds:playSound("minecraft:entity.creeper.primed", pos)
+        local center = vec(pos.x + 0.5, pos.y, pos.z + 0.5)
+        sounds:playSound("minecraft:entity.creeper.primed", center)
     end
     animations.model.creeper:play()
 end
