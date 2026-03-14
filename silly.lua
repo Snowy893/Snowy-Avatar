@@ -1,7 +1,7 @@
 if not client.isModLoaded("sillyplugin") and not client.isModLoaded("goofyplugin") and not client.isModLoaded("extura") then return end
 
 local util = require "lib.util"
-local lift = require("lib.thirdparty.Lift")
+local lift = require "lib.thirdparty.Lift"
 
 lift.config.enabled = true
 
@@ -14,4 +14,4 @@ util.tick:register(function()
             whitelistCache[name] = true
         end
     end
-end, 60)
+end, 600)
