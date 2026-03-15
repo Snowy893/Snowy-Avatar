@@ -50,23 +50,24 @@ function util.onchange(func, initialValue)
     end
 end
 
----Returns an explicit boolean value out of a value that is truthy or falsy
----@param value any
----@return boolean
----@nodiscard
-toboolean = toboolean or function(value)
-    return value and true or false
+if not toboolean then
+    ---Returns an explicit boolean value out of a value that is truthy or falsy
+    ---@param value any
+    ---@return boolean
+    ---@nodiscard
+    function toboolean(value)
+        return value and true or false
+    end
 end
 
----@param tbl table
----@param value any
----@nodiscard
-table.find = table.find or function(tbl, value)
-    if type(value) == "string" then
-        return toJson(tbl):find(tostring(value)) ~= nil
-    end
-    for _, v in pairs(tbl) do
-        if value == v then return true end
+if not table.find then
+    ---@param tbl table
+    ---@param value any
+    ---@nodiscard
+    function table.find(tbl, value)
+        for _, v in pairs(tbl) do
+            if value == v then return true end
+        end
     end
 end
 
