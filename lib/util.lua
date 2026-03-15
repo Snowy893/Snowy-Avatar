@@ -26,7 +26,7 @@ setmetatable(util, {
 ---@param func function
 ---@param ticks integer?
 function util.tick:register(func, ticks)
-    table.insert(tickObjs, { ticks = ticks, func = func })
+    table.insert(tickObjs, { func = func, ticks = ticks })
 end
 
 function events.tick()
@@ -60,6 +60,7 @@ end
 
 ---@param tbl table
 ---@param value any
+---@nodiscard
 table.find = table.find or function(tbl, value)
     if type(value) == "string" then
         return toJson(tbl):find(tostring(value)) ~= nil
@@ -179,6 +180,7 @@ end
 ---`:getTags()` returns the item tags, `:getTag()` or `.tag` returns data components
 ---@param itemStack ItemStack
 ---@return table?
+---@nodiscard
 function util.getProjectiles(itemStack)
     local projectiles = itemStack:getTag().ChargedProjectiles
     return projectiles
@@ -200,18 +202,18 @@ end
 function util.checkUseAction(playr, ...)
     local actions = { ... }
     local p
+
     if type(playr) == "PlayerAPI" then
         p = playr
     else
         table.insert(actions, playr)
         p = player
     end
-    if not p:isUsingItem() then return false end
+    
     local activeItem = p:getActiveItem()
     if activeItem:getCount() == 0 then return false end
 
     local useAction = activeItem:getUseAction()
-
     for _, action in ipairs(actions) do
         if useAction == action then return true end
     end

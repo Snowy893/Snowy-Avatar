@@ -8,13 +8,13 @@ local tasks = {}
 local function trueLength(tbl)
 	local length, _tbl = 0, {}
 	for k, v in pairs(tbl) do
-		for i = 1, #v.chars do
-			if #v.chars[i] <= 1 then
-				length = length + client.getTextWidth(v.chars[i])
+		for i, chars in ipairs(v) do
+			if #chars <= 1 then
+				length = length + client.getTextWidth(chars)
 			else
 				length = length + 8
 			end
-			if v.chars[i] == "\n" or i == #v.chars and k >= #tbl then
+			if chars == "\n" or i == #chars and k >= #tbl then
 				table.insert(_tbl, length)
 				length = 0
 			end
@@ -29,7 +29,7 @@ local function trueCharWidth(char)
 end
 
 ---@param str string
----@return AnimatedTextCharacters[]
+---@return string[]
 local function deconstructString(str)
 	local match = "[\x00-\x7F\xC2-\xF4][\x80-\xBF]*"
 	local tbl, i, lastCapture, capturing = {}, 1, 1, false
