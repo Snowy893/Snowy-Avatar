@@ -65,8 +65,11 @@ if not table.find then
     ---@param value any
     ---@nodiscard
     function table.find(tbl, value)
+        local isTable = type(value) == "table"
         for _, v in pairs(tbl) do
-            if value == v then return true end
+            if value == v or (isTable and type(v) == "table" and util.comparetables(value, v)) then
+                return true
+            end
         end
     end
 end
