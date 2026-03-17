@@ -2,7 +2,7 @@
 ---@field tick function | { register: fun(self: table, func: function, ticks: integer?) }
 ---@field TICK function | { register: fun(self: table, func: function, ticks: integer?) }
 ---@field arrow_tick Util.ArrowTick.func | { register: fun(self: table, func: Util.ArrowTick.func, ticks: integer?) }
----@field ARROW_TICK Util.ArrowTick.func | { register: fun(self: table, func: Util.ArrowTick.func, ticks: integer?)  }
+---@field ARROW_TICK Util.ArrowTick.func | { register: fun(self: table, func: Util.ArrowTick.func, ticks: integer?) }
 local util = {}
 local utilmt = {}
 setmetatable(util, utilmt)
@@ -26,10 +26,10 @@ utilmt.__index = setmetatable(
 )
 
 function utilmt:__newindex(key, value)
-    local k
-    if type(key) == "string" then k = key:lower() end
-    if k and k == "tick" or k == "arrow_tick" then
-        self[k]:register(value)
+    local event
+    if type(key) == "string" then event = key:lower() end
+    if event and event == "tick" or event == "arrow_tick" then
+        self[event]:register(value)
         return
     end
     rawset(self, key, value)
