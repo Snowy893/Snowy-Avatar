@@ -56,7 +56,6 @@ end
 function events.tick()
     for _, obj in ipairs(tickObjs) do
         obj.timer = obj.timer + 1
-        
         if not obj.ticks or obj.timer == obj.ticks then 
             obj.timer = 0
             obj.func()
@@ -65,8 +64,9 @@ function events.tick()
     for uuid, arrow in pairs(arrows) do
         local entity = world.getEntity(uuid)
         if entity then
+            arrow.timer = arrow.timer + 1
             for _, obj in ipairs(arrowTickObjs) do
-                if not obj.ticks or arrow.timer == obj.ticks then
+                if not obj.ticks or arrow.timer % obj.ticks == 0 then
                     arrows[uuid].shouldHide = obj.func(entity)
                 end
             end
