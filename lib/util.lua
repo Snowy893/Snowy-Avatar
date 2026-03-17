@@ -1,44 +1,81 @@
 ---@class Util
 ---@field tick function | { register: fun(self: table, func: function, ticks: integer?) }
 ---@field TICK function | { register: fun(self: table, func: function, ticks: integer?) }
+---@field arrow_tick Util.ArrowTick.func | { register: fun(self: table, func: Util.ArrowTick.func, ticks: integer?) }
+---@field ARROW_TICK Util.ArrowTick.func | { register: fun(self: table, func: Util.ArrowTick.func, ticks: integer?)  }
 local util = {}
+local utilmt = {}
+setmetatable(util, utilmt)
 
 local tickObjs = {}
-local timer = 0
+local arrowTickObjs = {}
+local arrows = {}
 
-setmetatable(util, {
-    __index = setmetatable({ tick = {} }, {
-        __index = function(self, key)
-            if type(key) == "string" and key:lower() == "tick" then
-                return self.tick
-            end
-        end,
-    }),
-    __newindex = function(self, key, value)
-        if type(key) == "string" and key:lower() == "tick" then
-            self.tick:register(value)
-            return
+utilmt.__index = setmetatable({ tick = {}, arrow_tick = {} }, {
+    __index = function(self, key)
+        local k
+        if type(key) == "string" then k = key:lower() end
+        if k then
+            return rawget(self, k)
         end
-        rawset(self, key, value)
-    end
+    end,
 })
+
+function utilmt:__newindex(key, value)
+    local k
+    if type(key) == "string" then k = key:lower() end
+    if k and k == "tick" or k == "arrow_tick" then
+        self[k]:register(value)
+        return
+    end
+    rawset(self, key, value)
+end
 
 ---@param func function
 ---@param ticks integer?
 function util.tick:register(func, ticks)
-    table.insert(tickObjs, { func = func, ticks = ticks })
+    table.insert(tickObjs, { func = func, ticks = ticks, timer = 0 })
+end
+
+---@param func fun(arrow: Entity): hide: boolean?
+---@param ticks integer?
+function util.arrow_tick:register(func, ticks)
+    table.insert(arrowTickObjs, { func = func, ticks = ticks })
+end
+
+function events.arrow_render(_, arrow)
+    local uuid = arrow:getUUID()
+    arrows[uuid] = arrows[uuid] or { timer = 0, shouldHide = false }
+    return arrows[uuid].shouldHide
 end
 
 function events.tick()
-    timer = timer + 1
     for _, obj in ipairs(tickObjs) do
-        if (not obj.ticks or timer % obj.ticks == 0) then obj.func() end
+        obj.timer = obj.timer + 1
+        
+        if not obj.ticks or obj.timer == obj.ticks then 
+            obj.timer = 0
+            obj.func()
+        end
+    end
+    for uuid, arrow in pairs(arrows) do
+        local entity = world.getEntity(uuid)
+        if entity then
+            for _, obj in ipairs(arrowTickObjs) do
+                if not obj.ticks or arrow.timer == obj.ticks then
+                    arrows[uuid].shouldHide = obj.func(entity)
+                end
+            end
+        else
+            arrows[uuid] = nil
+        end
     end
 end
 
----@param func fun(value, oldValue, ...)
+---@generic T
+---@param func fun(value, oldValue, ...: T)
 ---@param initialValue? any
----@return fun(value, ...)
+---@return fun(value, ...: T)
 ---@nodiscard
 function util.onchange(func, initialValue)
     local oldValue = initialValue

@@ -12,11 +12,6 @@ local onSneakChange = util.onchange(function()
     end
 end)
 
----@alias Afk.Event
----| "ON_CHANGE"
----| "ON_RENDER_LOOP"
----| "ON_TICK_NOT_AFK"
-
 ---@overload fun(secondsUntilAfk: integer): Afk.obj
 ---@param secondsUntilAfk integer
 ---@param includeRotation? boolean
@@ -86,6 +81,8 @@ events.TICK:register(function()
     for _, afk in ipairs(Afk.ALL) do
         afk.timer = afk.timer + 1
         if afk.timer == afk.afkCheckTickRate then
+            afk.timer = 0
+            
             if afk:eval() then
                 afk.afkTime = afk.afkTime + 1
             else

@@ -25,7 +25,7 @@ local config = {
    -- boundingBox = vec(0.6, 1.7999, 0.6) -- custom bounding box
 }
 
--- events
+---@class PatPat
 local playerEvents = { -- list of tables containing functions that get called when specific thing happens
    onPat = { -- runs when you start being petted
       --function() end

@@ -37,14 +37,14 @@ function Periodical.new(func)
         interface.tickCounter = ticks
     end
 
-    interface.ping = pings[interface.id]
+    interface.pingTicks = pings[interface.id]
 
     ---@return self
     function interface:resetTickCounter()
         if self.maxTicks == nil or self.minTicks == self.maxTicks then
             self.tickCounter = self.minTicks
         else
-            self.ping(math.random(self.minTicks, self.maxTicks))
+            self.pingTicks(math.random(self.minTicks, self.maxTicks))
         end
         return self
     end

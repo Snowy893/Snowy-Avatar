@@ -98,9 +98,6 @@ local onVehicle = util.onchange(function(vehicle)
 	-- -- models.model.boat:setVisible(isBoat and isDriving)
 end)
 
----@alias Hand
----| { RIGHT: boolean, LEFT: boolean }
-
 ---@param hand Hand
 local onAimingBowWhileCrouching = util.onchange(function(hand)
 	local rot = vec(30, 50, 30)
