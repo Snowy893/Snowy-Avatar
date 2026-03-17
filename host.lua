@@ -4,7 +4,7 @@ local util = require "lib.util"
 local syncedPings = require "lib.syncedpings"
 local skullPositions = require "lib.skulls"
 --#endregion
-local sadChair = models.model.root.sadchair
+local sadChair = models.model.sadchair
 local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
 local cursorUnlocked = false
 

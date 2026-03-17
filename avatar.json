@@ -5,10 +5,10 @@
   "color": "#27aae0",
   "autoScripts": ["lib.util", "script", "host", "silly"],
   "customizations": {
-    "model.root.torso.Head.eyes": {
+    "model.root.torso.head.HeadPart.eyes": {
       "primaryRenderType": "EYES"
     },
-    "model.root.torso.Head.creepereyes": {
+    "model.root.torso.head.HeadPart.creepereyes": {
       "primaryRenderType": "EMISSIVE",
       "visible": false
     },
@@ -20,9 +20,6 @@
     },
     "model.Skull.creepereyes2": {
       "primaryRenderType": "TRANSLUCENT_CULL",
-      "visible": false
-    },
-    "model.root.sadchair": {
       "visible": false
     }
   }
