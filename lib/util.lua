@@ -11,15 +11,19 @@ local tickObjs = {}
 local arrowTickObjs = {}
 local arrows = {}
 
-utilmt.__index = setmetatable({ tick = {}, arrow_tick = {} }, {
-    __index = function(self, key)
-        local k
-        if type(key) == "string" then k = key:lower() end
-        if k then
-            return rawget(self, k)
-        end
-    end,
-})
+utilmt.__index = setmetatable(
+    {
+        tick = {},
+        arrow_tick = {},
+    },
+    {
+        __index = function(self, key)
+            if type(key) == "string" then
+                return rawget(self, key:lower())
+            end
+        end,
+    }
+)
 
 function utilmt:__newindex(key, value)
     local k
