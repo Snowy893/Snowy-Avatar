@@ -314,4 +314,11 @@ function util.createTimer(ticks)
     end
 end
 
+---@param part ModelPart
+---@param scale number
+---@return ModelPart
+function util.scale(part, scale)
+    return part:setScale(scale, scale, scale)
+end
+
 return util
