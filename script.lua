@@ -71,19 +71,6 @@ end
 
 ------------------------------------------------------------------
 
----@param toggle boolean
-local onSleep = util.onchange(function(toggle)
-	animations.model.afkLoop:setPlaying(toggle)
-	if toggle then
-		animatedText.setText("sleeping", { text = "Zzz", color = "#605b85" })
-		animatedText.applyFunc("sleeping", function(task)
-			task:outline(true)
-		end)
-	else
-		animatedText.setText("sleeping", "")
-	end
-end)
-
 ---@param vehicle Entity?
 local onVehicle = util.onchange(function(vehicle)
 	-- local isBoat = vehicle and vehicle:getType():find("boat")
@@ -289,7 +276,6 @@ function util.tick()
 	onCrouchArmOffsetRot(singleCrouchHand or not bowCrouchHand and doubleCrouchHand)
 
     onTeamChange(color)
-    onSleep(sleeping)
     onVehicle(vehicle)
 end
 
