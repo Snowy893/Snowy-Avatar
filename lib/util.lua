@@ -141,8 +141,8 @@ function util.comparetables(tbl1, tbl2)
     return true
 end
 
----@param tbl? { [any]: function }
----@param mtbl? table
+---@param tbl { [any]: function }?
+---@param mtbl table?
 ---@return table
 ---@nodiscard
 function util.functiontable(tbl, mtbl)
@@ -168,14 +168,32 @@ function util.splitstring(input, separator)
     return t
 end
 
+---@param kilometers number
+function util.kilometerstomiles(kilometers)
+    return kilometers * 0.621371
+end
+
+---@overload fun(key, default): any
+---@param configName string
 ---@param key any
 ---@param default any
 ---@return any
 ---@nodiscard
-function util.getOrDefault(key, default)
+function util.getOrDefault(configName, key, default)
+    local name = config:getName()
+    if not default then
+        default = key
+        key = configName
+    else
+        config:setName(configName)
+    end
     local value = config:load(key)
-    if value ~= nil then return value
-    else return default end
+    config:setName(name)
+    if value ~= nil then
+        return value
+    else
+        return default
+    end
 end
 
 local permissionLevels = {

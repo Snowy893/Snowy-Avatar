@@ -2,7 +2,6 @@
 local animatedText = require "lib.thirdparty.animatedText"
 local depthEffect = require "lib.thirdparty.depth_effect"
 local patpat = require "lib.thirdparty.patpat"
-local mount = require "lib.thirdparty.EZMount"
 local util = require "lib.util"
 local afk = require "lib.afk"
 local periodical = require "lib.periodical"
@@ -15,10 +14,10 @@ local root = model.root
 local head = root.torso.head.HeadPart
 local body = root.torso.waist.Body
 local eyes = head.eyes
-local creeperEyes = head.creepereyes:scale(1.2, 1.2, 1.2)
+local creeperEyes = head.creepereyes
 local skull = model.Skull
 local skullEyes = skull.eyes2
-local skullCreeperEyes = skull.creepereyes2:scale(1.2, 1.2, 1.2)
+local skullCreeperEyes = skull.creepereyes2
 local rightArm = root.torso.waist.RightArm
 local leftArm = root.torso.waist.LeftArm
 local rightItemPivot = rightArm.RightItemPivot
@@ -31,9 +30,9 @@ eyes.righteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
 eyes.lefteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
 skullEyes.righteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
 skullEyes.lefteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
-creeperEyes:setVisible(false)
-skullCreeperEyes:setVisible(false)
-star:setVisible(false)
+creeperEyes:setVisible(false):scale(1.2, 1.2, 1.2)
+skullCreeperEyes:setVisible(false):scale(1.2, 1.2, 1.2)
+util.scale(star, 0.75):setVisible(false)
 
 ------------------------------------------------------------------
 
@@ -403,17 +402,3 @@ table.insert(patpat.player.onPat, function()
 	local sound = math.random(10) == 10 and "minecraft:entity.bat.hurt" or "minecraft:entity.cat.purr"
 	sounds:playSound(sound, util.eyePos(player), 0.15)
 end)
-
-mount:newObjectMount("boat", star, star.driver, {
-	still = anims.star,
-	forward = anims.star2,
-	backward = anims.star3,
-	turnright = nil,
-	turnleft = nil,
-	up = anims.star6,
-	down = anims.star7,
-	rear = anims.star8,
-	gallop = anims.star9,
-})
-
-mount:newObjectMount("minecart", star, star.driver, {})
