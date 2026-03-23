@@ -231,7 +231,6 @@ end
 ------------------------------------------------------------------
 
 function util.tick()
-    local sleeping = player:getPose() == "SLEEPING"
 	local crouching = player:isCrouching()
     local vehicle = player:getVehicle()
 	local team = player:getTeamInfo()
@@ -248,7 +247,7 @@ function util.tick()
 	
 	local leftHanded = player:isLeftHanded()
 	local mainHandActive = player:getActiveHand() == "MAIN_HAND"
-	local hand = (mainHandActive ~= leftHanded) and { RIGHT = true } or { LEFT = true } ---@type Hand
+	local hand = mainHandActive ~= leftHanded and { RIGHT = true } or { LEFT = true } ---@type Hand
 
 	local doubleCrouchHand ---@type Hand
 	local singleCrouchHand ---@type Hand
