@@ -335,42 +335,44 @@ afk.new(210)
 		end)
 	end)
 
+local switchDimension = {}
+
+function switchDimension.the_end()
+	eyeColor:color({ color = vec(0.81, 0.96, 0.99) })
+	eyeColor:color({
+		color = vec(0.35, 0.1, 0.35),
+		type = "depthBackground",
+	})
+	eyeColor:color({
+		color = vec(1, 1, 1),
+		type = "layer",
+		layer = "layer1",
+	})
+end
+
+function switchDimension.the_nether()
+	eyeColor:color({ color = vec(0.91, 0.65, 0.88) })
+	eyeColor:color({
+		color = vec(0.82, 0.2, 0.75),
+		type = "depthBackground",
+	})
+end
+
+function switchDimension.overworld()
+	eyeColor:color({ color = vec(0.85, 0.66, 1) })
+	eyeColor:color({
+		color = vec(0.75, 0.52, 0.9),
+		type = "depthBackground",
+	})
+end
+
 ---@param id Minecraft.dimensionID
 enviLib.register("DIMENSION", function(id)
 	local endIndex = select(2, id:find(":"))
 	local dimension = id:sub(endIndex + 1)
-
-	local switch = {
-		the_end = function()
-			eyeColor:color({ color = vec(0.81, 0.96, 0.99) })
-			eyeColor:color({
-				color = vec(0.35, 0.1, 0.35),
-				type = "depthBackground",
-			})
-			eyeColor:color({
-				color = vec(1, 1, 1),
-				type = "layer",
-				layer = "layer1",
-			})
-		end,
-		the_nether = function()
-			eyeColor:color({ color = vec(0.91, 0.65, 0.88) })
-			eyeColor:color({
-				color = vec(0.82, 0.2, 0.75),
-				type = "depthBackground",
-			})
-		end,
-		overworld = function()
-			eyeColor:color({ color = vec(0.85, 0.66, 1) })
-			eyeColor:color({
-				color = vec(0.75, 0.52, 0.9),
-				type = "depthBackground",
-			})
-		end,
-    }
 	
-	if switch[dimension] then switch[dimension]()
-	else switch.overworld() end
+	if switchDimension[dimension] then switchDimension[dimension]()
+	else switchDimension.overworld() end
 end)
 
 ---@param headPos Vector3

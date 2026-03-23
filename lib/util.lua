@@ -266,6 +266,13 @@ function util.checkUseAction(playr, ...)
     return false
 end
 
+---@param action Action
+---@param bool boolean?
+function util.toggle(action, bool)
+    action:toggled(bool)
+    action.toggle(bool)
+end
+
 ---@param entity Entity
 ---@param delta number?
 ---@nodiscard
@@ -273,7 +280,25 @@ function util.eyePos(entity, delta)
     return entity:getPos(delta):add(0, entity:getEyeHeight(), 0)
 end
 
----Thanks `manuel_2867` on the Figura Discord!
+------------------------------------------------------------------------------
+--Thanks `kitcat962` on the Figura Discord!
+
+---@param direction Vector3
+---@return Vector3
+function util.directionToEuler(direction)
+    local yaw = math.atan2(direction.x, direction.z)
+    local pitch = math.atan2(direction.y, direction.xz:length())
+    return vec(-pitch, -yaw, 0)
+end
+
+---@param direction Vector3
+---@return Vector3
+function util.directionToEulerDegree(direction)
+    local yaw = math.atan2(direction.x, direction.z)
+    local pitch = math.atan2(direction.y, direction.xz:length())
+    return vec(-math.deg(pitch), -math.deg(yaw), 0)
+end
+
 ---@overload fun(rotation: Vector3)
 ---@param x any
 ---@param y any
@@ -283,12 +308,7 @@ function util.realRotToModelRot(x, y, z)
     return vec(0, 180, 0) - rot
 end
 
----@param action Action
----@param bool boolean?
-function util.toggle(action, bool)
-    action:toggled(bool)
-    action.toggle(bool)
-end
+------------------------------------------------------------------------------
 
 ---Formats effect ids as `"effect.<namespace>.<name>` regardless of Minecraft version
 ---(1.20.5 and above formats it as `"<namespace>:<name>"`)
