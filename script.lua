@@ -218,7 +218,6 @@ end
 
 function util.tick()
 	local crouching = player:isCrouching()
-    local vehicle = player:getVehicle()
 	local team = player:getTeamInfo()
     local color = team and team.color
 	
