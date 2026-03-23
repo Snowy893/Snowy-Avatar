@@ -168,6 +168,17 @@ function util.splitstring(input, separator)
     return t
 end
 
+---@generic T
+---@param value T
+---@param ... T
+---@return T?
+function util.compare(value, ...)
+    for _, v in pairs({ ... }) do
+        if v == value then return value end
+    end
+    return nil
+end
+
 ---@param key any
 ---@param default any
 ---@return any

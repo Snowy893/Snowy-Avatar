@@ -71,20 +71,6 @@ end
 
 ------------------------------------------------------------------
 
----@param vehicle Entity?
-local onVehicle = util.onchange(function(vehicle)
-	-- local isBoat = vehicle and vehicle:getType():find("boat")
-	-- -- local isDriving = vehicle and vehicle:getControllingPassenger() == player
-	
-	-- if host:isHost() then
-	-- 	   avatar:store("isInBoat", toboolean(isBoat))
-	-- end
-
-	-- renderer:setRenderVehicle(not isBoat)
-
-	-- -- models.model.boat:setVisible(isBoat and isDriving)
-end)
-
 ---@param hand Hand
 local onAimingBowWhileCrouching = util.onchange(function(hand)
 	local rot = vec(30, 50, 30)
@@ -259,7 +245,7 @@ function util.tick()
 	elseif crouching then
 		if useAction == "BOW" then
 			bowCrouchHand = hand
-		elseif util.checkUseAction("TOOT_HORN", "SPEAR", "BLOCK") then
+		elseif util.compare(useAction, "TOOT_HORN", "SPEAR", "BLOCK") then
 			singleCrouchHand = hand
 		else
 			local rightItem = player:getHeldItem(leftHanded)
@@ -275,7 +261,6 @@ function util.tick()
 	onCrouchArmOffsetRot(singleCrouchHand or not bowCrouchHand and doubleCrouchHand)
 
     onTeamChange(color)
-    onVehicle(vehicle)
 end
 
 function events.render(delta, context)
