@@ -59,6 +59,11 @@ function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     ---@class Afk.obj
     local obj = {}
 
+    ---@alias Afk.Event string
+    ---| "ON_CHANGE"
+    ---| "ON_RENDER_LOOP"
+    ---| "ON_TICK_NOT_AFK"
+
     ---@generic self
     ---@param event Afk.Event
     ---@param func function

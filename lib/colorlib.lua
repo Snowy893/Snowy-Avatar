@@ -93,6 +93,15 @@ function colorlib.newColorMulti(parts)
         switch.all = switch.default -- Alias
     end
 
+    ---@alias ColorParts.Type string
+    ---| "all"
+    ---| "depthLayer"
+    ---| "layer" -- Alias
+    ---| "depthLayers"
+    ---| "layers" -- Alias
+    ---| "depthBackground"
+    ---| "background" -- Alias
+
     ---@param tbl {
     ---     color: Vector3,
     ---     type: ColorParts.Type?,

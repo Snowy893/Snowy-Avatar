@@ -71,6 +71,8 @@ end
 
 ------------------------------------------------------------------
 
+---@alias Hand { RIGHT: boolean, LEFT: boolean }
+
 ---@param hand Hand
 local onAimingBowWhileCrouching = util.onchange(function(hand)
 	local rot = vec(30, 50, 30)

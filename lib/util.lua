@@ -1,3 +1,4 @@
+---@alias Util.ArrowTick.func fun(arrow: Entity): hide: boolean?
 ---@class Util
 ---@field tick function | { register: fun(self: table, func: function, ticks: integer?) }
 ---@field TICK function | { register: fun(self: table, func: function, ticks: integer?) }

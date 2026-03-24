@@ -13,6 +13,10 @@ local enviLibEvents = {
     },
 }
 
+---@alias EnviLib.Type string
+---| "DIMENSION"
+---| "BIOME"
+
 ---@overload fun(type: EnviLib.Type, func: fun(environment: Minecraft.dimensionID|Biome))
 ---@param type EnviLib.Type
 ---@param func fun(environment: Minecraft.dimensionID|Biome, enteredOrExited: boolean)
