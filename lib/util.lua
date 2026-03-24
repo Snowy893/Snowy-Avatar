@@ -345,4 +345,10 @@ function util.createTimer(ticks)
     end
 end
 
+---@return boolean
+function util.isNight()
+    local time = world.getDayTime()
+    return time >= 13000 and time <= 23000
+end
+
 return util
