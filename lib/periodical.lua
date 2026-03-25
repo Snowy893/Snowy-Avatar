@@ -12,6 +12,10 @@ function events.tick()
 
         obj.tickCounter = obj.tickCounter - 1
 
+        if obj.tickCounter < 0 then
+            obj.tickQueue = obj.tickCounter
+        end
+
         if obj.tickCounter == 0 then
             obj.func()
             obj:resetTickCounter()
@@ -31,10 +35,12 @@ function Periodical.new(func)
 
     interface.id = "Periodical" .. tostring(count)
     interface.func = func
+    interface.tickQueue = 0
 
     ---@param ticks number
     pings[interface.id] = function(ticks)
-        interface.tickCounter = ticks
+        interface.tickCounter = math.max(0, ticks - interface.tickQueue)
+        interface.tickQueue = 0
     end
 
     interface.pingTicks = pings[interface.id]
