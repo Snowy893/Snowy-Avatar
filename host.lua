@@ -71,6 +71,7 @@ local fixShieldAction = qolPage:newAction()
         fixShield = toggle
         config:save("shouldFixShield", toggle)
     end)
+    :toggled(fixShield)
 
 local lowShieldAction = qolPage:newAction()
     :title("Low Shield")
@@ -80,6 +81,7 @@ local lowShieldAction = qolPage:newAction()
         lowShield = toggle
         config:save("shouldLowerShield", toggle)
     end)
+    :toggled(lowShield)
 
 local function checkResources()
     if fixShield or lowShield then
