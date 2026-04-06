@@ -382,6 +382,8 @@ util.RENDER_AMBIENT_FIRST_PERSON = false
 ---@type Util.AmbientParticle[]
 local ambients = {}
 
+util.RENDER_AMBIENT_FIRST_PERSON = true
+
 ---@param ambient Util.AmbientParticle
 ---@return Util.AmbientParticle
 function util.newAmbientParticles(ambient)
