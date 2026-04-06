@@ -329,7 +329,7 @@ end
 function util.getEffect(effect)
     local id = effect
     if effect:find(":", 2) then
-        local namespace, name = effect:match("(.*)%:(.*)")
+        local namespace, name = effect:match("^(.-):?([^:]+)$")
         id = "effect."..namespace.."."..name
     end
     return id
@@ -347,9 +347,75 @@ function util.createTimer(ticks)
 end
 
 ---@return boolean
+---@nodiscard
 function util.isNight()
     local time = world.getDayTime()
     return time >= 13000 and time <= 23000
+end
+
+---@param sound Sound
+---@param position Vector3?
+---@param pitch number?
+---@param noRandomPitch boolean?
+function util.playSound(sound, pitch, position, noRandomPitch)
+    pitch = pitch or 1
+    local p = noRandomPitch and pitch or math.lerp(pitch - 0.25, pitch + 0.25, math.random())
+    local pos = position or player:getPos()
+    sound:stop()
+    sound:pitch(p)
+    sound:pos(pos)
+    sound:play()
+end
+
+util.RENDER_AMBIENT_FIRST_PERSON = false
+
+---@alias Util.AmbientParticle {
+---     id: Minecraft.particleID,
+---     rate: number,
+---     radius: number,
+---     offset: Vector3?,
+---     velocity: number?,
+---     condition: (fun(): boolean)?,
+---     countLeft: 0,
+---}
+
+---@type Util.AmbientParticle[]
+local ambients = {}
+
+---@param ambient Util.AmbientParticle
+---@return Util.AmbientParticle
+function util.newAmbientParticles(ambient)
+    ambient.offset = ambient.offset or vec(0, 1, 0)
+    ambient.velocity = ambient.velocity or 0.5
+    ambient.condition = ambient.condition or world.exists
+    ambient.countLeft = 0
+    table.insert(ambients, ambient)
+    return ambient
+end
+
+function util.tick()
+    if not util.RENDER_AMBIENT_FIRST_PERSON and renderer:isFirstPerson() then return end
+    for _, ambient in ipairs(ambients) do
+        if ambient.condition() then
+            ambient.countLeft = ambient.countLeft + ambient.rate / 20
+            while ambient.countLeft > 0 do
+                ambient.countLeft = ambient.countLeft - 1
+                local pos = player:getPos():add(ambient.offset):add(
+                    math.lerp(-ambient.radius, ambient.radius, math.random()),
+                    math.lerp(-ambient.radius, ambient.radius, math.random()),
+                    math.lerp(-ambient.radius, ambient.radius, math.random())
+                )
+                particles:newParticle(ambient.id, pos,
+                    ambient.velocity == 0 and vec(0, 0, 0)
+                    or vec(
+                        math.lerp(-ambient.velocity, ambient.velocity, math.random()),
+                        math.lerp(-ambient.velocity, ambient.velocity, math.random()),
+                        math.lerp(-ambient.velocity, ambient.velocity, math.random())
+                    )
+                )
+            end
+        end
+    end
 end
 
 return util
