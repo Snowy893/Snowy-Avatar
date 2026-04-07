@@ -1,5 +1,4 @@
 --#region imports
-local animatedText = require "lib.thirdparty.animatedText"
 local depthEffect = require "lib.thirdparty.depth_effect"
 local patpat = require "lib.thirdparty.patpat"
 local util = require "lib.util"
@@ -173,24 +172,6 @@ local eyeColor = colorlib.newColorMulti({
 	skullCreeperEyes
 })
 
-animatedText.new(
-	"afk",
-	body,
-	vec(-7, 5.5, -6),
-	vec(0.35, 0.35, 0.35),
-	"BILLBOARD",
-	""
-)
-
-animatedText.new(
-	"sleeping",
-	body,
-	vec(0, 5, -6),
-	vec(0.35, 0.35, 0.35),
-	"BILLBOARD",
-	""
-)
-
 vanilla_model.PLAYER:setVisible(false)
 root.sadchair:setVisible(false)
 creeperEyes:setVisible(false)
@@ -267,12 +248,6 @@ end
 function events.render(delta, context)
 	local time = world.getTime(delta)
 
-	if player:getPose() == "SLEEPING" then
-		animatedText.applyFunc("sleeping", function(_, i)
-			return vec(-i * 1.1, (math.sin(time / 8 + i) * .5) + (i * 1.3), 0)
-		end)
-	end
-
 	if context == "FIRST_PERSON" then return end
 
     local cameraPos = client.getCameraPos()
@@ -301,23 +276,6 @@ afk.new(180)
 			animations.model.afkLoop:play()
 		end
 		head:setOffsetRot(math.sin(world.getTime(delta) / 14))
-	end)
-
-afk.new(210)
-	:register("ON_CHANGE", function(toggle)
-    	if toggle then
-			animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
-			animatedText.applyFunc("afk", function(task)
-				task:outline(true)
-			end)
-		else
-			animatedText.setText("afk", "")
-		end
-    end)
-	:register("ON_RENDER_LOOP", function(delta)
-		animatedText.applyFunc("afk", function(_, i)
-			return vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0)
-		end)
 	end)
 
 local switchDimension = {}
@@ -362,8 +320,6 @@ end)
 
 ---@param headPos Vector3
 table.insert(patpat.head.oncePat, function(_, headPos)
-	animations.model.skullPat:stop()
-	animations.model.skullPat:play()
 	headPos.x_z = headPos.x_z + 0.5
 	sounds:playSound("minecraft:entity.bat.hurt", headPos, 0.15)
 end)
@@ -373,3 +329,39 @@ table.insert(patpat.player.onPat, function()
 	local sound = math.random(10) == 10 and "minecraft:entity.bat.hurt" or "minecraft:entity.cat.purr"
 	sounds:playSound(sound, util.eyePos(player), 0.15)
 end)
+
+---@type Util.AmbientParticle
+local steam = {
+	id = client.isModLoaded("farmersdelight")
+		and "farmersdelight:steam"
+		or "minecraft:campfire_cosy_smoke",
+	offset = vec(0, 0.5, 0),
+	radius = 0.5,
+	velocity = 0.01,
+}
+
+function steam.condition()
+	steam.rate = player:isInWater() and 5 or 2.5
+	return player:isWet()
+end
+
+---@type Util.AmbientParticle
+local flame = {
+	id = "minecraft:flame",
+	offset = vec(0, 1, 0),
+	radius = 0.5,
+	velocity = 0.005,
+}
+
+function flame.condition()
+	flame.rate = player:isWet() and 0.5 or 1
+	return true
+end
+
+util.newAmbientParticles(steam)
+util.newAmbientParticles(flame)
+
+util.playerSoundReplace(
+	sounds["minecraft:entity.blaze.hurt"]:volume(0.9):pitch(0.9),
+	true, "player", "hurt"
+)

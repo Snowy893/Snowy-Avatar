@@ -267,6 +267,7 @@ function util.checkUseAction(playr, ...)
         p = player
     end
     
+    ---@diagnostic disable-next-line: param-type-mismatch
     local activeItem = p:getActiveItem()
     if activeItem:getCount() == 0 then return false end
 
@@ -416,6 +417,64 @@ function util.tick()
                     )
                 )
             end
+        end
+    end
+end
+
+local soundObjs = {}
+
+---@alias Util.SoundObj {
+---     sound: Sound,
+---     pitch: number?,
+---     condition: (fun(): boolean)?,
+---     contains: string[],
+---}
+
+---@overload fun(sound: Util.SoundObj)
+---@param sound Sound
+---@param keepSound boolean?
+---@param ... string?
+function util.playerSoundReplace(sound, keepSound, ...)
+    local obj = sound
+    if type(sound) == "Sound" then
+        obj = { ---@type Util.SoundObj
+            sound = sound,
+            pitch = sound:getPitch(),
+            condition = world.exists,
+            contains = { ... },
+        }
+    end
+    table.insert(soundObjs, obj)
+end
+
+-- Thanks `manuel_2867` on the Figura Discord for original snippet!
+-- https://discord.com/channels/1129805506354085959/1234218592187453452/1463663512520753227
+function events.on_play_sound(id, pos, volume, pitch, loop, category, path)
+    if not path then return
+    elseif not player:isLoaded() then return end
+
+    local nearest = math.huge
+    local uuid
+
+    for _, playr in pairs(world.getPlayers()) do
+        local dist = (playr:getPos() - pos):length()
+        if dist < nearest then
+            nearest = dist
+            uuid = playr:getUUID()
+        end
+    end
+
+    if uuid ~= player:getUUID() or nearest > 0.8 then return end
+
+    for _, obj in ipairs(soundObjs) do
+        local doReplace = true
+        for _, str in ipairs(obj.contains) do
+            doReplace = doReplace and toboolean(id:find(str))
+        end
+
+        if doReplace then
+            util.playSound(obj.sound, obj.pitch, pos)
+            break
         end
     end
 end

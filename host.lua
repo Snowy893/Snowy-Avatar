@@ -3,6 +3,7 @@ if not host:isHost() then return end
 local util = require "lib.util"
 local syncedPings = require "lib.syncedpings"
 local skullPositions = require "lib.skulls"
+local runLater = require "lib.thirdparty.runLater"
 --#endregion
 local sadChair = models.model.root.sadchair
 local unlockCursorKey = "key.mouse.4" ---@type Minecraft.keyCode
@@ -16,6 +17,9 @@ syncedPings.ticks = 4 * 20
 local page = action_wheel:newPage()
 local emotePage = action_wheel:newPage()
 local qolPage = action_wheel:newPage()
+
+local laughSound = sounds["minecraft:entity.bat.ambient"]
+local laughPitch = 0.5
 
 action_wheel:setPage(page)
 
@@ -35,6 +39,16 @@ function pings.creeper()
         sounds:playSound("minecraft:entity.creeper.primed", center)
     end
     animations.model.creeper:play()
+end
+
+function pings.laugh()
+    util.playSound(laughSound, laughPitch)
+    runLater(5, function()
+        util.playSound(laughSound, laughPitch)
+    end)
+    runLater(10, function()
+        util.playSound(laughSound, laughPitch)
+    end)
 end
 
 util.switchPageActions(
@@ -62,6 +76,12 @@ emotePage:newAction()
     :item("minecraft:creeper_head")
     :hoverColor(1, 0, 1)
     :onLeftClick(pings.creeper)
+
+emotePage:newAction()
+    :title("Laugh")
+    :item("minecraft:bat_spawn_egg")
+    :hoverColor(1, 0, 1)
+    :onLeftClick(pings.laugh)
 
 local fixShieldAction = qolPage:newAction()
     :title("Adjust Shield")
