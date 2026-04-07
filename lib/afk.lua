@@ -1,6 +1,8 @@
 local util = require "lib.util"
 
 ---@class Afk
+---@field isAfk boolean
+---@field afkTime integer
 ---@field timer integer
 ---@field includeRotation boolean
 ---@field events {
@@ -10,15 +12,12 @@ local util = require "lib.util"
 ---}
 ---@field afkCheckTickRate integer
 ---@field delay integer
+---@field didSneakChange boolean
 ---@field onAfkChange function
 local Afk = {}
 Afk.__index = Afk
 ---@type Afk[]
 Afk.ALL = {}
-
-Afk.isAfk = false
-Afk.afkTime = 0
-Afk.didSneakChange = false
 
 local isSingleplayer = client.getServerBrand() == "Integrated"
 
@@ -54,6 +53,9 @@ end
 ---@return Afk.Obj
 function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     local afk = setmetatable({}, Afk)
+    afk.isAfk = false
+    afk.afkTime = 0
+    afk.didSneakChange = false
     afk.timer = #Afk.ALL
     afk.includeRotation = includeRotation or true
     afk.events = {
