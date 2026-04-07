@@ -3,13 +3,14 @@ local SyncedPings = {}
 SyncedPings.ticks = 200
 
 local objs = {}
+local isHost = host:isHost()
 
 ---@generic T
 ---@param pingFunc fun(...: T?)
 ---@param ... T?
 ---@return fun(...: T?)
 function SyncedPings:new(pingFunc, ...)
-    if not host:isHost() then return function() end end
+    if not isHost then return function() end end
     self.pingFunc = pingFunc
     self.args = ...
     self.timer = #objs
@@ -20,14 +21,16 @@ function SyncedPings:new(pingFunc, ...)
     end
 end
 
-events.TICK:register(function()
-    for i, obj in ipairs(objs) do
-        obj.timer = obj.timer + 1
-        if obj.timer == SyncedPings.ticks then
-            obj.timer = 0
-            obj.pingFunc(obj.args)
+if isHost then
+    events.TICK:register(function()
+        for _, obj in ipairs(objs) do
+            obj.timer = obj.timer + 1
+            if obj.timer == SyncedPings.ticks then
+                obj.timer = 0
+                obj.pingFunc(obj.args)
+            end
         end
-    end
-end, "SyncedPings")
+    end, "SyncedPings")
+end
 
 return SyncedPings
