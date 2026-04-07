@@ -1,13 +1,60 @@
 ---@class Periodical
+---@field id string
+---@field func function
+---@field pingTicks fun(ticks: integer)
 local Periodical = {}
----@type {[string]: Periodical.obj}
-Periodical.objs = {}
+Periodical.__index = Periodical
+---@type {[string]: Periodical}
+Periodical.ALL = {}
+
 local count = 0
 local isSingleplayer = client.getServerBrand() == "Integrated"
 
+function Periodical:resetTickCounter()
+    if self.maxTicks == nil or self.minTicks == self.maxTicks then
+        self.tickCounter = self.minTicks
+    else
+        self.pingTicks(math.random(self.minTicks, self.maxTicks))
+    end
+    return self
+end
+
+---@overload fun(ticks: integer): Periodical
+---@param minTicks integer
+---@param maxTicks integer
+function Periodical:setTiming(minTicks, maxTicks)
+    self.minTicks = minTicks
+    self.maxTicks = maxTicks
+    self:resetTickCounter()
+    return self
+end
+
+---@overload fun(ticks: integer): Periodical
+---@param minTicks integer
+---@param maxTicks integer
+---@return self
+function Periodical:timing(minTicks, maxTicks) return self:setTiming(minTicks, maxTicks) end --- Alias
+
+---@param cond fun(): boolean
+---@return self
+function Periodical:setCondition(cond)
+    self.conditionFunc = cond
+    return self
+end
+
+---@param cond fun(): boolean
+---@return self
+function Periodical:condition(cond) return self:setCondition(cond) end --- Alias
+
+---@return Periodical
+function Periodical:register()
+    Periodical.ALL[self.id] = self
+    return self
+end
+
 function events.tick()
     if isSingleplayer and client.isPaused() then return end
-    for _, obj in pairs(Periodical.objs) do
+    for _, obj in pairs(Periodical.ALL) do
         if not obj.conditionFunc() then goto continue end
 
         obj.tickCounter = obj.tickCounter - 1
@@ -27,69 +74,23 @@ end
 
 ---@overload fun(func: function)
 ---@param func function
----@return Periodical.obj
+---@return Periodical
 function Periodical.new(func)
     count = count + 1
-    ---@class Periodical.obj
-    local interface = {}
-
-    interface.id = "Periodical" .. tostring(count)
-    interface.func = func
-    interface.tickQueue = 0
+    local periodical = setmetatable({}, Periodical)
+    periodical.id = "Periodical" .. tostring(count)
+    periodical.func = func
+    periodical.tickQueue = 0
 
     ---@param ticks number
-    pings[interface.id] = function(ticks)
-        interface.tickCounter = math.max(0, ticks - interface.tickQueue)
-        interface.tickQueue = 0
+    pings[periodical.id] = function(ticks)
+        periodical.tickCounter = math.max(0, ticks - periodical.tickQueue)
+        periodical.tickQueue = 0
     end
 
-    interface.pingTicks = pings[interface.id]
+    periodical.pingTicks = pings[periodical.id]
 
-    ---@return self
-    function interface:resetTickCounter()
-        if self.maxTicks == nil or self.minTicks == self.maxTicks then
-            self.tickCounter = self.minTicks
-        else
-            self.pingTicks(math.random(self.minTicks, self.maxTicks))
-        end
-        return self
-    end
-
-    ---@overload fun(ticks: integer): Periodical.obj
-    ---@param minTicks integer
-    ---@param maxTicks integer
-    ---@return self
-    function interface:setTiming(minTicks, maxTicks)
-        self.minTicks = minTicks
-        self.maxTicks = maxTicks
-        self:resetTickCounter()
-        return self
-    end
-
-    ---@overload fun(ticks: integer): Periodical.obj
-    ---@param minTicks integer
-    ---@param maxTicks integer
-    ---@return self
-    function interface:timing(minTicks, maxTicks) return self:setTiming(minTicks, maxTicks) end --- Alias
-
-    ---@param cond fun(): boolean
-    ---@return self
-    function interface:setCondition(cond)
-        self.conditionFunc = cond
-        return self
-    end
-
-    ---@param cond fun(): boolean
-    ---@return self
-    function interface:condition(cond) return self:setCondition(cond) end --- Alias
-
-    ---@return Periodical.obj
-    function interface:register()
-        Periodical.objs[self.id] = self
-        return self
-    end
-
-    return interface:setCondition(world.exists):setTiming(100)
+    return periodical:setCondition(world.exists):setTiming(100)
 end
 
 return Periodical

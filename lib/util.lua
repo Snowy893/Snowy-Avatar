@@ -144,7 +144,7 @@ end
 
 ---@param tbl? { [any]: function }
 ---@param mtbl? table
----@return table
+---@return { [any]: function }
 ---@nodiscard
 function util.functiontable(tbl, mtbl)
     local t = tbl or {}
@@ -418,6 +418,33 @@ function util.tick()
                 )
             end
         end
+    end
+end
+
+---@param particle Minecraft.particleID
+---@param position Vector3?
+---@param radius number?
+---@param velocity Vector3?
+---@param amount integer?
+function util.particleExplosion(particle, position, radius, velocity, amount)
+    position = position or player:getPos()
+    radius = radius or 3
+    velocity = velocity or vec(0.3, 0.3, 0.3)
+    amount = amount or 20
+    for _ = 1, amount do
+        local pos = position:add(
+            math.lerp(-radius, radius, math.random()),
+            math.lerp(-radius, radius, math.random()),
+            math.lerp(-radius, radius, math.random())
+        )
+        particles:newParticle(particle, pos,
+            velocity == 0 and vec(0, 0, 0)
+            or vec(
+                math.lerp(-velocity.x, velocity.x, math.random()),
+                math.lerp(-velocity.y, velocity.y, math.random()),
+                math.lerp(-velocity.z, velocity.z, math.random())
+            )
+        )
     end
 end
 

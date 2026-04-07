@@ -365,3 +365,27 @@ util.playerSoundReplace(
 	sounds["minecraft:entity.blaze.hurt"]:volume(0.9):pitch(0.9),
 	true, "player", "hurt"
 )
+
+local fireStrengthSound = sounds["minecraft:entity.blaze.shoot"]
+
+local fireTicks = 0
+function util.tick()
+	local lastTick = fireTicks
+	fireTicks = fireTicks + (player:isOnFire() and 1 or 0)
+	if fireTicks == lastTick then
+		fireTicks = 0
+	end
+
+	if fireTicks == 0 then
+		renderer:setRenderFire(true)
+	elseif fireTicks == 60 then
+		renderer:setRenderFire(false)
+		util.playSound(fireStrengthSound)
+		util.particleExplosion("minecraft:flame",
+			player:getPos():add(0, 1, 0),
+			0,
+			vec(0.1, 0.1, 0.1),
+			40
+		)
+	end
+end
