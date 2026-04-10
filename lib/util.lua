@@ -400,22 +400,24 @@ function util.tick()
     if not util.RENDER_AMBIENT_FIRST_PERSON and renderer:isFirstPerson() then return end
     for _, ambient in ipairs(ambients) do
         if ambient.condition() then
+            local playerPos = player:getPos()
             ambient.countLeft = ambient.countLeft + ambient.rate / 20
             while ambient.countLeft > 0 do
                 ambient.countLeft = ambient.countLeft - 1
-                local pos = player:getPos():add(ambient.offset):add(
+                local pos = vec(playerPos.x, playerPos.y, playerPos.z):add(ambient.offset):add(
                     math.lerp(-ambient.radius, ambient.radius, math.random()),
                     math.lerp(-ambient.radius, ambient.radius, math.random()),
                     math.lerp(-ambient.radius, ambient.radius, math.random())
                 )
-                particles:newParticle(ambient.id, pos,
-                    ambient.velocity == 0 and vec(0, 0, 0)
-                    or vec(
+                if ambient.velocity == 0 then
+                    particles:newParticle(ambient.id, pos, 0, 0, 0)
+                else
+                    particles:newParticle(ambient.id, pos,
                         math.lerp(-ambient.velocity, ambient.velocity, math.random()),
                         math.lerp(-ambient.velocity, ambient.velocity, math.random()),
                         math.lerp(-ambient.velocity, ambient.velocity, math.random())
                     )
-                )
+                end
             end
         end
     end
@@ -431,20 +433,27 @@ function util.particleExplosion(particle, position, radius, velocity, amount)
     radius = radius or 3
     velocity = velocity or vec(0.3, 0.3, 0.3)
     amount = amount or 20
+
+    local calculateVelocity = velocity.x ~= 0 and velocity.y ~= 0 and velocity.z ~= 0
+
     for _ = 1, amount do
-        local pos = position:add(
-            math.lerp(-radius, radius, math.random()),
-            math.lerp(-radius, radius, math.random()),
-            math.lerp(-radius, radius, math.random())
-        )
-        particles:newParticle(particle, pos,
-            velocity == 0 and vec(0, 0, 0)
-            or vec(
+        if calculateVelocity then
+            particles:newParticle(particle,
+                position.x + math.lerp(-radius, radius, math.random()),
+                position.y + math.lerp(-radius, radius, math.random()),
+                position.z + math.lerp(-radius, radius, math.random()),
                 math.lerp(-velocity.x, velocity.x, math.random()),
                 math.lerp(-velocity.y, velocity.y, math.random()),
                 math.lerp(-velocity.z, velocity.z, math.random())
             )
-        )
+        else
+            particles:newParticle(particle,
+                position.x + math.lerp(-radius, radius, math.random()),
+                position.y + math.lerp(-radius, radius, math.random()),
+                position.z + math.lerp(-radius, radius, math.random()),
+                0, 0, 0
+            )
+        end
     end
 end
 
