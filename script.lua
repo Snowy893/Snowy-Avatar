@@ -2,6 +2,7 @@
 local depthEffect = require "lib.thirdparty.depth_effect"
 local patpat = require "lib.thirdparty.patpat"
 local util = require "lib.util"
+local originsapi = require "lib.thirdparty.OriginsAPI"
 local afk = require "lib.afk"
 local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
@@ -9,18 +10,20 @@ local colorlib = require "lib.colorlib"
 --#endregion
 local model = models.model
 local root = model.root
-local head = root.torso.Head
-local body = root.torso.waist.Body
+local head = root.Head
+local body = root.Body
 local eyes = head.eyes
 local creeperEyes = head.creepereyes:scale(1.2, 1.2, 1.2)
 local skull = model.Skull
 local skullEyes = skull.eyes2
 local skullCreeperEyes = skull.creepereyes2:scale(1.2, 1.2, 1.2)
-local rightArm = root.torso.waist.RightArm
-local leftArm = root.torso.waist.LeftArm
+local rightArm = root.RightArm
+local leftArm = root.LeftArm
 local rightItemPivot = rightArm.RightItemPivot
 local leftItemPivot = leftArm.LeftItemPivot
+local rods = root.blazebornRods:scale(0.7, 0.7, 0.7):setPrimaryRenderType("TRANSLUCENT")
 
+vanilla_model.PLAYER:setVisible(false)
 eyes.righteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
 eyes.lefteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
 skullEyes.righteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
@@ -28,7 +31,7 @@ skullEyes.lefteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
 
 ------------------------------------------------------------------
 
-local name = "Snowy :blahaj:"
+local name = "Snowy"
 local nameColor = "#6600cc"
 local nameOutlineColor = colorlib.lighten(vectors.hexToRGB(nameColor) * 255, -25)
 local plate = {
@@ -171,11 +174,6 @@ local eyeColor = colorlib.newColorMulti({
 	creeperEyes,
 	skullCreeperEyes
 })
-
-vanilla_model.PLAYER:setVisible(false)
-root.sadchair:setVisible(false)
-creeperEyes:setVisible(false)
-skullCreeperEyes:setVisible(false)
 
 ------------------------------------------------------------------
 
@@ -353,8 +351,28 @@ local flame = {
 	velocity = 0.005,
 }
 
+local hasStrength
+
+---@param toggle boolean
+function pings.hasStrength(toggle)
+	hasStrength = toggle
+end
+
+if host:isHost() then
+	util.tick:register(function()
+		for _, effect in ipairs(host:getStatusEffects()) do
+			if util.getEffect(effect.name) == "effect.minecraft.strength" then
+				pings.hasStrength(true)
+			end
+			return
+		end
+		pings.hasStrength(false)
+	end, 100)
+end
+
 function flame.condition()
-	flame.rate = player:isWet() and 0.5 or 1
+	flame.id = hasStrength and "minecraft:soul_fire_flame" or "minecraft:flame"
+	flame.rate = player:isWet() and 0.5 or (player:isOnFire() and 4 or 1)
 	return true
 end
 
@@ -368,24 +386,67 @@ util.playerSoundReplace(
 
 local fireStrengthSound = sounds["minecraft:entity.blaze.shoot"]
 
+local lastFloat = 0
+local lastOnFire = false
+local lastFireTicks = 0
 local fireTicks = 0
+
+function rodsInvisible()
+	rods:setVisible(false)
+end
+
 function util.tick()
-	local lastTick = fireTicks
-	fireTicks = fireTicks + (player:isOnFire() and 1 or 0)
-	if fireTicks == lastTick then
-		fireTicks = 0
+	local float = originsapi.getPowerData(player, "snowy:blaze_float_resource") or 0
+	local leftHanded = player:isLeftHanded()
+	local modelType = models.model.root.RightArm.wideRightArm:getVisible()
+	local typeOffset = modelType and 0 or 0.5
+	local handedOffset = leftHanded and (-6 + typeOffset) or (6 - typeOffset)
+
+	lastFireTicks = fireTicks
+
+	if player:isOnFire() then
+		fireTicks = math.min(30, fireTicks + 1)
+	else
+		fireTicks = math.max(0, fireTicks - 1)
 	end
 
-	if fireTicks == 0 then
-		renderer:setRenderFire(true)
-	elseif fireTicks == 60 then
-		renderer:setRenderFire(false)
+	local onFire = fireTicks > 20 or float > 0
+
+	if float == 100 and lastFloat ~= 100 then
 		util.playSound(fireStrengthSound)
-		util.particleExplosion("minecraft:flame",
+		util.particleExplosion(flame.id,
 			player:getPos():add(0, 1, 0),
 			0,
 			vec(0.1, 0.1, 0.1),
-			40
+			20
 		)
 	end
+
+	if fireTicks > lastFireTicks then
+		animations.model.blazeborn_rods_transition:stop()
+	end
+
+	rods:setParentType(leftHanded and "LeftArm" or "RightArm")
+	rods:setPos(handedOffset)
+
+	rods:setOpacity((float > 0 or hasStrength) and 0.6 or 0.4)
+
+	local floatBonus = float > 0 and 0.15 or 0
+	local strengthBonus = hasStrength and 0.15 or 0
+	local speed = 0.5 + floatBonus + strengthBonus
+
+	animations.model.blazeborn_rods:setPlaying(onFire)
+		:setSpeed(leftHanded and -speed or speed)
+
+	if onFire ~= lastOnFire then
+		if onFire then
+			rods:setVisible(true)
+		else
+			animations.model.blazeborn_rods_transition:stop()
+			animations.model.blazeborn_rods_transition:play()
+		end
+	end
+
+	lastFloat = float
+	lastOnFire = onFire
 end
