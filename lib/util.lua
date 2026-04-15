@@ -142,8 +142,8 @@ function util.comparetables(tbl1, tbl2)
     return true
 end
 
----@param tbl? { [any]: function }
----@param mtbl? table
+---@param tbl { [any]: function }?
+---@param mtbl table?
 ---@return { [any]: function }
 ---@nodiscard
 function util.functiontable(tbl, mtbl)
@@ -179,6 +179,41 @@ function util.compare(value, ...)
     end
     return nil
 end
+
+---Properly checks if a table is a table, even if it has set its type with `__type`
+---@param tbl table
+function util.istable(tbl)
+    local t = type(tbl)
+    return t ~= "nil" and t ~= "number" and t ~= "string" and t ~= "boolean" and t ~= "function"
+end
+
+---@param tbl table
+---@return table
+function util.deepcopy(tbl)
+    local t = {}
+    for key, value in pairs(tbl) do
+        if util.istable(value) then
+            t[key] = util.deepcopy(value)
+        else
+            t[key] = value
+        end
+    end
+    return t
+end
+
+---@generic T
+---@param tbl T
+---@return T
+function util.index(tbl)
+    local mt = {}
+    function mt:__index()
+        return self
+    end
+
+    return setmetatable(tbl, mt)
+end
+
+------------------------------------------------------------------------------
 
 ---@param key any
 ---@param default any
@@ -457,6 +492,25 @@ function util.particleExplosion(particle, position, radius, velocity, amount)
     end
 end
 
+-- Thanks `manuel_2867` from the Figura Discord!
+do
+    math.dt = 0
+    local st = 0
+    local getst = client.getSystemTime
+    local exp = math.exp
+    -- https://youtu.be/LSNQuFEDOyQ?t=2980
+    function math.expDecay(a, b, decay, dt)
+        return b + (a - b) * exp(-decay * dt)
+    end
+
+    function events.render(_, context)
+        if context ~= "FIRST_PERSON" and context ~= "RENDER" then return end
+        local newst = getst()
+        math.dt = (newst - st) / 1000
+        st = newst
+    end
+end
+
 local soundObjs = {}
 
 ---@alias Util.SoundObj {
@@ -514,5 +568,7 @@ function events.on_play_sound(id, pos, volume, pitch, loop, category, path)
         end
     end
 end
+
+util.isHost = host:isHost()
 
 return util

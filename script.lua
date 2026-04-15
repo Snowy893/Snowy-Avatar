@@ -137,26 +137,25 @@ end)
 
 ---@type auria.depth_effect.obj[]
 local depthObjects = {}
----@param parts ModelPart[]
----@return {[string]: ModelPart[]}
-local layerObjects = (function(parts)
-	local tbl = {}
+---@type {[string]: ModelPart[]}
+local layerObjects
+do
+	local parts = { eyes.righteye, eyes.lefteye }
 	for _, part in ipairs(parts) do
 		local partName = part:getName()
-		
-		tbl[partName] = {}
+
+		layerObjects[partName] = {}
 
 		local index = 1
 		local layer = part["layer" .. index] or part["depthLayer" .. index]
 
 		while layer do
-			table.insert(tbl[partName], layer)
+			table.insert(layerObjects[partName], layer)
 			index = index + 1
 			layer = part["layer" .. index] or part["depthLayer" .. index]
 		end
 	end
-	return tbl
-end)({ eyes.righteye, eyes.lefteye })
+end
 
 for _, obj in pairs(layerObjects) do
     for _, layer in ipairs(obj) do
@@ -276,9 +275,9 @@ afk.new(180)
 		head:setOffsetRot(math.sin(world.getTime(delta) / 14))
 	end)
 
-local switchDimension = {}
+local dimenions = {}
 
-function switchDimension.the_end()
+function dimenions.the_end()
 	eyeColor:color({ color = vec(0.81, 0.96, 0.99) })
 	eyeColor:color({
 		color = vec(0.35, 0.1, 0.35),
@@ -291,7 +290,7 @@ function switchDimension.the_end()
 	})
 end
 
-function switchDimension.the_nether()
+function dimenions.the_nether()
 	eyeColor:color({ color = vec(0.91, 0.65, 0.88) })
 	eyeColor:color({
 		color = vec(0.82, 0.2, 0.75),
@@ -299,7 +298,7 @@ function switchDimension.the_nether()
 	})
 end
 
-function switchDimension.overworld()
+function dimenions.overworld()
 	eyeColor:color({ color = vec(0.85, 0.66, 1) })
 	eyeColor:color({
 		color = vec(0.75, 0.52, 0.9),
@@ -312,8 +311,8 @@ enviLib.register("DIMENSION", function(id)
 	local endIndex = select(2, id:find(":"))
 	local dimension = id:sub(endIndex + 1)
 	
-	if switchDimension[dimension] then switchDimension[dimension]()
-	else switchDimension.overworld() end
+	if dimenions[dimension] then dimenions[dimension]()
+	else dimenions.overworld() end
 end)
 
 ---@param headPos Vector3
