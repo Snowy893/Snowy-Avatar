@@ -138,7 +138,7 @@ end)
 ---@type auria.depth_effect.obj[]
 local depthObjects = {}
 ---@type {[string]: ModelPart[]}
-local layerObjects
+local layerObjects = {}
 do
 	local parts = { eyes.righteye, eyes.lefteye }
 	for _, part in ipairs(parts) do
@@ -395,8 +395,7 @@ do
 	function util.tick()
 		local float = originsapi.getPowerData(player, "snowy:blaze_float_resource") or 0
 		local leftHanded = player:isLeftHanded()
-		local modelType = models.model.root.RightArm.wideRightArm:getVisible()
-		local typeOffset = modelType and 0 or 0.5
+		local typeOffset = 0.5
 		local handedOffset = leftHanded and (-6 + typeOffset) or (6 - typeOffset)
 		local isOnFire = player:isOnFire()
 
@@ -441,7 +440,10 @@ do
 			animations.model.blazeborn_rods:setSpeed(leftHanded and -speed or speed)
 		end
 
-		rods:setVisible(beenOnFire)
+		if beenOnFire then
+			rods:setVisible(beenOnFire)
+		end
+		
 		animations.model.blazeborn_rods:setPlaying(beenOnFire)
 
 		if not beenOnFire and lastBeenOnFire then
