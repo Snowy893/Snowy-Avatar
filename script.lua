@@ -327,125 +327,129 @@ table.insert(patpat.player.onPat, function()
 	sounds:playSound(sound, util.eyePos(player), 0.15)
 end)
 
----@type Util.AmbientParticle
-local steam = {
-	id = client.isModLoaded("farmersdelight")
-		and "farmersdelight:steam"
-		or "minecraft:campfire_cosy_smoke",
-	offset = vec(0, 0.5, 0),
-	radius = 0.5,
-	velocity = 0.01,
-}
+do
+	local floatSound = sounds["minecraft:entity.blaze.shoot"]
 
-function steam.condition()
-	steam.rate = player:isInWater() and 5 or 2.5
-	return player:isWet()
-end
+	---@type Util.AmbientParticle
+	local steam = {
+		id = client.isModLoaded("farmersdelight")
+			and "farmersdelight:steam"
+			or "minecraft:campfire_cosy_smoke",
+		offset = vec(0, 0.5, 0),
+		radius = 0.5,
+		velocity = 0.01,
+	}
 
----@type Util.AmbientParticle
-local flame = {
-	id = "minecraft:flame",
-	offset = vec(0, 1, 0),
-	radius = 0.5,
-	velocity = 0.005,
-}
+	function steam.condition()
+		steam.rate = player:isInWater() and 5 or 2.5
+		return player:isWet()
+	end
 
-local hasStrength
+	---@type Util.AmbientParticle
+	local flame = {
+		id = "minecraft:flame",
+		offset = vec(0, 1, 0),
+		radius = 0.5,
+		velocity = 0.005,
+	}
 
----@param toggle boolean
-function pings.hasStrength(toggle)
-	hasStrength = toggle
-end
+	local strength
 
-if host:isHost() then
-	util.tick:register(function()
-		for _, effect in ipairs(host:getStatusEffects()) do
-			if util.getEffect(effect.name) == "effect.minecraft.strength" then
-				pings.hasStrength(true)
+	---@param level number?
+	function pings.strength(level)
+		strength = level
+	end
+
+	if host:isHost() then
+		util.tick:register(function()
+			for _, effect in ipairs(host:getStatusEffects()) do
+				if util.getEffect(effect.name) == "effect.minecraft.strength" then
+					pings.strength(effect.amplifier)
+				end
+				return
 			end
-			return
-		end
-		pings.hasStrength(false)
-	end, 100)
-end
-
-function flame.condition()
-	flame.id = hasStrength and "minecraft:soul_fire_flame" or "minecraft:flame"
-	flame.rate = player:isWet() and 0.5 or (player:isOnFire() and 4 or 1)
-	return true
-end
-
-util.newAmbientParticles(steam)
-util.newAmbientParticles(flame)
-
-util.playerSoundReplace(
-	sounds["minecraft:entity.blaze.hurt"]:volume(0.9):pitch(0.9),
-	true, "player", "hurt"
-)
-
-local fireStrengthSound = sounds["minecraft:entity.blaze.shoot"]
-
-local lastFloat = 0
-local lastOnFire = false
-local lastFireTicks = 0
-local fireTicks = 0
-
-function rodsInvisible()
-	rods:setVisible(false)
-end
-
-function util.tick()
-	local float = originsapi.getPowerData(player, "snowy:blaze_float_resource") or 0
-	local leftHanded = player:isLeftHanded()
-	local modelType = models.model.root.RightArm.wideRightArm:getVisible()
-	local typeOffset = modelType and 0 or 0.5
-	local handedOffset = leftHanded and (-6 + typeOffset) or (6 - typeOffset)
-
-	lastFireTicks = fireTicks
-
-	if player:isOnFire() then
-		fireTicks = math.min(30, fireTicks + 1)
-	else
-		fireTicks = math.max(0, fireTicks - 1)
+			pings.strength()
+		end, 80)
 	end
 
-	local onFire = fireTicks > 20 or float > 0
-
-	if float == 100 and lastFloat ~= 100 then
-		util.playSound(fireStrengthSound)
-		util.particleExplosion(flame.id,
-			player:getPos():add(0, 1, 0),
-			0,
-			vec(0.1, 0.1, 0.1),
-			20
-		)
+	function flame.condition()
+		flame.id = strength and (strength > 0 or math.random(4) == 1)
+			and "minecraft:soul_fire_flame"
+			or "minecraft:flame"
+		flame.rate = player:isWet() and 0.5 or (player:isOnFire() and 6 or 1)
+		return world.exists()
 	end
 
-	if fireTicks > lastFireTicks then
-		animations.model.blazeborn_rods_transition:stop()
+	util.newAmbientParticles(steam)
+	util.newAmbientParticles(flame)
+
+	local lastFloat = 0
+	local lastBeenOnFire = false
+	local lastFireTicks = 0
+	local fireTicks = 0
+
+	function rodsInvisible()
+		rods:setVisible(false)
 	end
 
-	rods:setParentType(leftHanded and "LeftArm" or "RightArm")
-	rods:setPos(handedOffset)
+	function util.tick()
+		local float = originsapi.getPowerData(player, "snowy:blaze_float_resource") or 0
+		local leftHanded = player:isLeftHanded()
+		local modelType = models.model.root.RightArm.wideRightArm:getVisible()
+		local typeOffset = modelType and 0 or 0.5
+		local handedOffset = leftHanded and (-6 + typeOffset) or (6 - typeOffset)
+		local isOnFire = player:isOnFire()
 
-	rods:setOpacity((float > 0 or hasStrength) and 0.6 or 0.4)
+		lastFireTicks = fireTicks
 
-	local floatBonus = float > 0 and 0.15 or 0
-	local strengthBonus = hasStrength and 0.15 or 0
-	local speed = 0.5 + floatBonus + strengthBonus
-
-	animations.model.blazeborn_rods:setPlaying(onFire)
-		:setSpeed(leftHanded and -speed or speed)
-
-	if onFire ~= lastOnFire then
-		if onFire then
-			rods:setVisible(true)
+		if isOnFire then
+			fireTicks = math.min(30, fireTicks + 1)
+			renderer:setPrimaryFireTexture(strength and strength > 0
+				and "minecraft:textures/block/soul_fire_1" or nil)
+			renderer:setSecondaryFireTexture(strength and strength > 0
+				and "snowy:textures/block/soul_fire_1" or nil)
 		else
+			fireTicks = math.max(0, fireTicks - 1)
+		end
+
+		local beenOnFire = fireTicks > 20 or (isOnFire and float > 0)
+
+		if float == 100 and lastFloat ~= 100 then
+			util.playSound(floatSound)
+			util.particleExplosion(flame.id,
+				player:getPos():add(0, 1, 0),
+				0,
+				vec(0.1, 0.1, 0.1),
+				20
+			)
+		end
+
+		if fireTicks > lastFireTicks then
+			animations.model.blazeborn_rods_transition:stop()
+		end
+
+		if beenOnFire then
+			rods:setParentType(leftHanded and "LeftArm" or "RightArm")
+			rods:setPos(handedOffset)
+
+			rods:setOpacity((float > 0 or strength) and 0.6 or 0.5)
+
+			local floatBonus = float > 0 and 0.15 or 0
+			local strengthBonus = strength and 0.15 or 0
+			local speed = 0.5 + floatBonus + strengthBonus
+
+			animations.model.blazeborn_rods:setSpeed(leftHanded and -speed or speed)
+		end
+
+		rods:setVisible(beenOnFire)
+		animations.model.blazeborn_rods:setPlaying(beenOnFire)
+
+		if not beenOnFire and lastBeenOnFire then
 			animations.model.blazeborn_rods_transition:stop()
 			animations.model.blazeborn_rods_transition:play()
 		end
-	end
 
-	lastFloat = float
-	lastOnFire = onFire
+		lastFloat = float
+		lastBeenOnFire = beenOnFire
+	end
 end
