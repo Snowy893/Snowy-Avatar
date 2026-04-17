@@ -388,14 +388,11 @@ do
 	local lastFireTicks = 0
 	local fireTicks = 0
 
-	function rodsInvisible()
-		rods:setVisible(false)
-	end
-
 	function util.tick()
 		local float = originsapi.getPowerData(player, "snowy:blaze_float_resource") or 0
 		local leftHanded = player:isLeftHanded()
-		local typeOffset = 0.5
+		local modelType = player:getModelType() == "DEFAULT"
+		local typeOffset = modelType and 0 or 0.5
 		local handedOffset = leftHanded and (-6 + typeOffset) or (6 - typeOffset)
 		local isOnFire = player:isOnFire()
 
@@ -408,7 +405,7 @@ do
 			renderer:setSecondaryFireTexture(strength and strength > 0
 				and "snowy:textures/block/soul_fire_1" or nil)
 		else
-			fireTicks = math.max(0, fireTicks - 1)
+			fireTicks = math.max(-10, fireTicks - 1)
 		end
 
 		local beenOnFire = fireTicks > 20 or (isOnFire and float > 0)
@@ -431,7 +428,7 @@ do
 			rods:setParentType(leftHanded and "LeftArm" or "RightArm")
 			rods:setPos(handedOffset)
 
-			rods:setOpacity((float > 0 or strength) and 0.6 or 0.5)
+			rods:setOpacity((float > 0 or strength) and 0.8 or 0.7)
 
 			local floatBonus = float > 0 and 0.15 or 0
 			local strengthBonus = strength and 0.15 or 0
@@ -443,12 +440,16 @@ do
 		if beenOnFire then
 			rods:setVisible(beenOnFire)
 		end
-		
+
 		animations.model.blazeborn_rods:setPlaying(beenOnFire)
 
 		if not beenOnFire and lastBeenOnFire then
 			animations.model.blazeborn_rods_transition:stop()
 			animations.model.blazeborn_rods_transition:play()
+		end
+
+		if fireTicks == -10 then
+			rods:setVisible(false)
 		end
 
 		lastFloat = float
