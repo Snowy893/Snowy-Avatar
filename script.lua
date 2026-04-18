@@ -1,8 +1,9 @@
 --#region imports
 local depthEffect = require "lib.thirdparty.depth_effect"
 local patpat = require "lib.thirdparty.patpat"
-local util = require "lib.util"
 local originsapi = require "lib.thirdparty.OriginsAPI"
+local runLater = require "lib.thirdparty.runLater"
+local util = require "lib.util"
 local afk = require "lib.afk"
 local periodical = require "lib.periodical"
 local enviLib = require "lib.envilib"
@@ -385,8 +386,8 @@ do
 
 	local lastFloat = 0
 	local lastBeenOnFire = false
+	local fireTicks = -10
 	local lastFireTicks = 0
-	local fireTicks = 0
 
 	function util.tick()
 		local float = originsapi.getPowerData(player, "snowy:blaze_float_resource") or 0
@@ -448,7 +449,8 @@ do
 			animations.model.blazeborn_rods_transition:play()
 		end
 
-		if fireTicks == -10 then
+		if animations.model.blazeborn_rods_transition:getTime() >= 0.49 or fireTicks == -10 then
+			animations.model.blazeborn_rods_transition:setTime(0)
 			rods:setVisible(false)
 		end
 
