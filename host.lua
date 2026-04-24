@@ -5,13 +5,14 @@ local syncedPings = require "lib.syncedpings"
 local skullPositions = require "lib.skulls"
 local runLater = require "lib.thirdparty.runLater"
 --#endregion
-local sadChair = models.model.sadchair
+local sadChair = models.model.sadChair
 
 syncedPings.ticks = 4 * 20
 
 local page = action_wheel:newPage()
 
-local laughSound = sounds["minecraft:entity.bat.ambient"]
+local creeperSound = sounds["minecraft:entity.creeper.primed"]:volume(1.1)
+local laughSound = sounds["minecraft:entity.bat.ambient"]:volume(0.7)
 local laughPitch = 0.5
 
 action_wheel:setPage(page)
@@ -25,21 +26,21 @@ end
 function pings.creeper()
     SnowyCreeperEyesVisible(true)
     if player:isLoaded() then
-        sounds:playSound("minecraft:entity.creeper.primed", util.eyePos(player))
+        util.playSound(creeperSound)
     end
     for _, pos in pairs(skullPositions) do
         local center = vec(pos.x + 0.5, pos.y, pos.z + 0.5)
-        sounds:playSound("minecraft:entity.creeper.primed", center)
+        util.playSound(creeperSound, nil, center)
     end
     animations.model.creeper:play()
 end
 
 function pings.laugh()
     util.playSound(laughSound, laughPitch)
-    runLater(5, function()
+    runLater(4, function()
         util.playSound(laughSound, laughPitch)
     end)
-    runLater(10, function()
+    runLater(8, function()
         util.playSound(laughSound, laughPitch)
     end)
 end

@@ -8,7 +8,7 @@
     "model.root.Head.eyes": {
       "primaryRenderType": "EYES"
     },
-    "model.root.Head.creepereyes": {
+    "model.root.Head.creeperEyes": {
       "primaryRenderType": "EMISSIVE",
       "visible": false
     },
@@ -18,11 +18,11 @@
     "model.Skull.eyes2": {
       "primaryRenderType": "EYES"
     },
-    "model.Skull.creepereyes2": {
+    "model.Skull.creeperEyes2": {
       "primaryRenderType": "TRANSLUCENT_CULL",
       "visible": false
     },
-    "model.sadchair": {
+    "model.sadChair": {
       "visible": false
     }
   }

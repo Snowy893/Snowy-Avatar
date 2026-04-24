@@ -14,10 +14,10 @@ local root = model.root
 local head = root.Head
 local body = root.Body
 local eyes = head.eyes
-local creeperEyes = head.creepereyes:scale(1.2, 1.2, 1.2)
+local creeperEyes = head.creeperEyes:scale(1.2, 1.2, 1.2)
 local skull = model.Skull
 local skullEyes = skull.eyes2
-local skullCreeperEyes = skull.creepereyes2:scale(1.2, 1.2, 1.2)
+local skullCreeperEyes = skull.creeperEyes2:scale(1.2, 1.2, 1.2)
 local rightArm = root.RightArm
 local leftArm = root.LeftArm
 local rightItemPivot = rightArm.RightItemPivot
@@ -25,10 +25,10 @@ local leftItemPivot = leftArm.LeftItemPivot
 local rods = root.blazebornRods:scale(0.7, 0.7, 0.7):setPrimaryRenderType("TRANSLUCENT")
 
 vanilla_model.PLAYER:setVisible(false)
-eyes.righteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
-eyes.lefteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
-skullEyes.righteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
-skullEyes.lefteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
+eyes.rightEye.background:setPrimaryRenderType("EMISSIVE_SOLID")
+eyes.leftEye.background:setPrimaryRenderType("EMISSIVE_SOLID")
+skullEyes.rightEye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
+skullEyes.leftEye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
 
 ------------------------------------------------------------------
 
@@ -103,26 +103,26 @@ local onSpyglass = util.onchange(function(hand)
 	local pos = vec(0, 0, -11.2)
 	local scale = vec(1.95, 0.95, 1)
 	if hand and hand.RIGHT then
-		eyes.righteye:setPos(pos)
-		eyes.righteye:setScale(scale)
-		eyes.lefteye:setPos()
-		eyes.lefteye:setScale()
-		animations.model.squintleft:play()
-		animations.model.squintright:stop()
+		eyes.rightEye:setPos(pos)
+		eyes.rightEye:setScale(scale)
+		eyes.leftEye:setPos()
+		eyes.leftEye:setScale()
+		animations.model.squintLeft:play()
+		animations.model.squintRight:stop()
 	elseif hand and hand.LEFT then
-		eyes.lefteye:setPos(pos)
-		eyes.lefteye:setScale(scale)
-		eyes.righteye:setPos()
-		eyes.righteye:setScale()
-		animations.model.squintright:play()
-		animations.model.squintleft:stop()
+		eyes.leftEye:setPos(pos)
+		eyes.leftEye:setScale(scale)
+		eyes.rightEye:setPos()
+		eyes.rightEye:setScale()
+		animations.model.squintRight:play()
+		animations.model.squintLeft:stop()
 	else
-		eyes.righteye:setPos()
-		eyes.righteye:setScale()
-		eyes.lefteye:setPos()
-		eyes.lefteye:setScale()
-		animations.model.squintleft:stop()
-		animations.model.squintright:stop()
+		eyes.rightEye:setPos()
+		eyes.rightEye:setScale()
+		eyes.leftEye:setPos()
+		eyes.leftEye:setScale()
+		animations.model.squintLeft:stop()
+		animations.model.squintRight:stop()
 	end
 end)
 
@@ -141,7 +141,7 @@ local depthObjects = {}
 ---@type {[string]: ModelPart[]}
 local layerObjects = {}
 do
-	local parts = { eyes.righteye, eyes.lefteye }
+	local parts = { eyes.rightEye, eyes.leftEye }
 	for _, part in ipairs(parts) do
 		local partName = part:getName()
 
@@ -167,10 +167,10 @@ end
 ------------------------------------------------------------------
 
 local eyeColor = colorlib.newColorMulti({
-	eyes.righteye,
-	eyes.lefteye,
-	skullEyes.righteye2,
-	skullEyes.lefteye2,
+	eyes.rightEye,
+	eyes.leftEye,
+	skullEyes.rightEye2,
+	skullEyes.leftEye2,
 	creeperEyes,
 	skullCreeperEyes
 })
@@ -408,7 +408,7 @@ do
 		else
 			fireTicks = math.max(-10, fireTicks - 1)
 		end
-
+		
 		local beenOnFire = fireTicks > 20 or (isOnFire and float > 0)
 
 		if float == 100 and lastFloat ~= 100 then
@@ -439,14 +439,16 @@ do
 		end
 
 		if beenOnFire then
-			rods:setVisible(beenOnFire)
+			rods:setVisible(true)
 		end
-
-		animations.model.blazeborn_rods:setPlaying(beenOnFire)
+		
+		animations.model.blazeborn_rods:setPlaying(
+			rods:getVisible() and not animations.model.blazeborn_rods_transition:isPlaying()
+		)
 
 		if not beenOnFire and lastBeenOnFire then
 			animations.model.blazeborn_rods_transition:stop()
-			animations.model.blazeborn_rods_transition:play()
+			animations.model.blazeborn_rods_transition:priority(1):play()
 		end
 
 		if animations.model.blazeborn_rods_transition:getTime() >= 0.49 or fireTicks == -10 then
