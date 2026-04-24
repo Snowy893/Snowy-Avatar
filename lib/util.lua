@@ -580,61 +580,6 @@ function util.isWearingArmor(playr)
     return false
 end
 
----@alias Util.Curios.slot
----| "head"
----| "necklace"
----| "back"
----| "rings"
----| "hands"
----| "waist"
----| "belt"
----| "talisman"
----| "feet"
----| "charm"
-
----@alias Util.Curios.inventory { [Util.Curios.slot]: {
----     items: ItemStack[]?,
----     visible: boolean,
----}? }
-
----@param playr Player?
----@return Util.Curios.inventory?
-function util.getCuriosInventory(playr)
-    if not client.isModLoaded("curios") then return nil end
-    local nbt = (playr or player):getNbt()
-    local curios = nbt.ForgeCaps
-        and nbt.ForgeCaps["curios:inventory"]
-        and nbt.ForgeCaps["curios:inventory"].Curios
-    if not curios then return nil end
-    local inv = {}
-    for _, v in ipairs(curios) do
-        inv[v.Identifier] = {
-            items = v.StacksHandler.Stacks.Items,
-            visible = v.StacksHandler.Renders.Renders[1]
-                and v.StacksHandler.Renders.Renders[1].Render == 1,
-        }
-    end
-    return next(inv) ~= nil and inv or nil
-end
-
----@param playr Player?
----@return boolean
-function util.isWearingCurios(playr)
-    if not client.isModLoaded("curios") then return false end
-    local nbt = (playr or player):getNbt()
-    local curios = nbt.ForgeCaps
-        and nbt.ForgeCaps["curios:inventory"]
-        and nbt.ForgeCaps["curios:inventory"].Curios
-    if not curios then return false end
-    for _, v in ipairs(curios) do
-        local items = v.StacksHandler.Stacks.Items
-        local visible = v.StacksHandler.Renders.Renders[1]
-            and v.StacksHandler.Renders.Renders[1].Render == 1
-        if visible and next(items) ~= nil then return true end
-    end
-    return false
-end
-
 util.isHost = host:isHost()
 
 return util
