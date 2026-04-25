@@ -1,8 +1,8 @@
--- Figura CuriosLib v1.0.0 by Snowy893
+-- Figura CuriosAPIAPI v1.0.0 by Snowy893
 -- Curios API Mod can be found here: https://modrinth.com/mod/curios
 
----@class CuriosLib
-local CuriosLib = {}
+---@class CuriosAPIAPI
+local CuriosAPIAPI = {}
 
 ---@alias Curios.slotID
 ---| "head"
@@ -58,7 +58,7 @@ local CuriosLib = {}
 
 ---@param entity Entity
 ---@return Curios.Data?
-function CuriosLib.getCuriosData(entity)
+function CuriosAPIAPI.getCuriosData(entity)
     if not client.isModLoaded("curios") then return nil end
     local nbt = entity:getNbt()
     ---@type Curios.Data?
@@ -70,8 +70,8 @@ end
 
 ---@param entity Entity? -- Uses `player` by default
 ---@return boolean
-function CuriosLib.wearingAny(entity)
-    local curios = CuriosLib.getCuriosData(entity or player)
+function CuriosAPIAPI.wearingAny(entity)
+    local curios = CuriosAPIAPI.getCuriosData(entity or player)
     if not curios then return false end
 
     for _, v in ipairs(curios) do
@@ -94,8 +94,8 @@ end
 ---@param slot Curios.slotID
 ---@param entity Entity? -- Uses `player` by default
 ---@return Curios.Slot?
-function CuriosLib.getSlot(slot, entity)
-    local curios = CuriosLib.getCuriosData(entity or player)
+function CuriosAPIAPI.getSlot(slot, entity)
+    local curios = CuriosAPIAPI.getCuriosData(entity or player)
     if not curios then return nil end
 
     for _, v in ipairs(curios) do
@@ -105,7 +105,7 @@ function CuriosLib.getSlot(slot, entity)
                 items = v.StacksHandler.Stacks.Items,
                 dropRule = v.StacksHandler.DropRule,
             }
-
+            
             local toggled = false
 
             for _, render in ipairs(v.StacksHandler.Renders.Renders) do
@@ -126,8 +126,8 @@ end
 
 ---@param entity Entity? -- Uses `player` by default
 ---@return Curios.Inventory?
-function CuriosLib.getInventory(entity)
-    local curios = CuriosLib.getCuriosData(entity or player)
+function CuriosAPIAPI.getInventory(entity)
+    local curios = CuriosAPIAPI.getCuriosData(entity or player)
     if not curios then return nil end
 
     local inv = {}
@@ -151,4 +151,4 @@ function CuriosLib.getInventory(entity)
     return next(inv) ~= nil and inv or nil
 end
 
-return CuriosLib
+return CuriosAPIAPI
