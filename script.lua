@@ -159,9 +159,9 @@ do
 end
 
 for _, obj in pairs(layerObjects) do
-    for _, layer in ipairs(obj) do
-        table.insert(depthObjects, depthEffect.apply(layer, 1))
-    end
+	for _, layer in ipairs(obj) do
+		table.insert(depthObjects, depthEffect.apply(layer, 1))
+	end
 end
 
 ------------------------------------------------------------------
@@ -232,6 +232,16 @@ function util.tick()
 			local leftItem = player:getHeldItem(not leftHanded)
 			if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
 				doubleCrouchHand = { RIGHT = true, LEFT = true }
+			else
+				local umbrellaHand = {
+					RIGHT = rightItem.id == "originsumbrellas:umbrella",
+					LEFT = leftItem.id == "originsumbrellas:umbrella",
+				}
+				if umbrellaHand.RIGHT and umbrellaHand.LEFT then
+					doubleCrouchHand = umbrellaHand
+				else
+					singleCrouchHand = umbrellaHand
+				end
 			end
 		end
 	end
@@ -248,12 +258,12 @@ function events.render(delta, context)
 
 	if context == "FIRST_PERSON" then return end
 
-    local cameraPos = client.getCameraPos()
-    local eyePos = util.eyePos(player, delta)
+	local cameraPos = client.getCameraPos()
+	local eyePos = util.eyePos(player, delta)
 	local distance = math.abs((cameraPos - eyePos):length())
 
 	for i, depthObject in ipairs(depthObjects) do
-		local depth = math.cos(time * 0.1 + i) * distance
+		local depth = math.cos(time * 0.1 + i) * math.min(4, distance)
 		depthObject:setDepth(depth)
 	end
 end
@@ -459,4 +469,6 @@ do
 		lastFloat = float
 		lastBeenOnFire = beenOnFire
 	end
+
+	util.playerSoundReplace(sounds["minecraft:entity.blaze.hurt"], true, "hurt")
 end

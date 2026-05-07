@@ -518,6 +518,7 @@ local soundObjs = {}
 ---     pitch: number?,
 ---     condition: (fun(): boolean)?,
 ---     contains: string[],
+---     doReplace: boolean,
 ---}
 
 ---@overload fun(sound: Util.SoundObj)
@@ -532,6 +533,7 @@ function util.playerSoundReplace(sound, keepSound, ...)
             pitch = sound:getPitch(),
             condition = world.exists,
             contains = { ... },
+            keepSound = keepSound
         }
     end
     table.insert(soundObjs, obj)
@@ -540,8 +542,8 @@ end
 -- Thanks `manuel_2867` on the Figura Discord for original snippet!
 -- https://discord.com/channels/1129805506354085959/1234218592187453452/1463663512520753227
 function events.on_play_sound(id, pos, volume, pitch, loop, category, path)
-    if not path then return
-    elseif not player:isLoaded() then return end
+    if not path then return end
+    if not player:isLoaded() then return end
 
     local nearest = math.huge
     local uuid
@@ -559,12 +561,13 @@ function events.on_play_sound(id, pos, volume, pitch, loop, category, path)
     for _, obj in ipairs(soundObjs) do
         local doReplace = true
         for _, str in ipairs(obj.contains) do
-            doReplace = doReplace and toboolean(id:find(str))
+            doReplace = id:find(str) and doReplace
+            if not doReplace then break end
         end
 
         if doReplace then
             util.playSound(obj.sound, obj.pitch, pos)
-            break
+            return not obj.keepSound
         end
     end
 end
@@ -572,9 +575,8 @@ end
 ---@param playr Player?
 ---@return boolean
 function util.isWearingArmor(playr)
-    local p = playr or player
     for i = 3, 6 do
-        local armor = p:getItem(i)
+        local armor = (playr or player):getItem(i)
         if armor and armor.id ~= "minecraft:air" then return true end
     end
     return false

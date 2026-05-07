@@ -22,8 +22,6 @@ colorlib.vanillaColors = {
 
 ------------------------------------------------------------------
 
-local hasDepthEffect = require("lib.thirdparty.depth_effect") ~= nil
-
 ---@param parts ModelPart[]
 ---@return ColorParts
 function colorlib.newColorMulti(parts)
@@ -43,55 +41,44 @@ function colorlib.newColorMulti(parts)
 
     local switch = {}
 
-    if not hasDepthEffect then
-        switch.default = function(tbl)
-            for _, part in pairs(parts) do
-                part:color()
-                part:color(tbl.color)
+    switch.depthlayer = function(tbl)
+        local layer = tbl.depthLayer or tbl.layer
+        for _, part in pairs(parts) do
+            if part[layer] then
+                part[layer]:color(tbl.color)
             end
         end
-
-        switch.all = switch.default -- Alias
-    else
-        switch.depthlayer = function(tbl)
-            local layer = tbl.depthLayer or tbl.layer
-            for _, part in pairs(parts) do
-                if part[layer] then
-                    part[layer]:color(tbl.color)
-                end
-            end
-        end
-        switch.layer = switch.depthlayer -- Alias
-
-        switch.depthlayers = function(tbl)
-            for _, part in pairs(layers) do
-                part:color()
-                part:color(tbl.color)
-            end
-        end
-        switch.layers = switch.depthlayers -- Alias
-
-        switch.depthbackground = function(tbl)
-            for _, part in pairs(parts) do
-                local background = part.bg or part.background
-                if background then
-                    background:color()
-                    background:color(tbl.color)
-                end
-            end
-        end
-        switch.background = switch.depthbackground -- Alias
-
-        switch.default = function(tbl)
-            for _, v in pairs(parts) do
-                v:color()
-                v:color(tbl.color)
-            end
-            interface:color({ color = tbl.color, type = "depthLayers" })
-            interface:color({ color = tbl.color, type = "depthBackground" })
-        end
-        switch.all = switch.default -- Alias
     end
+    switch.layer = switch.depthlayer -- Alias
+
+    switch.depthlayers = function(tbl)
+        for _, part in pairs(layers) do
+            part:color()
+            part:color(tbl.color)
+        end
+    end
+    switch.layers = switch.depthlayers -- Alias
+
+    switch.depthbackground = function(tbl)
+        for _, part in pairs(parts) do
+            local background = part.bg or part.background
+            if background then
+                background:color()
+                background:color(tbl.color)
+            end
+        end
+    end
+    switch.background = switch.depthbackground -- Alias
+
+    switch.default = function(tbl)
+        for _, v in pairs(parts) do
+            v:color()
+            v:color(tbl.color)
+        end
+        interface:color({ color = tbl.color, type = "depthLayers" })
+        interface:color({ color = tbl.color, type = "depthBackground" })
+    end
+    switch.all = switch.default -- Alias
 
     ---@alias ColorParts.Type string
     ---| "all"
