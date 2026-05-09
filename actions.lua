@@ -1,4 +1,3 @@
-if not host:isHost() then return end
 --#region imports
 local util = require "lib.util"
 local syncedPings = require "lib.syncedpings"
@@ -7,13 +6,13 @@ local runLater = require "lib.thirdparty.runLater"
 --#endregion
 local sadChair = models.model.sadChair
 
-syncedPings.ticks = 4 * 20
-
 local page = action_wheel:newPage()
 
 local creeperSound = sounds["minecraft:entity.creeper.primed"]:volume(1.1)
 local laughSound = sounds["minecraft:entity.bat.ambient"]:volume(0.7)
 local laughPitch = 0.5
+
+syncedPings.ticks = 4 * 20
 
 action_wheel:setPage(page)
 
