@@ -10,7 +10,7 @@ local page = action_wheel:newPage()
 
 local creeperSound = sounds["minecraft:entity.creeper.primed"]:volume(1.1)
 local laughSound = sounds["minecraft:entity.bat.ambient"]:volume(0.7):subtitle("Strange Laugh")
-local laughPitch = 0.5
+local laughPitch = 0.4
 
 syncedPings.ticks = 4 * 20
 
@@ -37,9 +37,6 @@ end
 function pings.laugh()
     util.playSound(laughSound, laughPitch)
     runLater(4, function()
-        util.playSound(laughSound, laughPitch)
-    end)
-    runLater(8, function()
         util.playSound(laughSound, laughPitch)
     end)
 end
