@@ -9,7 +9,7 @@ local sadChair = models.model.sadChair
 local page = action_wheel:newPage()
 
 local creeperSound = sounds["minecraft:entity.creeper.primed"]:volume(1.1)
-local laughSound = sounds["minecraft:entity.bat.ambient"]:volume(0.7)
+local laughSound = sounds["minecraft:entity.bat.ambient"]:volume(0.7):subtitle("Strange Laugh")
 local laughPitch = 0.5
 
 syncedPings.ticks = 4 * 20
