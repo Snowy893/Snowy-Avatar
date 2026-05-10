@@ -174,10 +174,23 @@ end
 ---@param ... T
 ---@return T?
 function util.compare(value, ...)
-    for _, v in pairs({ ... }) do
+    for _, v in ipairs({ ... }) do
         if v == value then return value end
     end
     return nil
+end
+
+---@generic T
+---@param ... T
+---@return T?
+function util.compareall(...)
+    local values = { ... }
+    local last = values[1]
+    for i = 2, #values do
+        if last ~= values[i] then return nil end
+        last = values[i]
+    end
+    return last
 end
 
 ---Properly checks if a table is a table, even if it has set its type with `__type`

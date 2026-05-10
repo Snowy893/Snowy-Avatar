@@ -3,7 +3,7 @@
   "description": "Snowy's Avatar",
   "author": "Snowy893",
   "color": "#6600cc",
-  "autoScripts": ["lib.util", "script", "actions", "silly", "origins"],
+  "autoScripts": ["lib.util", "script", "actions", "host", "silly", "origins"],
   "customizations": {
     "model.root.Head.eyes": {
       "primaryRenderType": "EYES"

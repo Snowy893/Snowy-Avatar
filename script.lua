@@ -125,8 +125,8 @@ end)
 
 ---@param hand Hand
 local onCrouchArmOffsetRot = util.onchange(function(hand)
-	local rightRot = (hand and hand.RIGHT) and 20 or nil
-	local leftRot = (hand and hand.LEFT) and 20 or nil
+	local rightRot = hand.RIGHT and 20 or nil
+	local leftRot = hand.LEFT and 20 or nil
 	vanilla_model.RIGHT_ARM:setOffsetRot(rightRot)
 	vanilla_model.LEFT_ARM:setOffsetRot(leftRot)
 end)
@@ -208,44 +208,51 @@ function util.tick()
 		animations.model.aiming:stop()
 	end
 	
-	local leftHanded = player:isLeftHanded()
 	local mainHandActive = player:getActiveHand() == "MAIN_HAND"
-	local hand = mainHandActive ~= leftHanded and { RIGHT = true } or { LEFT = true } ---@type Hand
+	local leftHanded = player:isLeftHanded()
+	local activeHand = mainHandActive ~= leftHanded and "RIGHT" or "LEFT"
 
-	local doubleCrouchHand ---@type Hand
-	local singleCrouchHand ---@type Hand
-	local spyglassHand ---@type Hand
-	local bowCrouchHand ---@type Hand
+	local crouchHand = {} ---@type Hand
+	local miniCrossbowHand = {} ---@type Hand
+	local spyglassHand = {} ---@type Hand
+	local bowCrouchHand = {} ---@type Hand
+	local rightArmRot = vectors.vec3(0, 0, 0)
+	local leftArmRot = vectors.vec3(0, 0, 0)
 
 	if useAction == "SPYGLASS" then
-		spyglassHand = hand
-	elseif crouching then
-		if useAction == "BOW" then
-			bowCrouchHand = hand
-		elseif util.compare(useAction, "TOOT_HORN", "SPEAR", "BLOCK") then
-			singleCrouchHand = hand
-		else
-			local rightItem = player:getHeldItem(leftHanded)
-			local leftItem = player:getHeldItem(not leftHanded)
-			if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
-				doubleCrouchHand = { RIGHT = true, LEFT = true }
-			else
-				local umbrellaHand = {
-					RIGHT = rightItem.id == "originsumbrellas:umbrella",
-					LEFT = leftItem.id == "originsumbrellas:umbrella",
-				}
-				if umbrellaHand.RIGHT and umbrellaHand.LEFT then
-					doubleCrouchHand = umbrellaHand
-				else
-					singleCrouchHand = umbrellaHand
-				end
+		spyglassHand[activeHand] = true
+	elseif crouching and useAction == "BOW" then
+		bowCrouchHand[activeHand] = true
+	elseif crouching and util.compare(useAction, "TOOT_HORN", "SPEAR", "BLOCK") then
+		crouchHand[activeHand] = true
+	else
+		local rightItem = player:getHeldItem(leftHanded)
+		local leftItem = player:getHeldItem(not leftHanded)
+		local rightItemCharged = util.crossbowCharged(rightItem)
+		local leftItemCharged = util.crossbowCharged(leftItem)
+		if rightItemCharged or leftItemCharged then
+			if rightItemCharged and leftItemCharged and util.compareall("hunters_return:mini_crossbow", rightItem.id, leftItem.id) then
+				miniCrossbowHand.RIGHT = true
+				miniCrossbowHand.LEFT = true
 			end
+			crouchHand.RIGHT = crouching
+			crouchHand.LEFT = crouching
+		elseif crouching then
+			crouchHand.RIGHT = rightItem.id == "originsumbrellas:umbrella"
+			crouchHand.LEFT = leftItem.id == "originsumbrellas:umbrella"
 		end
 	end
 
 	onAimingBowWhileCrouching(bowCrouchHand)
 	onSpyglass(spyglassHand)
-	onCrouchArmOffsetRot(singleCrouchHand or not bowCrouchHand and doubleCrouchHand)
+
+	rightArmRot.x = crouchHand.RIGHT and 20 or 0
+	leftArmRot.x = crouchHand.LEFT and 20 or 0
+	rightArmRot.y = leftHanded and miniCrossbowHand.RIGHT and -15 or 0
+	leftArmRot.y = not leftHanded and miniCrossbowHand.LEFT and 15 or 0
+
+	vanilla_model.RIGHT_ARM:setOffsetRot(rightArmRot)
+	vanilla_model.LEFT_ARM:setOffsetRot(leftArmRot)
 
     onTeamChange(color)
 end
