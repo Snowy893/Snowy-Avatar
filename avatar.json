@@ -2,13 +2,13 @@
   "name": "Snowy",
   "description": "Snowy's Avatar",
   "author": "Snowy893",
-  "color": "#27aae0",
-  "autoScripts": ["lib.util", "script", "host", "silly"],
+  "color": "#6600cc",
+  "autoScripts": ["lib.util", "script", "actions", "host", "silly"],
   "customizations": {
-    "model.root.torso.Head.eyes": {
+    "model.root.Head.eyes": {
       "primaryRenderType": "EYES"
     },
-    "model.root.torso.Head.creepereyes": {
+    "model.root.Head.creeperEyes": {
       "primaryRenderType": "EMISSIVE",
       "visible": false
     },
@@ -18,11 +18,11 @@
     "model.Skull.eyes2": {
       "primaryRenderType": "EYES"
     },
-    "model.Skull.creepereyes2": {
+    "model.Skull.creeperEyes2": {
       "primaryRenderType": "TRANSLUCENT_CULL",
       "visible": false
     },
-    "model.root.sadchair": {
+    "model.sadChair": {
       "visible": false
     }
   }

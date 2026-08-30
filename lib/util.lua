@@ -142,9 +142,9 @@ function util.comparetables(tbl1, tbl2)
     return true
 end
 
----@param tbl? { [any]: function }
----@param mtbl? table
----@return table
+---@param tbl { [any]: function }?
+---@param mtbl table?
+---@return { [any]: function }
 ---@nodiscard
 function util.functiontable(tbl, mtbl)
     local t = tbl or {}
@@ -174,11 +174,59 @@ end
 ---@param ... T
 ---@return T?
 function util.compare(value, ...)
-    for _, v in pairs({ ... }) do
+    for _, v in ipairs({ ... }) do
         if v == value then return value end
     end
     return nil
 end
+
+---@generic T
+---@param ... T
+---@return T?
+function util.compareall(...)
+    local values = { ... }
+    local last = values[1]
+    for i = 2, #values do
+        if last ~= values[i] then return nil end
+        last = values[i]
+    end
+    return last
+end
+
+---Properly checks if a table is a table, even if it has set its type with `__type`
+---@param tbl table
+function util.istable(tbl)
+    local t = type(tbl)
+    return t ~= "nil" and t ~= "number" and t ~= "string" and t ~= "boolean" and t ~= "function"
+end
+
+---@param tbl table
+---@return table
+function util.deepcopy(tbl)
+    local t = {}
+    for key, value in pairs(tbl) do
+        if util.istable(value) then
+            t[key] = util.deepcopy(value)
+        else
+            t[key] = value
+        end
+    end
+    return t
+end
+
+---@generic T
+---@param tbl T
+---@return T
+function util.index(tbl)
+    local mt = {}
+    function mt:__index()
+        return self
+    end
+
+    return setmetatable(tbl, mt)
+end
+
+------------------------------------------------------------------------------
 
 ---@param key any
 ---@param default any
@@ -267,6 +315,7 @@ function util.checkUseAction(playr, ...)
         p = player
     end
     
+    ---@diagnostic disable-next-line: param-type-mismatch
     local activeItem = p:getActiveItem()
     if activeItem:getCount() == 0 then return false end
 
@@ -399,25 +448,153 @@ function util.tick()
     if not util.RENDER_AMBIENT_FIRST_PERSON and renderer:isFirstPerson() then return end
     for _, ambient in ipairs(ambients) do
         if ambient.condition() then
+            local playerPos = player:getPos()
             ambient.countLeft = ambient.countLeft + ambient.rate / 20
             while ambient.countLeft > 0 do
                 ambient.countLeft = ambient.countLeft - 1
-                local pos = player:getPos():add(ambient.offset):add(
+                local pos = vec(playerPos.x, playerPos.y, playerPos.z):add(ambient.offset):add(
                     math.lerp(-ambient.radius, ambient.radius, math.random()),
                     math.lerp(-ambient.radius, ambient.radius, math.random()),
                     math.lerp(-ambient.radius, ambient.radius, math.random())
                 )
-                particles:newParticle(ambient.id, pos,
-                    ambient.velocity == 0 and vec(0, 0, 0)
-                    or vec(
+                if ambient.velocity == 0 then
+                    particles:newParticle(ambient.id, pos, 0, 0, 0)
+                else
+                    particles:newParticle(ambient.id, pos,
                         math.lerp(-ambient.velocity, ambient.velocity, math.random()),
                         math.lerp(-ambient.velocity, ambient.velocity, math.random()),
                         math.lerp(-ambient.velocity, ambient.velocity, math.random())
                     )
-                )
+                end
             end
         end
     end
 end
+
+---@param particle Minecraft.particleID
+---@param position Vector3?
+---@param radius number?
+---@param velocity Vector3?
+---@param amount integer?
+function util.particleExplosion(particle, position, radius, velocity, amount)
+    position = position or player:getPos()
+    radius = radius or 3
+    velocity = velocity or vec(0.3, 0.3, 0.3)
+    amount = amount or 20
+
+    local calculateVelocity = velocity.x ~= 0 and velocity.y ~= 0 and velocity.z ~= 0
+
+    for _ = 1, amount do
+        if calculateVelocity then
+            particles:newParticle(particle,
+                position.x + math.lerp(-radius, radius, math.random()),
+                position.y + math.lerp(-radius, radius, math.random()),
+                position.z + math.lerp(-radius, radius, math.random()),
+                math.lerp(-velocity.x, velocity.x, math.random()),
+                math.lerp(-velocity.y, velocity.y, math.random()),
+                math.lerp(-velocity.z, velocity.z, math.random())
+            )
+        else
+            particles:newParticle(particle,
+                position.x + math.lerp(-radius, radius, math.random()),
+                position.y + math.lerp(-radius, radius, math.random()),
+                position.z + math.lerp(-radius, radius, math.random()),
+                0, 0, 0
+            )
+        end
+    end
+end
+
+-- Thanks `manuel_2867` from the Figura Discord!
+do
+    math.dt = 0
+    local st = 0
+    local getst = client.getSystemTime
+    local exp = math.exp
+    -- https://youtu.be/LSNQuFEDOyQ?t=2980
+    function math.expDecay(a, b, decay, dt)
+        return b + (a - b) * exp(-decay * dt)
+    end
+
+    function events.render(_, context)
+        if context ~= "FIRST_PERSON" and context ~= "RENDER" then return end
+        local newst = getst()
+        math.dt = (newst - st) / 1000
+        st = newst
+    end
+end
+
+local soundObjs = {}
+
+---@alias Util.SoundObj {
+---     sound: Sound,
+---     pitch: number?,
+---     condition: (fun(): boolean)?,
+---     contains: string[],
+---     doReplace: boolean,
+---}
+
+---@overload fun(sound: Util.SoundObj)
+---@param sound Sound
+---@param keepSound boolean?
+---@param ... string?
+function util.playerSoundReplace(sound, keepSound, ...)
+    local obj = sound
+    if type(sound) == "Sound" then
+        obj = { ---@type Util.SoundObj
+            sound = sound,
+            pitch = sound:getPitch(),
+            condition = world.exists,
+            contains = { ... },
+            keepSound = keepSound
+        }
+    end
+    table.insert(soundObjs, obj)
+end
+
+-- Thanks `manuel_2867` on the Figura Discord for original snippet!
+-- https://discord.com/channels/1129805506354085959/1234218592187453452/1463663512520753227
+function events.on_play_sound(id, pos, volume, pitch, loop, category, path)
+    if not path then return end
+    if not player:isLoaded() then return end
+
+    local nearest = math.huge
+    local uuid
+
+    for _, playr in pairs(world.getPlayers()) do
+        local dist = (playr:getPos() - pos):length()
+        if dist < nearest then
+            nearest = dist
+            uuid = playr:getUUID()
+        end
+    end
+
+    if uuid ~= player:getUUID() or nearest > 0.8 then return end
+
+    for _, obj in ipairs(soundObjs) do
+        local doReplace = true
+        for _, str in ipairs(obj.contains) do
+            doReplace = id:find(str) and doReplace
+            if not doReplace then break end
+        end
+
+        if doReplace then
+            util.playSound(obj.sound, obj.pitch, pos)
+            return not obj.keepSound
+        end
+    end
+end
+
+---@param playr Player?
+---@return boolean
+function util.isWearingArmor(playr)
+    for i = 3, 6 do
+        local armor = (playr or player):getItem(i)
+        if armor and armor.id ~= "minecraft:air" then return true end
+    end
+    return false
+end
+
+util.isHost = host:isHost()
 
 return util

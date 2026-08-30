@@ -1,5 +1,4 @@
 --#region imports
-local animatedText = require "lib.thirdparty.animatedText"
 local depthEffect = require "lib.thirdparty.depth_effect"
 local patpat = require "lib.thirdparty.patpat"
 local util = require "lib.util"
@@ -10,26 +9,27 @@ local colorlib = require "lib.colorlib"
 --#endregion
 local model = models.model
 local root = model.root
-local head = root.torso.Head
-local body = root.torso.waist.Body
+local head = root.Head
+local body = root.Body
 local eyes = head.eyes
-local creeperEyes = head.creepereyes:scale(1.2, 1.2, 1.2)
+local creeperEyes = head.creeperEyes:scale(1.2, 1.2, 1.2)
 local skull = model.Skull
 local skullEyes = skull.eyes2
-local skullCreeperEyes = skull.creepereyes2:scale(1.2, 1.2, 1.2)
-local rightArm = root.torso.waist.RightArm
-local leftArm = root.torso.waist.LeftArm
+local skullCreeperEyes = skull.creeperEyes2:scale(1.2, 1.2, 1.2)
+local rightArm = root.RightArm
+local leftArm = root.LeftArm
 local rightItemPivot = rightArm.RightItemPivot
 local leftItemPivot = leftArm.LeftItemPivot
 
-eyes.righteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
-eyes.lefteye.background:setPrimaryRenderType("EMISSIVE_SOLID")
-skullEyes.righteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
-skullEyes.lefteye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
+vanilla_model.PLAYER:setVisible(false)
+eyes.rightEye.background:setPrimaryRenderType("EMISSIVE_SOLID")
+eyes.leftEye.background:setPrimaryRenderType("EMISSIVE_SOLID")
+skullEyes.rightEye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
+skullEyes.leftEye2.background:setPrimaryRenderType("EMISSIVE_SOLID")
 
 ------------------------------------------------------------------
 
-local name = "Snowy :blahaj:"
+local name = "Snowy"
 local nameColor = "#6600cc"
 local nameOutlineColor = colorlib.lighten(vectors.hexToRGB(nameColor) * 255, -25)
 local plate = {
@@ -100,33 +100,33 @@ local onSpyglass = util.onchange(function(hand)
 	local pos = vec(0, 0, -11.2)
 	local scale = vec(1.95, 0.95, 1)
 	if hand and hand.RIGHT then
-		eyes.righteye:setPos(pos)
-		eyes.righteye:setScale(scale)
-		eyes.lefteye:setPos()
-		eyes.lefteye:setScale()
-		animations.model.squintleft:play()
-		animations.model.squintright:stop()
+		eyes.rightEye:setPos(pos)
+		eyes.rightEye:setScale(scale)
+		eyes.leftEye:setPos()
+		eyes.leftEye:setScale()
+		animations.model.squintLeft:play()
+		animations.model.squintRight:stop()
 	elseif hand and hand.LEFT then
-		eyes.lefteye:setPos(pos)
-		eyes.lefteye:setScale(scale)
-		eyes.righteye:setPos()
-		eyes.righteye:setScale()
-		animations.model.squintright:play()
-		animations.model.squintleft:stop()
+		eyes.leftEye:setPos(pos)
+		eyes.leftEye:setScale(scale)
+		eyes.rightEye:setPos()
+		eyes.rightEye:setScale()
+		animations.model.squintRight:play()
+		animations.model.squintLeft:stop()
 	else
-		eyes.righteye:setPos()
-		eyes.righteye:setScale()
-		eyes.lefteye:setPos()
-		eyes.lefteye:setScale()
-		animations.model.squintleft:stop()
-		animations.model.squintright:stop()
+		eyes.rightEye:setPos()
+		eyes.rightEye:setScale()
+		eyes.leftEye:setPos()
+		eyes.leftEye:setScale()
+		animations.model.squintLeft:stop()
+		animations.model.squintRight:stop()
 	end
 end)
 
 ---@param hand Hand
 local onCrouchArmOffsetRot = util.onchange(function(hand)
-	local rightRot = (hand and hand.RIGHT) and 20 or nil
-	local leftRot = (hand and hand.LEFT) and 20 or nil
+	local rightRot = hand.RIGHT and 20 or nil
+	local leftRot = hand.LEFT and 20 or nil
 	vanilla_model.RIGHT_ARM:setOffsetRot(rightRot)
 	vanilla_model.LEFT_ARM:setOffsetRot(leftRot)
 end)
@@ -135,66 +135,19 @@ end)
 
 ---@type auria.depth_effect.obj[]
 local depthObjects = {}
----@param parts ModelPart[]
----@return {[string]: ModelPart[]}
-local layerObjects = (function(parts)
-	local tbl = {}
-	for _, part in ipairs(parts) do
-		local partName = part:getName()
-		
-		tbl[partName] = {}
-
-		local index = 1
-		local layer = part["layer" .. index] or part["depthLayer" .. index]
-
-		while layer do
-			table.insert(tbl[partName], layer)
-			index = index + 1
-			layer = part["layer" .. index] or part["depthLayer" .. index]
-		end
-	end
-	return tbl
-end)({ eyes.righteye, eyes.lefteye })
-
-for _, obj in pairs(layerObjects) do
-    for _, layer in ipairs(obj) do
-        table.insert(depthObjects, depthEffect.apply(layer, 1))
-    end
-end
+table.insert(depthObjects, depthEffect.apply(eyes.rightEye.layer1, 1))
+table.insert(depthObjects, depthEffect.apply(eyes.leftEye.layer1, 1))
 
 ------------------------------------------------------------------
 
 local eyeColor = colorlib.newColorMulti({
-	eyes.righteye,
-	eyes.lefteye,
-	skullEyes.righteye2,
-	skullEyes.lefteye2,
+	eyes.rightEye,
+	eyes.leftEye,
+	skullEyes.rightEye2,
+	skullEyes.leftEye2,
 	creeperEyes,
 	skullCreeperEyes
 })
-
-animatedText.new(
-	"afk",
-	body,
-	vec(-7, 5.5, -6),
-	vec(0.35, 0.35, 0.35),
-	"BILLBOARD",
-	""
-)
-
-animatedText.new(
-	"sleeping",
-	body,
-	vec(0, 5, -6),
-	vec(0.35, 0.35, 0.35),
-	"BILLBOARD",
-	""
-)
-
-vanilla_model.PLAYER:setVisible(false)
-root.sadchair:setVisible(false)
-creeperEyes:setVisible(false)
-skullCreeperEyes:setVisible(false)
 
 ------------------------------------------------------------------
 
@@ -232,34 +185,39 @@ function util.tick()
 		animations.model.aiming:stop()
 	end
 	
-	local leftHanded = player:isLeftHanded()
 	local mainHandActive = player:getActiveHand() == "MAIN_HAND"
-	local hand = mainHandActive ~= leftHanded and { RIGHT = true } or { LEFT = true } ---@type Hand
+	local leftHanded = player:isLeftHanded()
+	local activeHand = mainHandActive ~= leftHanded and "RIGHT" or "LEFT"
 
-	local doubleCrouchHand ---@type Hand
-	local singleCrouchHand ---@type Hand
-	local spyglassHand ---@type Hand
-	local bowCrouchHand ---@type Hand
+	local crouchHand = {} ---@type Hand
+	local spyglassHand = {} ---@type Hand
+	local bowCrouchHand = {} ---@type Hand
+	local rightArmRot = vectors.vec3(0, 0, 0)
+	local leftArmRot = vectors.vec3(0, 0, 0)
 
 	if useAction == "SPYGLASS" then
-		spyglassHand = hand
-	elseif crouching then
-		if useAction == "BOW" then
-			bowCrouchHand = hand
-		elseif util.compare(useAction, "TOOT_HORN", "SPEAR", "BLOCK") then
-			singleCrouchHand = hand
-		else
-			local rightItem = player:getHeldItem(leftHanded)
-			local leftItem = player:getHeldItem(not leftHanded)
-			if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
-				doubleCrouchHand = { RIGHT = true, LEFT = true }
-			end
+		spyglassHand[activeHand] = true
+	elseif crouching and useAction == "BOW" then
+		bowCrouchHand[activeHand] = true
+	elseif crouching and util.compare(useAction, "TOOT_HORN", "SPEAR", "BLOCK") then
+		crouchHand[activeHand] = true
+	else
+		local rightItem = player:getHeldItem(leftHanded)
+		local leftItem = player:getHeldItem(not leftHanded)
+		if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
+			crouchHand.RIGHT = crouching
+			crouchHand.LEFT = crouching
 		end
 	end
 
 	onAimingBowWhileCrouching(bowCrouchHand)
 	onSpyglass(spyglassHand)
-	onCrouchArmOffsetRot(singleCrouchHand or not bowCrouchHand and doubleCrouchHand)
+
+	rightArmRot.x = crouchHand.RIGHT and 20 or 0
+	leftArmRot.x = crouchHand.LEFT and 20 or 0
+
+	vanilla_model.RIGHT_ARM:setOffsetRot(rightArmRot)
+	vanilla_model.LEFT_ARM:setOffsetRot(leftArmRot)
 
     onTeamChange(color)
 end
@@ -267,20 +225,14 @@ end
 function events.render(delta, context)
 	local time = world.getTime(delta)
 
-	if player:getPose() == "SLEEPING" then
-		animatedText.applyFunc("sleeping", function(_, i)
-			return vec(-i * 1.1, (math.sin(time / 8 + i) * .5) + (i * 1.3), 0)
-		end)
-	end
-
 	if context == "FIRST_PERSON" then return end
 
-    local cameraPos = client.getCameraPos()
-    local eyePos = util.eyePos(player, delta)
+	local cameraPos = client.getCameraPos()
+	local eyePos = util.eyePos(player, delta)
 	local distance = math.abs((cameraPos - eyePos):length())
 
 	for i, depthObject in ipairs(depthObjects) do
-		local depth = math.cos(time * 0.1 + i) * distance
+		local depth = math.cos(time * 0.1 + i) * math.min(1, distance / 4)
 		depthObject:setDepth(depth)
 	end
 end
@@ -303,26 +255,9 @@ afk.new(180)
 		head:setOffsetRot(math.sin(world.getTime(delta) / 14))
 	end)
 
-afk.new(210)
-	:register("ON_CHANGE", function(toggle)
-    	if toggle then
-			animatedText.setText("afk", { text = "Zzz", color = "#605b85" })
-			animatedText.applyFunc("afk", function(task)
-				task:outline(true)
-			end)
-		else
-			animatedText.setText("afk", "")
-		end
-    end)
-	:register("ON_RENDER_LOOP", function(delta)
-		animatedText.applyFunc("afk", function(_, i)
-			return vec(-i * 1.1, (math.sin(world.getTime(delta) / 8 + i) * .5) + (i * 1.3), 0)
-		end)
-	end)
+local dimensions = {}
 
-local switchDimension = {}
-
-function switchDimension.the_end()
+function dimensions.the_end()
 	eyeColor:color({ color = vec(0.81, 0.96, 0.99) })
 	eyeColor:color({
 		color = vec(0.35, 0.1, 0.35),
@@ -335,7 +270,7 @@ function switchDimension.the_end()
 	})
 end
 
-function switchDimension.the_nether()
+function dimensions.the_nether()
 	eyeColor:color({ color = vec(0.91, 0.65, 0.88) })
 	eyeColor:color({
 		color = vec(0.82, 0.2, 0.75),
@@ -343,7 +278,7 @@ function switchDimension.the_nether()
 	})
 end
 
-function switchDimension.overworld()
+function dimensions.overworld()
 	eyeColor:color({ color = vec(0.85, 0.66, 1) })
 	eyeColor:color({
 		color = vec(0.75, 0.52, 0.9),
@@ -356,14 +291,12 @@ enviLib.register("DIMENSION", function(id)
 	local endIndex = select(2, id:find(":"))
 	local dimension = id:sub(endIndex + 1)
 	
-	if switchDimension[dimension] then switchDimension[dimension]()
-	else switchDimension.overworld() end
+	if dimensions[dimension] then dimensions[dimension]()
+	else dimensions.overworld() end
 end)
 
 ---@param headPos Vector3
 table.insert(patpat.head.oncePat, function(_, headPos)
-	animations.model.skullPat:stop()
-	animations.model.skullPat:play()
 	headPos.x_z = headPos.x_z + 0.5
 	sounds:playSound("minecraft:entity.bat.hurt", headPos, 0.15)
 end)
@@ -373,3 +306,5 @@ table.insert(patpat.player.onPat, function()
 	local sound = math.random(10) == 10 and "minecraft:entity.bat.hurt" or "minecraft:entity.cat.purr"
 	sounds:playSound(sound, util.eyePos(player), 0.15)
 end)
+
+avatar:store("patpat.yesPats", true)

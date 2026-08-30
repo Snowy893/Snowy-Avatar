@@ -14,4 +14,4 @@ util.tick:register(function()
             whitelistCache[name] = true
         end
     end
-end, 600)
+end, 300)

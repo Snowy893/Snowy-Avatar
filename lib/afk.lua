@@ -1,7 +1,22 @@
 local util = require "lib.util"
+
 ---@class Afk
+---@field isAfk boolean
+---@field afkTime integer
+---@field timer integer
+---@field includeRotation boolean
+---@field events {
+---     ON_CHANGE: { [any]: function },
+---     ON_RENDER_LOOP: { [any]: function },
+---     ON_TICK_NOT_AFK: { [any]: function },
+---}
+---@field afkCheckTickRate integer
+---@field delay integer
+---@field didSneakChange boolean
+---@field onAfkChange function
 local Afk = {}
----@type Afk.interface[]
+Afk.__index = Afk
+---@type Afk[]
 Afk.ALL = {}
 
 local isSingleplayer = client.getServerBrand() == "Integrated"
@@ -12,51 +27,47 @@ local onSneakChange = util.onchange(function()
     end
 end)
 
----@overload fun(secondsUntilAfk: integer): Afk.obj
+---@return boolean
+function Afk:eval()
+    local posUnchanged = self.position == self.oldPosition
+    local isAfk = posUnchanged and (player:getPose() ~= "SLEEPING") and not self.didSneakChange
+    self.oldPosition = self.position
+    self.position = player:getPos()
+
+    if self.includeRotation then
+        local rotUnchanged = self.rotation == self.oldRotation
+
+        self.oldRotation = self.rotation
+        self.rotation = player:getRot()
+
+        return isAfk and rotUnchanged
+    end
+
+    return isAfk
+end
+
+---@overload fun(secondsUntilAfk: integer): Afk.Obj
 ---@param secondsUntilAfk integer
 ---@param includeRotation? boolean
 ---@param afkCheckTickRate? integer
----@return Afk.obj
+---@return Afk.Obj
 function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
-    ---@class Afk.interface
-    local interface = {
-        isAfk = false,
-        afkTIme = 0,
-        timer = #Afk.ALL,
-        includeRotation = includeRotation or true,
-        didSneakChange = false,
-        events = {
-            ON_CHANGE = util.functiontable(),
-            ON_RENDER_LOOP = util.functiontable(),
-            ON_TICK_NOT_AFK = util.functiontable(),
-        },
+    local afk = setmetatable({}, Afk)
+    afk.isAfk = false
+    afk.afkTime = 0
+    afk.didSneakChange = false
+    afk.timer = #Afk.ALL
+    afk.includeRotation = includeRotation or true
+    afk.events = {
+        ON_CHANGE = util.functiontable(),
+        ON_RENDER_LOOP = util.functiontable(),
+        ON_TICK_NOT_AFK = util.functiontable(),
     }
+    afk.afkCheckTickRate = afkCheckTickRate or 5
+    afk.delay = secondsUntilAfk * afk.afkCheckTickRate
+    afk.onAfkChange = util.onchange(afk.events.ON_CHANGE --[[@as fun(toggle: boolean)]])
 
-    interface.afkCheckTickRate = afkCheckTickRate or 5
-    interface.delay = secondsUntilAfk * interface.afkCheckTickRate
-
-    interface.onAfkChange = util.onchange(interface.events.ON_CHANGE --[[@as fun(toggle: boolean)]])
-
-    ---@return boolean
-    function interface:eval()
-        local posUnchanged = self.position == self.oldPosition
-        local isAfk = posUnchanged and (player:getPose() ~= "SLEEPING") and not self.didSneakChange
-        self.oldPosition = self.position
-        self.position = player:getPos()
-
-        if self.includeRotation then
-            local rotUnchanged = self.rotation == self.oldRotation
-
-            self.oldRotation = self.rotation
-            self.rotation = player:getRot()
-
-            return isAfk and rotUnchanged
-        end
-
-        return isAfk
-    end
-
-    ---@class Afk.obj
+    ---@class Afk.Obj
     local obj = {}
 
     ---@alias Afk.Event string
@@ -69,11 +80,11 @@ function Afk.new(secondsUntilAfk, includeRotation, afkCheckTickRate)
     ---@param func function
     ---@return self
     function obj:register(event, func)
-        table.insert(interface.events[event], func)
+        table.insert(afk.events[event], func)
         return obj
     end
 
-    table.insert(Afk.ALL, interface)
+    table.insert(Afk.ALL, afk)
     return obj
 end
 
