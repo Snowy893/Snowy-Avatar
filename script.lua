@@ -162,7 +162,7 @@ periodical.new(function() animations.model.blink:play() end)
 
 ---This is global because it runs in `animations.model.creeper`'s instruction keyframe
 ---@param toggle boolean
-function SnowyCreeperEyesVisible(toggle)
+function CreeperEyesVisible(toggle)
 	eyes:setVisible(not toggle)
 	creeperEyes:setVisible(toggle)
 	skullEyes:setVisible(not toggle)
@@ -279,9 +279,9 @@ function dimensions.the_nether()
 end
 
 function dimensions.overworld()
-	eyeColor:color({ color = vec(0.85, 0.66, 1) })
+	eyeColor:color({ color = vec(200/255, 155/255, 237/255) })
 	eyeColor:color({
-		color = vec(0.75, 0.52, 0.9),
+		color = vec(200/255, 155/255, 237/255),
 		type = "depthBackground",
 	})
 end

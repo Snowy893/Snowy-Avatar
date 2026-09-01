@@ -23,7 +23,7 @@ function pings.sadChair(toggle)
 end
 
 function pings.creeper()
-    SnowyCreeperEyesVisible(true)
+    CreeperEyesVisible(true)
     if player:isLoaded() then
         util.playSound(creeperSound)
     end
